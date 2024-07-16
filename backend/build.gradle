@@ -140,3 +140,31 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+//generated 폴더를 지정
+//문자열 타입으로 generated라는 변수를 만들어주었다. 그리고 파일 경로를 만들어주었다.
+//
+//        Querydsl은 자동으로 클래스를 만드는 기능을 가지고 있다. 그것을 Qclass라고 한다. (보통 클래스 이름 앞에 Q를 붙여서 만들어지기 때문)
+//이 파일들은 기본적으로 build directory 안에 들어가게 된다. 그래서 우리 눈에 보이지 않는다.
+//        위 코드는 해당 파일들을 우리 눈에 보이게 꺼내오기 위해 경로를 설정해 준 것이다.
+//
+//        왜냐하면 인텔리제이를 사용할 때 발생할 수 있는 잠재적인 문제를 피하기 위함이다.
+//        만약 기본값으로 Qclass를 생성하면 빌드 디렉토리에 들어가는데, gradle build할 때 스캔하는 영역과 ide가 스캔할 때 인텔리제이가 스캔하는 영역이 중복스캔이 일어날 수 있다.
+//        그래서 이런 문제를 해결하기 위해 Qclass의 생성 폴더 위치를 강제로 변경한 것이다.
+//Qclass가 git에 올라가지 않게 주의할 것.
+def generated = 'src/main/generated'
+
+//자바 컴파일 시 생성된 source(complied .class 아님!!) 가 갈 폴더를 generated 로 설정
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+//generated folder를 source 로 볼 수 있도록 추가
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
+//gradle clean 시 자동생성된 source 파일들 삭제하도록 설정
+clean {
+    delete file(generated)
+}

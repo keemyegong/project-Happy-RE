@@ -9,9 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * 유저 모델 정의.
- */
 @Entity
 @Getter
 @Setter
@@ -39,4 +36,14 @@ public class User extends BaseEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "social_login")
+    private SocialLogin socialLogin;
+
+    @Column(name = "profile_url")
+    private String profileUrl;
+
+    public enum SocialLogin {
+        LOCAL, KAKAO, GOOGLE
+    }
 }
