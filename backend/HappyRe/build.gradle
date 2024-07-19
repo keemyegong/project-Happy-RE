@@ -10,7 +10,6 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
-        vendor = JvmVendorSpec.AMAZON //Amazon Corretto 사용. LTS이고, 최소한의 라이센스이며, OpenJDK 소스를 변경하지 않았다(https://en.wikipedia.org/wiki/OpenJDK)
     }
 }
 
@@ -40,27 +39,12 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+    //STMP email 인증
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-//generated 폴더를 지정
-//Qclass가 git에 올라가지 않게 주의할 것.
-def generated = 'src/main/generated'
-
-//자바 컴파일 시 생성된 source(complied .class 아님!!) 가 갈 폴더를 generated 로 설정
-tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file(generated))
-}
-
-//generated folder를 source 로 볼 수 있도록 추가
-sourceSets {
-    main.java.srcDirs += [ generated ]
-}
-
-//gradle clean 시 자동생성된 source 파일들 삭제하도록 설정
-clean {
-    delete file(generated)
-}
