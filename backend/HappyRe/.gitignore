@@ -16,6 +16,13 @@ out/
 ### Java ###
 /bin
 
+#Generated Sources
+src/main/generated/*
+
+# Log file
+*.log
+*.log*.gz
+
 ### Maintain JDK ###
 !jdk/*
 !jdk/**
