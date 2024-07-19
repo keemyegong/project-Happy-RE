@@ -13,6 +13,9 @@ out/
 ### VS Code ###
 .vscode/
 
+### SpringBoot ###
+application-dev.properties
+
 ### Java ###
 /bin
 
