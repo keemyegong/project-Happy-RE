@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/emotions")
+@RequestMapping("/api/emotion")
 public class EmotionController {
 
     @Autowired

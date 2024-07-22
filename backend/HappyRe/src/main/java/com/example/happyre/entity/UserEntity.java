@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 @Table(name = "user")
 public class UserEntity {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -38,19 +37,5 @@ public class UserEntity {
 
     @Column(name = "profile_url")
     private String profileUrl;
-
-//    @Id
-//    private long id;
-//
-//    private String email;
-//
-//    private String password;
-//
-//    private String username;
-//
-//    private String name;
-//
-//    private String role;
-
 
 }
