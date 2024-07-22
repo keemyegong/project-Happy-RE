@@ -10,6 +10,7 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+        vendor = JvmVendorSpec.AMAZON //Amazon Corretto 사용. LTS이고, 최소한의 라이센스이며, OpenJDK 소스를 변경하지 않았다(https://en.wikipedia.org/wiki/OpenJDK)
     }
 }
 
@@ -34,17 +35,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    //JWT depndencies
+    //JWT dependencies
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-
-    //STMP email 인증
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
-
