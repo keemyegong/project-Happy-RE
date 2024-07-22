@@ -27,3 +27,6 @@ src/main/generated/*
 # Log file
 *.log
 *.log*.gz
+
+###Settings
+src/main/resources/settings.env
