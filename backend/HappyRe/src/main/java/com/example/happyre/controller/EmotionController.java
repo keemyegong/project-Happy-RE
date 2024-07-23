@@ -2,12 +2,15 @@ package com.example.happyre.controller;
 
 import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.repository.EmotionRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "Emotion")
 @RestController
 @RequestMapping("/api/emotion")
 public class EmotionController {
@@ -15,6 +18,7 @@ public class EmotionController {
     @Autowired
     private EmotionRepository emotionRepository;
 
+    @Operation
     @GetMapping
     public List<EmotionEntity> getAllEmotions() {
         return emotionRepository.findAll();

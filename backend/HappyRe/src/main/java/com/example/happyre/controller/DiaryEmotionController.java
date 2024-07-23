@@ -4,12 +4,14 @@ import com.example.happyre.entity.DiaryEmotionEntity;
 import com.example.happyre.repository.DiaryEmotionRepository;
 import com.example.happyre.repository.DiaryRepository;
 import com.example.happyre.repository.EmotionRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "Operation not guaranteed")
 @RestController
 @RequestMapping("/api/diaryEmotion")
 public class DiaryEmotionController {

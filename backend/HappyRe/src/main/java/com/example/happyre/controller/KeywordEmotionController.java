@@ -4,12 +4,14 @@ import com.example.happyre.entity.KeywordEmotionEntity;
 import com.example.happyre.repository.EmotionRepository;
 import com.example.happyre.repository.KeywordEmotionRepository;
 import com.example.happyre.repository.KeywordRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "Operation not guaranteed")
 @RestController
 @RequestMapping("/api/keywordEmotion")
 public class KeywordEmotionController {
