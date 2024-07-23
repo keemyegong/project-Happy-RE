@@ -5,6 +5,7 @@ import com.example.happyre.dto.JoinUserDTO;
 import com.example.happyre.dto.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "User")
 @Controller
 @ResponseBody
 @RequestMapping("/api/user")

@@ -2,12 +2,14 @@ package com.example.happyre.controller;
 
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.service.DiaryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "Diary")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/diary")
