@@ -15,9 +15,9 @@ api_key = os.environ.get('OPEN_API_KEY')
 api_instance = Chatbot(api_key)
 
 
-
 @router.get('/')
 def temp():
+    print('get 요청 들어옴')
     return({'chat':'bot'})
 
 @router.post('/')

@@ -6,11 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-    "http://localhost:8000",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500/",
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:8000/ai-api/"
+    '*'
 ]
 
 app.add_middleware(
@@ -23,3 +19,7 @@ app.add_middleware(
 
 app.include_router(emotion_router, prefix='/ai-api/emotion')
 app.include_router(chatbot_router, prefix="/ai-api/chatbot")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
