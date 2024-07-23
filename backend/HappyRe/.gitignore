@@ -1,0 +1,32 @@
+HELP.md
+.gradle
+.xml
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+
+### VS Code ###
+.vscode/
+
+### Java ###
+/bin
+
+#Generated Sources
+src/main/generated/*
+
+# Log file
+*.log
+*.log*.gz
+
+###Settings
+*.env
