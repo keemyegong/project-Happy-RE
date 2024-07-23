@@ -2,7 +2,13 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.JoinUserDTO;
 
+import com.example.happyre.dto.ModifyUserDTO;
+import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,22 +25,38 @@ public class UserController {
 
 
     //유저정보 조회
-    @GetMapping("/")
-    public String getUser() {
-
-
-        return null;
+    @GetMapping("/me")
+    public ResponseEntity<?> getUser(HttpServletRequest request) {
+        UserEntity userEntity = userService.findInfoByEmail(request);
+        if (userEntity != null) {
+            return ResponseEntity.ok(userEntity);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
     }
+
     //유저정보 수정
-    @PostMapping("/")
-    public String modifyUser() {
-        return null;
+    @PutMapping("/me")
+    public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
+        try {
+            userService.modifyUserInfo(modifyUserDTO, request);
+            return ResponseEntity.ok("User updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
     //회원 탈퇴
-    @DeleteMapping("/")
-    public String deleteUser() {
-        return null;
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUser(HttpServletRequest request) {
+        try{
+            userService.deleteUserInfo(request);
+            return ResponseEntity.ok("User deleted successfully");
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
+
+
     //유저정보 등록 (회원가입)
     @PostMapping("/join")
     public String joinUser(@RequestBody JoinUserDTO joinUserDTO) {
