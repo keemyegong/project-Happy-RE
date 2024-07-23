@@ -23,14 +23,17 @@ public class UserService {
 
         String email = null;
         Cookie[] cookies = request.getCookies();
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
+
                 if ("email".equals(cookie.getName())) {
                     email = cookie.getValue();
                     break;
                 }
             }
         }
+
         UserEntity user = userRepository.findByEmail(email);
         return user;
     }
