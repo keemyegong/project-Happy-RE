@@ -4,3 +4,45 @@
     width: 450px;
     text-align: center;
 }
+
+.login-title{
+    margin: 30px;
+}
+
+.login-title-container{
+    margin: 20px;
+}
+
+.login-content-container{
+    margin-inline: 20px;
+    margin-bottom: 30px;
+    margin-top: 20px;
+
+}
+
+.login-sub-content{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.password-finder{
+    text-decoration: none;
+    color: #8f90b9;
+    font-size: 12px;
+}
+
+.go-signup-div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    gap: 5px;
+}
+
+.go-signup{
+    text-decoration: none;
+    color: #8f90b9;
+    font-size: 12px;
+}
