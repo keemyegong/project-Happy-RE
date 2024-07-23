@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:ital,wght@0,100;0,300;0,400;0,500;0,700;0,800;0,900;1,100;1,300;1,400;1,500;1,700;1,800;1,900&display=swap');
+
+.navbar {
+  width: 100%;
+  background-color: lightblue;
+  padding: 15px 0px;
+  text-align: center;
+}
+
+.navbar-menu {
+  margin: 8px;
+}
+
+.navbarMenu-font {
+  color: black;
+  text-align: center;
+  font-feature-settings: 'clig' off, 'liga' off;
+  font-family: "Alegreya Sans SC";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 22px; /* 122.222% */
+}
