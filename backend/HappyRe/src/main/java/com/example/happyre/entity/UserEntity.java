@@ -38,4 +38,14 @@ public class UserEntity {
     @Column(name = "profile_url")
     private String profileUrl;
 
+    // 새로운 컬럼 추가
+    @Column(name = "russell_x", nullable = true)
+    private Double russellX;
+
+    @Column(name = "russell_y", nullable = true)
+    private Double russellY;
+
+    @Column(name = "myfrog", nullable = true)
+    private Integer myfrog;
+
 }
