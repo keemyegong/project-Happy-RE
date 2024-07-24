@@ -1,0 +1,110 @@
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+.calendar {
+  font-family: 'Pretendard-Regular';
+  font-weight: 100;
+  width: 570px;
+  height: 412px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  color: white;
+  opacity: 0.8;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-line {
+  margin-top: 20px;
+  border-bottom: solid 0.5px white;  
+}
+
+.col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.col-start {
+  justify-content: flex-start;
+}
+
+.col-center {
+  flex-grow: 1;
+}
+
+.col-end {
+  justify-content: flex-end;
+}
+
+.icon {
+  cursor: pointer;
+}
+
+.days {
+  color: white;
+  opacity: 0.8;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.body {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+}
+
+.cell {
+  color: white;
+  opacity: 0.8;
+  font-size: 12px;
+  flex-grow: 1;
+  padding: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cell.disabled {
+  color: white;
+  opacity: 0.4;
+}
+
+.cell.selected {
+  color: white;
+  opacity: 1;
+  font-weight:900;
+}
+
+.cell .number {
+  position: relative;
+  z-index: 2;
+}
+
+.cell .bg {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cell.selected .bg {
+  opacity: 1;
+}
