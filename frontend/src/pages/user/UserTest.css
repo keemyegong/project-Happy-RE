@@ -1,16 +1,8 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-}
-
 .styled-container {
-  height: 100vh;
-  background-color: #000;
+  height: 90vh;
+  background-color: #00000000;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -19,9 +11,8 @@ html, body {
 }
 
 .question-container {
-  flex: 1;
+  height: 20vh;
   font-family: Pretendard;
-  height: 30%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -31,11 +22,11 @@ html, body {
 }
 
 .question-container h4 {
-  font-size: clamp(0.75rem, 1.5vw, 3rem);
+  font-size: clamp(0.7rem, 1.5vw, 3rem);
 }
 
 .choices-container {
-  flex: 1;
+  height: auto;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: repeat(4, 1fr);
@@ -44,25 +35,32 @@ html, body {
   padding: 0px;
 }
 
+@media (max-width: 600px) {
+  .choices-container {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+  }
+}
+
 .choice-button {
-  margin: 10px;
-  color: #999999; /* 기본 글씨 색상을 옅은 회색으로 설정 */
+  margin: 5px;
+  color: #999999;
   border: none;
   background-color: transparent;
   transition: color 0.3s ease;
   cursor: pointer;
-  padding: 10px;
-  font-size: 1rem;
+  padding: 5px;
+  font-size: clamp(0.8rem, 1.5vw, 3rem);
 }
 
 .choice-button.selected {
-  color: #d4d43b; /* 클릭 시 연노란색으로 변경 */
+  color: #d4d43b;
 }
 
 .submit-button {
   color: #fff;
   background-color: #333758;
-  align-self: center; /* 가운데 정렬 */
+  align-self: center;
   margin-top: 20px;
   padding: 10px 20px;
   border: none;
