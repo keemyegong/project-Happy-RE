@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Nav() {
@@ -41,10 +39,10 @@ function Nav() {
               <Link className='navbar-menu navbar-menu-font' to='/message'>MESSAGE</Link>
             </li>
             <li className="nav-item">
-              <Link className='navbar-menu navbar-icon' to='/logout'><LogoutIcon /></Link>
+              <Link className='navbar-menu navbar-icon' to='/logout'>LOGOUT</Link>
             </li>
             <li className="nav-item">
-              <Link className='navbar-menu navbar-icon' to='/profile'><AccountCircleIcon /></Link>
+              <Link className='navbar-menu navbar-icon' to='/profile'>PROFILE</Link>
             </li>
           </ul>
         </div>

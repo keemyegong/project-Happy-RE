@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { Container, Box, Typography, Button } from '@mui/material';
 import './Main.css';
 import art from '../../assets/characters/art.png';
 import soldier from '../../assets/characters/soldier.png';
@@ -7,22 +6,6 @@ import steel from '../../assets/characters/steel.png';
 import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import { Link } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
-
-
-// 커스텀 Login Button
-const GoLoginButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  borderRadius : 12,
-  fontSize : 12,
-  padding : '7px 12px',
-  color: theme.palette.getContrastText('#4B4E6D'),
-  backgroundColor: '#333758',
-  '&:hover': {
-    backgroundColor: '#54587E',
-  },
-}));
-
 
 const Main = () => {
   const containerWrapRef = useRef(null);
@@ -106,15 +89,22 @@ const Main = () => {
     };
 
     const initialPositions1 = [
-      { x: 0.7, y: 0.2 },
-      { x: 0.45, y: 0.3 },
+      { x: 0.6, y: 0.3 },
+      { x: 0.3, y: 0.4 },
     ];
 
     const initialPositions2 = [
-      { x: 0, y: 0.4 },
       { x: 0.2, y: 0.2 },
-      { x: 0.35, y: 0.3 },
+      { x: 0.1, y: 0.4 },
+      { x: 0.55, y: 0.3 },
     ];
+
+    const calculateCharacterSize = () => {
+      const screenWidth = window.innerWidth;
+      return Math.min(Math.max(screenWidth * 0.1, 50), 200); // 최소 50, 최대 200
+    };
+
+    const characterSize = calculateCharacterSize();
 
     const characters1 = characterImages.slice(0, 2).map((src, index) => {
       const img = new Image();
@@ -123,8 +113,8 @@ const Main = () => {
         img,
         x: 0,
         y: 0,
-        width: 200,
-        height: 200
+        width: characterSize,
+        height: characterSize,
       };
     });
 
@@ -135,8 +125,8 @@ const Main = () => {
         img,
         x: 0,
         y: 0,
-        width: 200,
-        height: 200
+        width: characterSize,
+        height: characterSize,
       };
     });
 
@@ -177,48 +167,44 @@ const Main = () => {
   }, []);
 
   return (
-    <Container maxWidth={false} disableGutters>
-      <Box className='container-wrap' ref={containerWrapRef}>
-        <Box className='container-1'>
-          <h1>Happy:Re</h1>
-        </Box>
-        <Box className='container-2'>
-          <Box>
-            <p className='description-1'>RE:CORD YOUR</p>
-          </Box>
-          <Box>
-            <p className='description-2'>DAILY MOOD</p>
-          </Box>
-          <Box className='character-box-1'>
-            <Box className='characters'>
-              <canvas ref={canvasRef1} style={{ display: 'block', width: '100%', height: '100%' }} />
-            </Box>
-            <Box className='information'>
-              <Typography variant="h2">record</Typography>
-              <Typography variant='body1'>바쁜 일상 속에서 놓치기 쉬운 나의 감정,</Typography>
-              <Typography variant='body1'>이제 해피리와 함께 기록해보세요.</Typography>
-            </Box>
-          </Box>
-        </Box>
-        <Box className='container-3'>
-          <Box className='information'>
-            <Typography variant="h2">mood</Typography>
-            <Typography variant='body1'>해피리는 당신과 함께 감정을 공유하며 기록하고,</Typography>
-            <Typography variant='body1'>하루에 대한 레포트를 제공합니다.</Typography>
-            <Typography variant='body1'>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</Typography>
-            <Typography variant='body1'>우리 함께 감정에 대해 알아가 볼까요?</Typography>
-            <GoLoginButton variant="contained">
-              <Link className='go-login' to={'/login'} >
-                함께 할래요!
-              </Link>
-            </GoLoginButton>
-          </Box>
-          <Box className='characters'>
-            <canvas ref={canvasRef2} style={{ display: 'block', width: '100%', height: '100%' }} />
-          </Box>
-        </Box>
-      </Box>
-    </Container>
+    <div className="container-wrap" ref={containerWrapRef}>
+      <div className="container-1">
+        <h1>Happy:Re</h1>
+      </div>
+      <div className="container-2">
+        <div>
+          <p className="description-1">RE:CORD YOUR</p>
+        </div>
+        <div>
+          <p className="description-2">DAILY MOOD</p>
+        </div>
+        <div className="character-box-1">
+          <div className="characters">
+            <canvas ref={canvasRef1} style={{ display: 'block', width: '100%', height: '100%' }} />
+          </div>
+          <div className="information">
+            <h2>record</h2>
+            <p>바쁜 일상 속에서 놓치기 쉬운 나의 감정,</p>
+            <p>이제 해피리와 함께 기록해보세요.</p>
+          </div>
+        </div>
+      </div>
+      <div className="container-3">
+        <div className="information">
+          <h2>mood</h2>
+          <p>해피리는 당신과 함께 감정을 공유하며 기록하고,</p>
+          <p>하루에 대한 레포트를 제공합니다.</p>
+          <p>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</p>
+          <p>우리 함께 감정에 대해 알아가 볼까요?</p>
+          <Link className="go-login" to="/login">
+            함께 할래요!
+          </Link>
+        </div>
+        <div className="characters">
+          <canvas ref={canvasRef2} style={{ display: 'block', width: '100%', height: '100%' }} />
+        </div>
+      </div>
+    </div>
   );
 };
 
