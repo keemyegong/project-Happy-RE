@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Tag(name = "User")
 @Controller
 @ResponseBody
@@ -66,5 +68,17 @@ public class UserController {
         userService.joinProcess(joinUserDTO);
         return null;
     }
+
+    @PutMapping("/russell")
+    public  ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String,Double> body){
+        try {
+            userService.fistRussell(request, body);
+            return ResponseEntity.ok("First russell setting successfully");
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
 
 }

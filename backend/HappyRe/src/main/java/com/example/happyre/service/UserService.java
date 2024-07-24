@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -37,6 +39,19 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(email);
         return user;
     }
+
+    public void fistRussell(HttpServletRequest request, Map<String,Double> body) {
+        UserEntity user = findInfoByEmail(request);
+        if(user == null) {
+            throw new RuntimeException("User not found");
+        }
+        user.setRussellX(body.get("x"));
+        user.setRussellY(body.get("y"));
+        userRepository.save(user);
+
+    }
+
+
 
     public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request){
         UserEntity userEntity = findInfoByEmail(request);
