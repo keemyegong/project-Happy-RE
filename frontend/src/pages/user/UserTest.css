@@ -1,0 +1,79 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+
+.styled-container {
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 375px;
+}
+
+.question-container {
+  flex: 1;
+  font-family: Pretendard;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  padding: 20px;
+}
+
+.question-container h4 {
+  font-size: clamp(0.75rem, 1.5vw, 3rem);
+}
+
+.choices-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 10px;
+  color: #fff;
+  padding: 0px;
+}
+
+.choice-button {
+  margin: 10px;
+  color: #999999; /* 기본 글씨 색상을 옅은 회색으로 설정 */
+  border: none;
+  background-color: transparent;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.choice-button.selected {
+  color: #d4d43b; /* 클릭 시 연노란색으로 변경 */
+}
+
+.submit-button {
+  color: #fff;
+  background-color: #333758;
+  align-self: center; /* 가운데 정렬 */
+  margin-top: 20px;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #54587E;
+}
+
+.go-login {
+  text-decoration: none;
+  color: white;
+}

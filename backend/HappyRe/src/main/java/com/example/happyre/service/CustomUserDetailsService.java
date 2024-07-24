@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserEntity userData = userRepository.findByEmail(email);
         if (userData == null) {
             // 사용자 정보를 찾을 수 없을 때 예외를 던짐
-            System.out.println();
+            System.out.println("User not found with email: " + email);
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
         // UserDetails에 담아서 return하면 AuthenticationManager가 검증함

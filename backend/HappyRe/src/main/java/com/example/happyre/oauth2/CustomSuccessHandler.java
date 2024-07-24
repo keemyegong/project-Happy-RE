@@ -1,7 +1,10 @@
 package com.example.happyre.oauth2;
 
 import com.example.happyre.dto.CustomOAuth2User;
+import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
+import com.example.happyre.repository.UserRepository;
+import com.example.happyre.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,10 +21,13 @@ import java.util.Iterator;
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public CustomSuccessHandler(JWTUtil jwtUtil) {
+
+    public CustomSuccessHandler(JWTUtil jwtUtil, UserRepository userRepository) {
 
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -36,8 +42,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
-
-        String token = jwtUtil.createJwt(email, role, 60*60*60*1000L);
+        UserEntity user =  userRepository.findByEmail(email);
+        String token = jwtUtil.createJwt(email, role, 60*60*60*1000L, user.getId());
 
         response.addCookie(createCookie("Authorization", token));
         response.sendRedirect("http://localhost:3000/");
@@ -46,7 +52,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60*60*60*2);
+        cookie.setMaxAge(60*60*60*1000);
         //https 설정
         //cookie.setSecure(true);
         cookie.setPath("/");
