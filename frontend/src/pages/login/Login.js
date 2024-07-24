@@ -7,6 +7,7 @@ import { useNavigate  } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Cookies from 'js-cookie';
 
+axios.defaults.withCredentials = true;
 
 function Login() {
   console.log(Cookies.get('JSESSIONID'))
@@ -18,14 +19,12 @@ function Login() {
   const googleLogin = ()=>{
     axios.post(
       window.location.href = "http://localhost:8080/oauth2/authorization/google"
-    ).then((response)=>{
-      console.log(response);
-      console.log('aaa');
-    })
+    )
 
   }
 
   const login = ()=>{
+    console.log('a')
     const inputUserInfo = {
       email,
       password,
@@ -39,12 +38,15 @@ function Login() {
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
       const decoded = jwtDecode(jwtToken.substr(7));
-      // jwtToken : back과 통신하기 위한 Token
-      // decoded : cookie decoding 정보, 이메일, 유저 ID 포함
 
     }).then((Response)=>{
       navigate('/');
-    })
+    }).catch(()=>{
+
+      console.log('Login failed');
+
+    }
+    )
 
   }
 
@@ -95,7 +97,15 @@ function Login() {
           </div>
 
           <button className='btn login-btn' onClick={login}>Login</button>
-
+          <button onClick={()=>{
+            axios.get(
+              'http://192.168.31.228:8080/api/user/me',
+              { withCredentials: true }
+              
+            ).then((Response)=>{
+              console.log(Response);
+            })
+          }}> test </button>
         </div>
         <hr className='border-light border-1' />
 
