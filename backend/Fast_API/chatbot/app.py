@@ -8,8 +8,6 @@ from fastapi.encoders import jsonable_encoder
 from .Chatbot import Chatbot
 from fastapi.security import OAuth2PasswordBearer
 
-
-
 router = APIRouter()
 load_dotenv()
 api_key = os.environ.get('OPEN_API_KEY')
@@ -31,8 +29,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         return user_id
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Could not validate credential")
-    
-    
 
 @router.get('/')
 def temp():

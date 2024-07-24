@@ -20,6 +20,15 @@ app.add_middleware(
 app.include_router(emotion_router, prefix='/ai-api/emotion')
 app.include_router(chatbot_router, prefix="/ai-api/chatbot")
 
+# custom middleware
+@app.middleware("http")
+async def JWTFilter(request: Request, call_next):
+    #preprocessing
+    #execution
+    response = await call_next(request)
+    #postprocessing
+    return response #최종 response
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
