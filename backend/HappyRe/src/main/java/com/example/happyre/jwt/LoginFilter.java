@@ -61,10 +61,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(email, role, 60*60*60*1000L,customUserDetails.getId());
+        String token = jwtUtil.createJwt(email, role, 60*60*60*1000*500L,customUserDetails.getId());
 
 
         response.addCookie(createCookie("Authorization", token));
+        response.addHeader("Authorization", "Bearer " + token);
 
 
         System.out.println("successful authentication");
