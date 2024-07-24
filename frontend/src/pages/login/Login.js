@@ -37,7 +37,6 @@ const Login = () => {
             <Link className='go-signup' to={'/signup'}>Sign Up</Link>
           </p>
         </div>
-
       </div>
     </div>
   );
