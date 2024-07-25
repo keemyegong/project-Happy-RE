@@ -27,20 +27,21 @@ public class UserService {
     public UserEntity findInfoByEmail(HttpServletRequest request){
 
         String email = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-
-                if ("Authorization".equals(cookie.getName())) {
-                    String token = cookie.getValue();
-
-                    email = jwtUtil.getEmail(token);
-                    break;
-                }
-            }
-        }
-
+//        Cookie[] cookies = request.getCookies();
+//
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//
+//                if ("Authorization".equals(cookie.getName())) {
+//                    String token = cookie.getValue();
+//
+//                    email = jwtUtil.getEmail(token);
+//                    break;
+//                }
+//            }
+//        }
+        String token = request.getHeader("Authorization").substring(7);
+        email = jwtUtil.getEmail(token);
         UserEntity user = userRepository.findByEmail(email);
         return user;
     }
