@@ -4,12 +4,11 @@ import { Link } from 'react-router-dom';
 import loginTitle from '../../assets/login_title.png'
 import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import Cookies from 'js-cookie';
-// import cookieClient from 'react-cookie';
 
 axios.defaults.withCredentials = true;
-const defaultUrl = 'http://192.168.31.228:8080'
+// const defaultUrl = 'http://192.168.31.228:8080'
+const defaultUrl = 'http://localhost:8080'
 function Login() {
   let navigate = useNavigate ();
   const [email,setEmail] = useState('');
@@ -31,18 +30,19 @@ function Login() {
     axios.post(
       `${defaultUrl}/login`,
       inputUserInfo,
-      { withCredentials: true }
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
-      Cookies.set('Authorization',jwtToken.substr(7), { expires: 7 })
-      const decoded = jwtDecode(jwtToken.substr(7));
+      if (isLoginSaved){
+        Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
+      } else {
+        Cookies.set('Authorization', jwtToken.substr(7));
 
+      }
+      
     }).then((Response)=>{
-      navigate('/');
+      navigate('/profile');
     }).catch(()=>{
-
       console.log('Login failed');
-
     }
     )
 
@@ -90,26 +90,12 @@ function Login() {
               </label>
             </div>
             <Link className='password-finder' 
-            to={'/password/reset'}>Forgot Password?</Link>
+            to={'/password/reset'}> </Link>
 
           </div>
 
           <button className='btn login-btn' onClick={login}>Login</button>
-          <button onClick={()=>{
-            
-            axios.get(
-              `${defaultUrl}/api/user/me`,
-              { withCredentials: true,
-                headers : {
-                  Authorization :`Bearer ${Cookies.get('Authorization')}`
-                }
-               },
-              
-            ).then((Response)=>{
-
-              console.log(Response);
-            })
-          }}> test </button>
+          
         </div>
         <hr className='border-light border-1' />
 
@@ -120,7 +106,6 @@ function Login() {
             <Link className='go-signup' to={'/signup'}>Sign Up</Link>
           </p>
         </div>
-
       </div>
     </div>
   );
