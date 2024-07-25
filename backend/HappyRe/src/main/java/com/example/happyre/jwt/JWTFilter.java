@@ -41,20 +41,21 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
         System.out.println(path);
+        authorization =request.getHeader("Authorization") ;
+        boolean flag= true;
+        if (cookies != null) {
 
-//        if (cookies != null) {
-//
-//            for (Cookie cookie : cookies) {
-//
-//                System.out.println(cookie.getName());
-//                if (cookie.getName().equals("Authorization")) {
-//
-//                    authorization = cookie.getValue();
-//                }
-//            }
-//        }
+            for (Cookie cookie : cookies) {
 
-        authorization =request.getHeader("Authorization").substring(7) ;
+                System.out.println(cookie.getName());
+                if (cookie.getName().equals("Authorization")) {
+                    flag = false;
+                    authorization = cookie.getValue();
+                }
+            }
+        }
+
+
         //Authorization 헤더 검증
         if (authorization == null) {
 
@@ -67,7 +68,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //토큰
 //        String token = authorization;
-        String token = authorization;
+        String token;
+        if(flag){
+            token = authorization.substring(7);
+        }else{
+            token = authorization;
+        }
+
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
 

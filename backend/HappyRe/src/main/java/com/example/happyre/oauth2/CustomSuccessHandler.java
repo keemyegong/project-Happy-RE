@@ -57,7 +57,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //https 설정
         //cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
 
         return cookie;
     }
