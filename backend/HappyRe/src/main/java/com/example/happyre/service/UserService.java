@@ -3,40 +3,61 @@ package com.example.happyre.service;
 import com.example.happyre.dto.JoinUserDTO;
 import com.example.happyre.dto.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
+import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JWTUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JWTUtil jwtUtil) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     public UserEntity findInfoByEmail(HttpServletRequest request){
 
         String email = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-
-                if ("email".equals(cookie.getName())) {
-                    email = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
+//        Cookie[] cookies = request.getCookies();
+//
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//
+//                if ("Authorization".equals(cookie.getName())) {
+//                    String token = cookie.getValue();
+//
+//                    email = jwtUtil.getEmail(token);
+//                    break;
+//                }
+//            }
+//        }
+        String token = request.getHeader("Authorization").substring(7);
+        email = jwtUtil.getEmail(token);
         UserEntity user = userRepository.findByEmail(email);
         return user;
     }
+
+    public void fistRussell(HttpServletRequest request, Map<String,Double> body) {
+        UserEntity user = findInfoByEmail(request);
+        if(user == null) {
+            throw new RuntimeException("User not found");
+        }
+        user.setRussellX(body.get("x"));
+        user.setRussellY(body.get("y"));
+        userRepository.save(user);
+
+    }
+
+
 
     public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request){
         UserEntity userEntity = findInfoByEmail(request);

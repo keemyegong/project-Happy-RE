@@ -13,12 +13,117 @@
     margin: 20px;
 }
 
+.google-login-btn{
+    font-size: 12px;
+    background-color: #4B4E6D;
+    color: white;
+    padding: 20px;
+    width: 100%;
+
+}
+
+.google-login-btn:hover{
+    background-color: #717598;
+    color: white;
+    
+}
+
+.google-login-btn:active{
+    background-color: #717598 !important;
+    color: white !important;
+}
+
+.login-btn{
+    font-size: 12px;
+    background-color: #333758;
+    color: white;
+    padding: 20px;
+    width: 100%;
+
+}
+
+.login-btn:hover{
+    background-color: #54587E;
+    color: white;
+    
+}
+
+.login-btn:active{
+    background-color: #54587E !important;
+    color: white !important;
+    
+}
+
 .login-content-container{
     margin-inline: 20px;
     margin-bottom: 30px;
     margin-top: 20px;
 
 }
+
+.login-input{
+    background-color: rgba(105, 105, 105, 0.3);
+    border: 0px;
+    color: #B2B2B2;
+}
+
+.login-input:focus{
+    background-color: #2A2A2A;
+    border: 0px; 
+    color: #B2B2B2;
+    
+}
+
+.custom-checkbox{
+    border: 0.5px solid white;
+    background-color: #000000;
+}
+
+.custom-checkbox{
+    border: 1px solid #8f90b9;
+    background-color: #000000;
+}
+
+.custom-checkbox:checked{
+    background-color: #54587E;
+    border: 1px solid #8f90b9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(143, 144, 185, 0.6);
+}
+
+.custom-checkbox:focus{
+    border: 1px solid #8f90b9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(143, 144, 185, 0.6);
+}
+
+.checkbox-label{
+    color: #B2B2B2;
+    font-size: 12px;
+}
+
+.checkbox-container{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-control:focus {
+    border: 1px white solid;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #2A2A2A inset ; -webkit-text-fill-color: #B2B2B2; }
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active { transition: background-color 5000s ease-in-out 0s; }
+
+.form-floating > input + label:after {
+    background: none !important;
+}
+
+.form-floating > input + label {
+    background: none !important;
+    color: #9E9E9E!important;
+    font-size: 13px;
+}
+
 
 .login-sub-content{
     display: flex;
@@ -31,6 +136,7 @@
     color: #8f90b9;
     font-size: 12px;
 }
+
 
 .go-signup-div{
     margin: 20px;
