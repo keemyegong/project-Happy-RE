@@ -6,25 +6,21 @@ import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Cookies from 'js-cookie';
+// import cookieClient from 'react-cookie';
 
 axios.defaults.withCredentials = true;
-
+const defaultUrl = 'http://localhost:8080'
 function Login() {
-  console.log(Cookies.get('JSESSIONID'))
   let navigate = useNavigate ();
   const [email,setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginSaved, setIsLoginSaved ]= useState(false);
 
   const googleLogin = ()=>{
-    axios.post(
-      window.location.href = "http://localhost:8080/oauth2/authorization/google"
-    )
-
+    window.location.href = `${defaultUrl}/oauth2/authorization/google`
   }
 
   const login = ()=>{
-    console.log('a')
     const inputUserInfo = {
       email,
       password,
@@ -32,7 +28,7 @@ function Login() {
     console.log(inputUserInfo);
 
     axios.post(
-      'http://192.168.31.228:8080/login',
+      `${defaultUrl}/login`,
       inputUserInfo,
       { withCredentials: true }
     ).then((Response)=>{
@@ -99,10 +95,11 @@ function Login() {
           <button className='btn login-btn' onClick={login}>Login</button>
           <button onClick={()=>{
             axios.get(
-              'http://192.168.31.228:8080/api/user/me',
-              { withCredentials: true }
+              `${defaultUrl}/api/user/me`,
+              { withCredentials: true },
               
             ).then((Response)=>{
+
               console.log(Response);
             })
           }}> test </button>
