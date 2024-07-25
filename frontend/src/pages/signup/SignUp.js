@@ -1,6 +1,7 @@
 import React from 'react';
 import './SignUp.css'
 import signUpTitle from '../../assets/signup_title.png'
+import Button from '../../components/Button/Button';
 
 const SignUp = () => {
 
@@ -15,6 +16,7 @@ const SignUp = () => {
 
 				</div>
 				<hr className='border-light border-1' />
+				<Button className='btn dark-btn big' content='Sign Up'/>
 				
 			</div>
     </div>
