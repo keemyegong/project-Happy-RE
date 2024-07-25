@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './UserTest.css';
 
 const UserTest = () => {
@@ -38,6 +39,27 @@ const UserTest = () => {
     ).map((sum) => sum / selectedChoices.length);
 
     console.log(`Average coordinates: [${averageCoordinates[0].toFixed(2)}, ${averageCoordinates[1].toFixed(2)}]`);
+
+    const data = {
+      x: averageCoordinates[0].toFixed(2),
+      y: averageCoordinates[1].toFixed(2),
+    };
+
+    const token = 'eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJ1c2VyaWQiOjQsImlhdCI6MTcyMTc5NjQyOCwiZXhwIjoxNzIyMDEyNDI4fQ.S_BaHSzoZQ8Trql3o9bAd5OxXm6K4n96KnMyOBg5xv4'; // 여기에 실제 토큰 값을 넣으세요
+    const serverUrl = `http://192.168.31.228:8080/api/user/russell`;
+
+    axios.put(serverUrl, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      .then((response) => {
+        console.log('Data sent successfully:', response.data);
+      })
+      .catch((error) => {
+        console.error('Error sending data:', error);
+      });
   };
 
   return (
