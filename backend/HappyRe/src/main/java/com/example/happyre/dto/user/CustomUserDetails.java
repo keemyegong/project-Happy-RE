@@ -1,4 +1,4 @@
-package com.example.happyre.dto;
+package com.example.happyre.dto.user;
 
 import com.example.happyre.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;

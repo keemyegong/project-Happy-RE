@@ -1,4 +1,4 @@
-package com.example.happyre.dto;
+package com.example.happyre.dto.oauth;
 
 public interface OAuth2Response {
     //제공자 (Ex. naver, google, ...)

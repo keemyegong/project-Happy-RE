@@ -1,7 +1,7 @@
 package com.example.happyre.jwt;
 
-import com.example.happyre.dto.CustomOAuth2User;
-import com.example.happyre.dto.UserDTO;
+import com.example.happyre.dto.oauth.CustomOAuth2User;
+import com.example.happyre.dto.user.UserDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

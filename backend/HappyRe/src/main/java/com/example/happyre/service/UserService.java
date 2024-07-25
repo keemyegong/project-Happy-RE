@@ -1,11 +1,10 @@
 package com.example.happyre.service;
 
-import com.example.happyre.dto.JoinUserDTO;
-import com.example.happyre.dto.ModifyUserDTO;
+import com.example.happyre.dto.user.JoinUserDTO;
+import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

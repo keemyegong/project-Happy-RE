@@ -1,6 +1,6 @@
 package com.example.happyre.jwt;
 
-import com.example.happyre.dto.CustomUserDetails;
+import com.example.happyre.dto.user.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -64,7 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(email, role, 60*60*60*1000*500L,customUserDetails.getId());
 
 
-        //response.addCookie(createCookie("Authorization", token));
+       //    response.addCookie(createCookie("Authorization", token));
         response.addHeader("Authorization", "Bearer " + token);
 
 
