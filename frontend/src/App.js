@@ -6,30 +6,33 @@ import Main from './pages/main/Main';
 import Login from './pages/login/Login';
 import SignUp from './pages/signup/SignUp';
 import UserTest from './pages/user/UserTest';
+import UserUpdate from './pages/userUpdate/UserUpdate';
+
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test'
+
 import './App.css';
 
-const AppContent = () => {
-  // Navbar가 main일 때는 보이지 않도록 수정
-  const location = useLocation();
-  const showNav = location.pathname !== '/';
+// const AppContent = () => {
+//   // Navbar가 main일 때는 보이지 않도록 수정
+//   const location = useLocation();
+//   const showNav = location.pathname !== '/';
 
-  return (
-    <>
-      <StarryBackground />
-      <div className="content">
-        {showNav && <Nav />}
-        <Routes>
-          <Route path="/" element={<Main />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/usertest" element={<UserTest />} />
-        </Routes>
-      </div>
-    </>
-  );
-};
+//   return (
+//     <>
+//       <StarryBackground />
+//       <div className="content">
+//         {showNav && <Nav />}
+//         <Routes>
+//           <Route path="/" element={<Main />} />
+//           <Route path="/login" element={<Login />} />
+//           <Route path="/signup" element={<SignUp />} />
+//           <Route path="/usertest" element={<UserTest />} />
+//         </Routes>
+//       </div>
+//     </>
+//   );
+// };
 
 const App = () => {
   return (
@@ -44,6 +47,8 @@ const App = () => {
             <Route path="/usertest" element={<UserTest />} />
             <Route path="/emotion" element={<EmotionGraph />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/user/update" element={<UserUpdate />} />
+
           </Routes>
         </div>
       </div>

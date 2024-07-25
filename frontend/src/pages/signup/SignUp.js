@@ -7,7 +7,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate  } from "react-router-dom";
 
-const defaultUrl = 'http://localhost:8080'
+// const defaultUrl = 'http://localhost:8080'
+const defaultUrl = 'http://192.168.31.228:8080'
 
 const SignUp = () => {
   let navigate = useNavigate ();
