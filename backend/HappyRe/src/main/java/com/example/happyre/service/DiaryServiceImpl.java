@@ -1,8 +1,11 @@
 package com.example.happyre.service;
 
+import com.example.happyre.dto.diary.ReportResponse;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.repository.DiaryRepository;
+import com.example.happyre.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.engine.jdbc.env.spi.AnsiSqlKeywords;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,21 +16,43 @@ import java.util.Optional;
 public class DiaryServiceImpl {
 
     private final DiaryRepository diaryRepository;
-
-
+    private final KeywordRepository keywordRepository;
 
 
     public List<DiaryEntity> findByUserId(int userid) {
         return diaryRepository.findByUserId(userid);
     }
 
+    public void addReport(ReportResponse reportResponse, int userId){
+        reportResponse.getSummary();
+        reportResponse.getKeywords();
+        // 다이어리 먼저 생성
+        DiaryEntity diaryEntity = new DiaryEntity();
+        diaryEntity.setSummary(reportResponse.getSummary());
+        diaryEntity.setUserId(userId);
+        diaryEntity = diaryRepository.save(diaryEntity);
 
-    public List<DiaryEntity> findAll() {
-        return diaryRepository.findAll();
+        int diaryKey = diaryEntity.getDiaryId();
+
+        System.out.println("Diary ID: " + diaryKey);
+        //키워드 저장
+
+
+
     }
 
 
 
+
+
+
+
+
+
+
+    public List<DiaryEntity> findAll() {
+        return diaryRepository.findAll();
+    }
 
     public DiaryEntity update(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).get();

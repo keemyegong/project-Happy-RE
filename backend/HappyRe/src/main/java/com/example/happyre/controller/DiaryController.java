@@ -1,5 +1,6 @@
 package com.example.happyre.controller;
 
+import com.example.happyre.dto.diary.ReportResponse;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
@@ -43,11 +44,13 @@ public class DiaryController {
 
 
     @PostMapping("/report")
-    public ResponseEntity<?> addReport(HttpServletRequest request){
+    public ResponseEntity<?> addReport(HttpServletRequest request, @RequestBody ReportResponse reportResponse){
         try {
+            System.out.println("Controller : addReport");
             int userId = jwtUtil.getUserId(request.getHeader("Authorization").substring(7));
-            List<DiaryEntity> diaryEntity = diaryService.findByUserId(userId);
-            return new ResponseEntity<>(diaryEntity, HttpStatus.OK);
+
+            diaryService.addReport(reportResponse,userId);
+            return null;
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
