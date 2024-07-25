@@ -25,4 +25,10 @@ public class KeywordEntity {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
+    @Column(name="russell_x" , nullable = false)
+    private double russellX;
+
+    @Column(name="russell_y", nullable = false)
+    private double russelly;
+
 }
