@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         String path = request.getRequestURI();
-        if (path.equals("/api/user/login") || path.equals("/api/user/join")) {
+        if (path.equals("/api/user/login") || path.equals("/api/user/join") || path.equals("/login")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -41,18 +41,15 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
         System.out.println(path);
-        System.out.println(path);
-        System.out.println(path);
-        System.out.println(path);
-        System.out.println(path);
-        System.out.println(path);
+        authorization =request.getHeader("Authorization") ;
+        boolean flag= true;
         if (cookies != null) {
 
             for (Cookie cookie : cookies) {
 
                 System.out.println(cookie.getName());
                 if (cookie.getName().equals("Authorization")) {
-
+                    flag = false;
                     authorization = cookie.getValue();
                 }
             }
@@ -70,7 +67,13 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         //토큰
-        String token = authorization;
+//        String token = authorization;
+        String token;
+        if(flag){
+            token = authorization.substring(7);
+        }else{
+            token = authorization;
+        }
 
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
