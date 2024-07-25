@@ -42,8 +42,10 @@ public class JWTFilter extends OncePerRequestFilter {
         }
         System.out.println(path);
         authorization =request.getHeader("Authorization") ;
+        System.out.println("Header: tokennnnnn :" + authorization);
         boolean flag= true;
-        if (cookies != null) {
+
+        if (cookies != null && authorization == null) {
 
             for (Cookie cookie : cookies) {
 

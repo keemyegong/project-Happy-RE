@@ -41,6 +41,7 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
         try {
+            System.out.println("modifyUser Controller ");
             userService.modifyUserInfo(modifyUserDTO, request);
             return ResponseEntity.ok("User updated successfully");
         } catch (RuntimeException e) {
