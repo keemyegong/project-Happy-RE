@@ -5,7 +5,7 @@ import loginTitle from '../../assets/login_title.png'
 import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-// import Cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 // import cookieClient from 'react-cookie';
 
 axios.defaults.withCredentials = true;
@@ -17,7 +17,9 @@ function Login() {
   const [isLoginSaved, setIsLoginSaved ]= useState(false);
 
   const googleLogin = ()=>{
+
     window.location.href = `${defaultUrl}/oauth2/authorization/google`
+    
   }
 
   const login = ()=>{
@@ -25,7 +27,6 @@ function Login() {
       email,
       password,
     }
-    console.log(inputUserInfo);
 
     axios.post(
       `${defaultUrl}/login`,
@@ -33,7 +34,7 @@ function Login() {
       { withCredentials: true }
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
-      console.log(jwtToken);
+      Cookies.set('Authorization',jwtToken.substr(7), { expires: 7 })
       const decoded = jwtDecode(jwtToken.substr(7));
 
     }).then((Response)=>{
@@ -95,11 +96,12 @@ function Login() {
 
           <button className='btn login-btn' onClick={login}>Login</button>
           <button onClick={()=>{
+            
             axios.get(
               `${defaultUrl}/api/user/me`,
               { withCredentials: true,
                 headers : {
-                  Authorization :'Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3MjE4NzA2MzksImV4cCI6MTcyMjA4NjYzOX0.kx5Cyv9v0mE38n9p16tRhwOZq1qlsiYhRA9zEpRHkPU'
+                  Authorization :`Bearer ${Cookies.get('Authorization')}`
                 }
                },
               
