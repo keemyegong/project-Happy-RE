@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import Nav from './components/navbar/Navbar';
 import Main from './pages/main/Main';
 import Login from './pages/login/Login';
+import SignUp from './pages/signup/SignUp';
 import UserTest from './pages/user/UserTest';
 import StarryBackground from './components/starry-background/StarryBackground';
 import './App.css';
@@ -21,6 +22,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/usertest" element={<UserTest />} />
         </Routes>
       </div>
