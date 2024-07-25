@@ -4,26 +4,21 @@ import { Link } from 'react-router-dom';
 import loginTitle from '../../assets/login_title.png'
 import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-
+import Cookies from 'js-cookie';
 
 axios.defaults.withCredentials = true;
-
+// const defaultUrl = 'http://192.168.31.228:8080'
+const defaultUrl = 'http://localhost:8080'
 function Login() {
-
   let navigate = useNavigate ();
   const [email,setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginSaved, setIsLoginSaved ]= useState(false);
 
   const googleLogin = ()=>{
-    axios.post(
-      window.location.href = "http://localhost:8080/oauth2/authorization/naver"
-    ).then((response)=>{
-      console.log(response);
-      console.log('aaa');
-    })
 
+    window.location.href = `${defaultUrl}/oauth2/authorization/google`
+    
   }
 
   const login = ()=>{
@@ -31,40 +26,25 @@ function Login() {
       email,
       password,
     }
-    console.log(inputUserInfo);
 
     axios.post(
-      'http://192.168.31.228:8080/login',
+      `${defaultUrl}/login`,
       inputUserInfo,
-      { withCredentials: true }
     ).then((Response)=>{
-      console.log("Response :  ",Response)
+      const jwtToken = Response.headers.authorization;
+      if (isLoginSaved){
+        Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
+      } else {
+        Cookies.set('Authorization', jwtToken.substr(7));
 
-
-
+      }
+      
     }).then((Response)=>{
-      navigate('/');
-    })
-
-  }
-
-  const me = ()=>{
-    axios.get(
-      'http://192.168.31.228:8080/api/user/me',
-      { withCredentials: true }
-    ).then((Response)=>{
-      console.log("Server response:");
-      console.log(Response.data); // 서버 응답 본문 출력
-
-      // 응답 객체 전체를 출력합니다
-      console.log("Full response object:");
-      console.log(Response); // 응답 객체 전체 출력
-
-
-    }).then((Response)=>{
-      navigate('/');
-    })
-
+      navigate('/profile');
+    }).catch(()=>{
+      console.log('Login failed');
+    }
+    )
 
   }
 
@@ -110,12 +90,12 @@ function Login() {
               </label>
             </div>
             <Link className='password-finder' 
-            to={'/password/reset'}>Forgot Password?</Link>
+            to={'/password/reset'}> </Link>
 
           </div>
 
           <button className='btn login-btn' onClick={login}>Login</button>
-          <button className='btn login-btn' onClick={me}>test</button>
+          
         </div>
         <hr className='border-light border-1' />
 
@@ -125,9 +105,7 @@ function Login() {
           <p>
             <Link className='go-signup' to={'/signup'}>Sign Up</Link>
           </p>
-          <button className='btn login-btn' onClick={me}>test</button>
         </div>
-
       </div>
     </div>
   );

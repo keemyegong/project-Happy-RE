@@ -10,6 +10,20 @@ html, body {
   background-color: #0e0d21;
 }
 
+.main-navbar {
+  padding-top: 30px;
+  padding-right: 55px;
+  margin-left: auto;
+}
+
+.main-navbar-text {
+  color: white;
+  font-family: 'Alegreya Sans SC', sans-serif;
+  font-size: 18px;
+  font-weight: 270;
+  text-decoration: none;
+}
+
 .container-wrap {
   background-image: url('../../assets/images/main_2.png');
   background-size: contain;
@@ -17,6 +31,7 @@ html, body {
   background-position: center top;
   width: 100vw;
   min-width: 375px;
+  min-height: 703px;
   display: flex;
   flex-direction: column;
 }
@@ -69,7 +84,7 @@ html, body {
 
 .character-box-1 .information {
   width: 50%;
-  padding-left: 10%;
+  padding-left: 5%;
   padding-right: 3%;
 }
 

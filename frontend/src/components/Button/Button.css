@@ -1,0 +1,53 @@
+
+.dark-btn{
+    font-size: 12px;
+    background-color: #333758;
+    color: white;
+}
+
+.dark-btn:hover{
+    background-color: #54587E;
+    color: white;
+    
+}
+
+.dark-btn:active{
+    background-color: #54587E !important;
+    color: white !important;
+    
+}
+
+.light-btn{
+    font-size: 12px;
+    background-color: #4B4E6D;
+    color: white;
+
+}
+
+.light-btn:hover{
+    background-color: #717598;
+    color: white;
+    
+}
+
+.light-btn:active{
+    background-color: #717598 !important;
+    color: white !important;
+}
+
+.big{
+    width: 100%;
+    padding: 20px;
+    font-size: 12px;
+}
+
+.middle{
+    width: 100%;
+    padding : 10px;
+    font-size: 12px;
+}
+
+.small{
+    padding: 10px;
+    
+}
