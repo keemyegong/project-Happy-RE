@@ -10,7 +10,7 @@ const SignUp = () => {
       <div className='signup-container'>
 				<div className='signup-title'>
 				
-	      	<img src={signUpTitle} height={70} />
+	      	<img src={signUpTitle} width={450} className='mb-3' />
           <Button className='btn light-btn big' content='Sign Up with Google'/>
 				</div>
 				<hr className='border-light border-1' />

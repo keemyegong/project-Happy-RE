@@ -36,13 +36,14 @@ const App = () => {
     <Router>
       <div className="App">
         <StarryBackground />
+        <Nav />
         <div className="content">
-          <Nav />
           <Routes>
             <Route path="/" element={<Main />} />
             <Route path="/login" element={<Login />} />
             <Route path="/usertest" element={<UserTest />} />
             <Route path="/emotion" element={<EmotionGraph />} />
+            <Route path="/signup" element={<SignUp />} />
           </Routes>
         </div>
       </div>
