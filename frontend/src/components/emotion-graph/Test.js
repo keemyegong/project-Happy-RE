@@ -11,7 +11,7 @@ const sampleData = [
 ];
 
 const Test = () => (
-  <div className='emotion-container'>
+  <div className='emotion-container'> 
     <EmotionGraph data={sampleData} />
   </div>
 );
