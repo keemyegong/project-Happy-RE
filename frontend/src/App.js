@@ -11,15 +11,11 @@ import EmotionGraph from './components/emotion-graph/Test'
 import './App.css';
 
 const AppContent = () => {
-  // Navbar가 main일 때는 보이지 않도록 수정
-  const location = useLocation();
-  const showNav = location.pathname !== '/';
 
   return (
     <>
       <StarryBackground />
       <div className="content">
-        {showNav && <Nav />}
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
