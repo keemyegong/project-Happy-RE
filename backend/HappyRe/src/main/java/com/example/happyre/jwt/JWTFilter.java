@@ -73,7 +73,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }else{
             token = authorization;
         }
-
+        System.out.println("Now Token : " + token);
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
 
@@ -87,6 +87,7 @@ public class JWTFilter extends OncePerRequestFilter {
         //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
+        System.out.println("Now Token username : " + username + " role: " + role);
 
         //userDTO를 생성하여 값 set
         UserDTO userDTO = new UserDTO();
@@ -100,7 +101,7 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
-
+        System.out.println("dofillter");
         filterChain.doFilter(request, response);
 
 

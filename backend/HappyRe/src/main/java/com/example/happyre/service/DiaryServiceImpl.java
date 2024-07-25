@@ -1,7 +1,9 @@
 package com.example.happyre.service;
 
+import com.example.happyre.dto.diary.KeyWordResponse;
 import com.example.happyre.dto.diary.ReportResponse;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.repository.DiaryRepository;
 import com.example.happyre.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,21 @@ public class DiaryServiceImpl {
 
         System.out.println("Diary ID: " + diaryKey);
         //키워드 저장
+        KeywordEntity keywordEntity;
+        int sequence = 0;
+        for(KeyWordResponse keyWordResponse : reportResponse.getKeywords()){
+            keywordEntity = new KeywordEntity();
+            keywordEntity.setDiary_id(diaryKey);
+            keywordEntity.setSummary(keyWordResponse.getSummary());
+            keywordEntity.setKeyword(keyWordResponse.getKeyword());
+            keywordEntity.setRussellX(keyWordResponse.getRussellx());
+            keywordEntity.setRusselly(keyWordResponse.getRusselly());
+            keywordEntity.setSequence(++sequence);
+            keywordRepository.save(keywordEntity);
+        }
+        //emotion 설정
+
+
 
 
 

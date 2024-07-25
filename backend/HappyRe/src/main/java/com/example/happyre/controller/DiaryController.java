@@ -48,7 +48,6 @@ public class DiaryController {
         try {
             System.out.println("Controller : addReport");
             int userId = jwtUtil.getUserId(request.getHeader("Authorization").substring(7));
-
             diaryService.addReport(reportResponse,userId);
             return null;
         }catch(Exception e){
