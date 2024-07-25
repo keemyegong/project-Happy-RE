@@ -9,7 +9,9 @@ const SignUp = () => {
     <div className='signup'>
       <div className='signup-container'>
 				<div className='signup-title'>
+				
 	      	<img src={signUpTitle} height={70} />
+          <Button className='btn light-btn big' content='Sign Up with Google'/>
 				</div>
 				<hr className='border-light border-1' />
 				<div className='signup-content'>
