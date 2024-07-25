@@ -5,11 +5,11 @@ import loginTitle from '../../assets/login_title.png'
 import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 // import cookieClient from 'react-cookie';
 
 axios.defaults.withCredentials = true;
-const defaultUrl = 'http://localhost:8080'
+const defaultUrl = 'http://192.168.31.228:8080'
 function Login() {
   let navigate = useNavigate ();
   const [email,setEmail] = useState('');
@@ -33,6 +33,7 @@ function Login() {
       { withCredentials: true }
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
+      console.log(jwtToken);
       const decoded = jwtDecode(jwtToken.substr(7));
 
     }).then((Response)=>{
@@ -96,7 +97,11 @@ function Login() {
           <button onClick={()=>{
             axios.get(
               `${defaultUrl}/api/user/me`,
-              { withCredentials: true },
+              { withCredentials: true,
+                headers : {
+                  Authorization :'Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3MjE4NzA2MzksImV4cCI6MTcyMjA4NjYzOX0.kx5Cyv9v0mE38n9p16tRhwOZq1qlsiYhRA9zEpRHkPU'
+                }
+               },
               
             ).then((Response)=>{
 
