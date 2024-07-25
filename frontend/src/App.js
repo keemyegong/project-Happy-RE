@@ -5,6 +5,7 @@ import Main from './pages/main/Main';
 import Login from './pages/login/Login';
 import UserTest from './pages/user/UserTest';
 import StarryBackground from './components/starry-background/StarryBackground';
+import EmotionGraph from './components/emotion-graph/Test'
 import './App.css';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/" element={<Main />} />
             <Route path="/login" element={<Login />} />
             <Route path="/usertest" element={<UserTest />} />
+            <Route path="/emotion" element={<EmotionGraph />} />
           </Routes>
         </div>
       </div>

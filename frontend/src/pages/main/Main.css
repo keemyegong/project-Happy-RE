@@ -17,6 +17,7 @@ html, body {
   background-position: center top;
   width: 100vw;
   min-width: 375px;
+  min-height: 703px;
   display: flex;
   flex-direction: column;
 }
@@ -69,7 +70,7 @@ html, body {
 
 .character-box-1 .information {
   width: 50%;
-  padding-left: 10%;
+  padding-left: 5%;
   padding-right: 3%;
 }
 

@@ -17,8 +17,8 @@ const Main = () => {
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
 
-  useEffect(() => {
-    const containerWrap = containerWrapRef.current;
+  useEffect(() => { // 웹페이지 반응형 높이 설정하는 부분
+    const containerWrap = containerWrapRef.current; 
     if (containerWrap) {
       const width = containerWrap.offsetWidth;
       containerWrap.style.height = `${width * 1.875}px`;
@@ -35,7 +35,7 @@ const Main = () => {
     };
   }, []);
 
-  useEffect(() => {
+  useEffect(() => { // 캐릭터 위치 및 점프 부분
     const initializeCanvas = (canvasRef, characters, initialPositions) => {
       const canvas = canvasRef.current;
       if (canvas) {
@@ -88,15 +88,15 @@ const Main = () => {
       }
     };
 
-    const initialPositions1 = [
+    const initialPositions1 = [ // 캐릭터 포지션
       { x: 0.6, y: 0.3 },
       { x: 0.3, y: 0.4 },
     ];
 
-    const initialPositions2 = [
-      { x: 0.2, y: 0.2 },
+    const initialPositions2 = [ // 캐릭터 포지션
+      { x: 0.3, y: 0.3 },
       { x: 0.1, y: 0.4 },
-      { x: 0.55, y: 0.3 },
+      { x: 0.5, y: 0.5 },
     ];
 
     const calculateCharacterSize = () => {
@@ -140,8 +140,8 @@ const Main = () => {
       rootMargin: '0px',
       threshold: 0.1,
     };
-
-    const observerCallback = (entries, observer) => {
+    // 페이즈 인 애니메이션 부분
+    const observerCallback = (entries, observer) => { 
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.style.animation = 'appear-from-bottom ease 2.5s';
