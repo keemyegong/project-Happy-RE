@@ -105,7 +105,6 @@ function Login() {
           <p>
             <Link className='go-signup' to={'/signup'}>Sign Up</Link>
           </p>
-          <button className='btn login-btn' onClick={me}>test</button>
         </div>
       </div>
     </div>
