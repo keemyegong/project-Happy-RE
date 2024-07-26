@@ -12,4 +12,4 @@ const AIChat = () => {
   );
 };
 
-export default App;
+export default AIChat;
