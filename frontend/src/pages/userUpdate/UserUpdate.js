@@ -1,5 +1,7 @@
 import React, { useState,useContext, useEffect, useRef } from 'react';
 import {universeVariable} from '../../App';
+import { Buffer } from 'buffer';
+// import RNFetchBlob from "rn-fetch-blob";
 
 import axios from 'axios';
 import './UserUpdate.css';
@@ -43,8 +45,23 @@ const UserUpdate = ()=>{
     axios.get(`${universal.defaultUrl}/api/user/me`,
       {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
     ).then((Response)=>{
-      console.log(Response.data);
+      // console.log(Response.data);
       setNickname(Response.data.name);
+    }).then(()=>{
+      axios.get(`${universal.defaultUrl}/api/user/profileimg`,
+      {headers:
+        {"content-type": "image/jpeg",
+          Authorization : `Bearer ${Cookies.get('Authorization')}`}
+      }
+      ).then((Response)=>{
+        let base64_to_imgsrc = Buffer.from(Response.data, "base64").toString();
+        console.log(base64_to_imgsrc);
+        // setImage("data:image/jpeg;base64," + base64_to_imgsrc);
+      }).then(()=>{
+        console.log(image);
+      }).catch(()=>{
+        console.log('error')
+      })
     })
   },[])
   return(
@@ -87,7 +104,7 @@ const UserUpdate = ()=>{
               Authorization : `Bearer ${Cookies.get('Authorization')}`
             }}
           ).then((Response)=>{
-            console.log(Response.data);
+            // console.log(Response.data);
             axios.post(
               `${universal.defaultUrl}/api/user/uploadprofile`,
               formData,
