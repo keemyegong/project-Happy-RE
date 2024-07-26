@@ -1,12 +1,11 @@
 package com.example.happyre.controller;
 
-import com.example.happyre.dto.JoinUserDTO;
+import com.example.happyre.dto.user.JoinUserDTO;
 
-import com.example.happyre.dto.ModifyUserDTO;
+import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +41,7 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
         try {
+            System.out.println("modifyUser Controller ");
             userService.modifyUserInfo(modifyUserDTO, request);
             return ResponseEntity.ok("User updated successfully");
         } catch (RuntimeException e) {

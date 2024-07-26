@@ -1,8 +1,13 @@
 package com.example.happyre.service;
 
+import com.example.happyre.dto.diary.KeyWordResponse;
+import com.example.happyre.dto.diary.ReportResponse;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.repository.DiaryRepository;
+import com.example.happyre.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.engine.jdbc.env.spi.AnsiSqlKeywords;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,33 +15,69 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class DiaryServiceImpl implements DiaryService{
+public class DiaryServiceImpl {
 
     private final DiaryRepository diaryRepository;
+    private final KeywordRepository keywordRepository;
 
-    @Override
-    public Optional<DiaryEntity> findById(int id) {
-        return diaryRepository.findById(id);
+
+    public List<DiaryEntity> findByUserId(int userid) {
+        return diaryRepository.findByUserId(userid);
     }
 
-    @Override
+    public void addReport(ReportResponse reportResponse, int userId){
+        reportResponse.getSummary();
+        reportResponse.getKeywords();
+        // 다이어리 먼저 생성
+        DiaryEntity diaryEntity = new DiaryEntity();
+        diaryEntity.setSummary(reportResponse.getSummary());
+        diaryEntity.setUserId(userId);
+        diaryEntity = diaryRepository.save(diaryEntity);
+
+        int diaryKey = diaryEntity.getDiaryId();
+
+        System.out.println("Diary ID: " + diaryKey);
+        //키워드 저장
+        KeywordEntity keywordEntity;
+        int sequence = 0;
+        for(KeyWordResponse keyWordResponse : reportResponse.getKeywords()){
+            keywordEntity = new KeywordEntity();
+            keywordEntity.setDiary_id(diaryKey);
+            keywordEntity.setSummary(keyWordResponse.getSummary());
+            keywordEntity.setKeyword(keyWordResponse.getKeyword());
+            keywordEntity.setRussellX(keyWordResponse.getRussellx());
+            keywordEntity.setRusselly(keyWordResponse.getRusselly());
+            keywordEntity.setSequence(++sequence);
+            keywordRepository.save(keywordEntity);
+        }
+        //emotion 설정
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
     public List<DiaryEntity> findAll() {
         return diaryRepository.findAll();
     }
 
-    @Override
-    public DiaryEntity insert(DiaryEntity diaryEntity) {
-        return findById(diaryRepository.save(diaryEntity).getDiaryId()).get();//TODO: Return되는 DiaryEntity의 date 값이 항상 null임.(DB에는 정상적으로 date 생성됨)
-    }
-
-    @Override
     public DiaryEntity update(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).get();
         matchingEntity.setSummary(diaryDTOEntity.getSummary());
         return diaryRepository.save(matchingEntity);
     }
 
-    @Override
+
     public void delete(int id) {
         DiaryEntity matchingEntity = diaryRepository.findById(id).get();
         diaryRepository.delete(matchingEntity);

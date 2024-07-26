@@ -1,6 +1,6 @@
 package com.example.happyre.service;
 
-import com.example.happyre.dto.CustomUserDetails;
+import com.example.happyre.dto.user.CustomUserDetails;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

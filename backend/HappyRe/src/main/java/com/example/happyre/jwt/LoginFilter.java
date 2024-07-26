@@ -1,6 +1,6 @@
 package com.example.happyre.jwt;
 
-import com.example.happyre.dto.CustomUserDetails;
+import com.example.happyre.dto.user.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;

@@ -1,4 +1,4 @@
-package com.example.happyre.dto;
+package com.example.happyre.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,13 +1,12 @@
-package com.example.happyre.dto;
+package com.example.happyre.dto.user;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Data
-public class ModifyUserDTO {
+@Getter
+@Setter
+public class JoinUserDTO {
     private String email;
     private String password;
     private String name;
-    private String profileUrl;
 }

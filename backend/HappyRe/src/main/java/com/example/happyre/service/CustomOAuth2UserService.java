@@ -1,6 +1,10 @@
 package com.example.happyre.service;
 
-import com.example.happyre.dto.*;
+import com.example.happyre.dto.oauth.CustomOAuth2User;
+import com.example.happyre.dto.oauth.GoogleResponse;
+import com.example.happyre.dto.oauth.NaverResponse;
+import com.example.happyre.dto.oauth.OAuth2Response;
+import com.example.happyre.dto.user.UserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.UserRepository;
 

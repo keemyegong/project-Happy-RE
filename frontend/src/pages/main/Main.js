@@ -168,9 +168,6 @@ const Main = () => {
 
   return (
     <div className="container-wrap" ref={containerWrapRef}>
-      <div className='main-navbar'>
-        <Link className='main-navbar-text' to='/login'>LOGIN</Link>
-      </div>
       <div className="container-1">
         <h1>Happy:Re</h1>
       </div>

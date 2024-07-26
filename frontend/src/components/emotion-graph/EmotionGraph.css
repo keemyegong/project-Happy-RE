@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@100&display=swap');
 
 .graph-container {
     position: relative;
@@ -27,20 +29,23 @@
     
     .label {
         position: absolute;
-        font-size: 10px;
+        font-size: 15px;
         color: white;
+        font-family: 'Poiret One', cursive;
     }
     
     .label.x {
         top: 100%;
         left: 50%;
         transform: translateX(-50%);
+        font-family: 'Poiret One', cursive;
     }
     
     .label.y {
         left: 100%;
         top: 50%;
         transform: translateY(-50%);
+        font-family: 'Poiret One', cursive;
     }
     
     .heatmapContainer {
