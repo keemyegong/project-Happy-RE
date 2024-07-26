@@ -67,8 +67,10 @@ public class UserController {
             System.out.println(joinUserDTO);
             userService.joinProcess(joinUserDTO);
             return ResponseEntity.ok("Join process successfully");
-        }catch(Exception e){
+        }catch(IllegalStateException e){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
 
