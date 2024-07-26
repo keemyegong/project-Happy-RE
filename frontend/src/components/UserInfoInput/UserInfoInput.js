@@ -17,6 +17,7 @@ const UserInfoInput = (props)=>{
               onChange={(event)=>{
                 props.setNickname(event.target.value);
               }}
+              defaultValue={props.nickname}
               />
               <label for='nickname'>nickname</label>
             </div>
