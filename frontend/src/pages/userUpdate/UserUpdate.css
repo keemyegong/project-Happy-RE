@@ -1,0 +1,26 @@
+.user-update-container{
+  margin: auto;
+  margin-top: 150px;
+  width: 450px;
+  text-align: center;
+}
+
+.user-avatar{
+  margin: auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 100%;
+  overflow: hidden;
+}
+
+.profile-image{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+}
+
+.user-update-form{
+  margin-top: 30px;
+  margin-bottom: 30px;
+}

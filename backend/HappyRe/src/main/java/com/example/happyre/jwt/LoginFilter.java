@@ -64,7 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(email, role, 60*60*60*1000*500L,customUserDetails.getId());
 
 
-       //    response.addCookie(createCookie("Authorization", token));
+//        response.addCookie(createCookie("Authorization", token));
         response.addHeader("Authorization", "Bearer " + token);
 
 
@@ -84,7 +84,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //https 설정
         //cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
 
         return cookie;
     }
