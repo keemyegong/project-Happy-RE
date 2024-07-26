@@ -6,11 +6,31 @@ const UserTest = () => {
   const [selectedChoices, setSelectedChoices] = useState([]);
 
   const choiceLabels = [
-    '행복하다', '만족스럽다', '뿌듯하다', '산뜻하다', '신난다', '유쾌하다',
-    '화가난다', '짜증난다', '두렵다', '답답하다', '막막하다', '걱정스럽다',
-    '불쾌하다', '한심하다', '처량하다', '슬프다', '지겹다', '지쳤다',
-    '귀찮다', '차분하다', '괜찮다', '평화롭다', '편안하다', '느긋하다',
-  ];
+    { label: '놀람', coordinates: [0, 1] },
+    { label: '긴장', coordinates: [0.1, 0.9] },
+    { label: '화남', coordinates: [-0.1, 0.8] },
+    { label: '두려움', coordinates: [-0.2, 0.8] },
+    { label: '짜증', coordinates: [-0.3, 0.7] },
+    { label: '고통', coordinates: [-0.4, 0.6] },
+    { label: '좌절', coordinates: [-0.5, 0.5] },
+    { label: '비참', coordinates: [-1, 0] },
+    { label: '슬픔', coordinates: [-0.9, -0.2] },
+    { label: '우울', coordinates: [-0.8, -0.3] },
+    { label: '지루함', coordinates: [-0.6, -0.5] },
+    { label: '풀이 죽음', coordinates: [-0.5, -0.6] },
+    { label: '피곤', coordinates: [-0.4, -0.7] },
+    { label: '졸림', coordinates: [-0.3, -0.8] },
+    { label: '차분함', coordinates: [0.3, -0.9] },
+    { label: '편안함', coordinates: [0.4, -0.8] },
+    { label: '만족', coordinates: [0.6, -0.6] },
+    { label: '여유로움', coordinates: [0.6, -0.6] },
+    { label: '평온', coordinates: [0.8, -0.4] },
+    { label: '기쁨', coordinates: [0.9, -0.3] },
+    { label: '즐거움', coordinates: [1, 0] },
+    { label: '행복', coordinates: [0.9, 0.2] },
+    { label: '흥분', coordinates: [0.7, 0.4] },
+    { label: '유쾌한', coordinates: [0.6, 0.5] },
+];
 
   const handleChoiceChange = (index) => {
     setSelectedChoices((prev) =>
@@ -26,17 +46,12 @@ const UserTest = () => {
       return;
     }
 
-    const radians = (degrees) => (degrees * Math.PI) / 180;
-
-    const coordinates = selectedChoices.map((index) => {
-      const angle = 15 * index;
-      return [0.5 * Math.cos(radians(angle)), 0.5 * Math.sin(radians(angle))];
-    });
-
-    const averageCoordinates = coordinates.reduce(
-      (acc, coord) => [acc[0] + coord[0], acc[1] + coord[1]],
-      [0, 0]
-    ).map((sum) => sum / selectedChoices.length);
+    const averageCoordinates = selectedChoices
+      .map(index => choiceLabels[index].coordinates)
+      .reduce(
+        (acc, coord) => [acc[0] + coord[0], acc[1] + coord[1]],
+        [0, 0]
+      ).map(sum => sum / selectedChoices.length);
 
     console.log(`Average coordinates: [${averageCoordinates[0].toFixed(2)}, ${averageCoordinates[1].toFixed(2)}]`);
 
@@ -70,13 +85,13 @@ const UserTest = () => {
         <h4>그렇지만 당신이 경험한 기분을 나타낸다고 생각되는 단어를 클릭해주세요.</h4>
       </div>
       <div className="choices-container">
-        {choiceLabels.map((label, index) => (
+        {choiceLabels.map((item, index) => (
           <button
             key={index}
             className={`choice-button ${selectedChoices.includes(index) ? 'selected' : ''}`}
             onClick={() => handleChoiceChange(index)}
           >
-            {label}
+            {item.label}
           </button>
         ))}
       </div>
