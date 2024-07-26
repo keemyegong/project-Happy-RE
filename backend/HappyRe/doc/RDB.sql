@@ -1,16 +1,3 @@
-USE happyre;
-
-CREATE TABLE if not exists user (
-    id int auto_increment primary KEY,
-    email varchar(255) UNIQUE NOT NULL,
-    password varchar(255) NULL, -- The password could be null for Social Login user
-    name varchar(255) NOT NULL,
-    role varchar(255) DEFAULT 'ROLE_USER',
-    created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    social_login varchar(255) NULL,
-    profile_url varchar(255) NULL
-);
-
 CREATE TABLE if not exists `diary` (
     `diary_id` int auto_increment PRIMARY KEY,
     `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -41,12 +28,14 @@ CREATE TABLE if not exists `emotion` (
     `emotion` varchar(255) NOT NULL
 );
 
-CREATE TABLE if not exists `keyword` (
-    `keyword_id` int PRIMARY KEY,
-    `diary_id` int NOT NULL,
-    `sequence` int NOT NULL,
-    `keyword` varchar(255) NOT NULL,
-    `summary` text NOT NULL,
+CREATE TABLE if not exists `keyword`(
+    `keyword_id` INT PRIMARY KEY,
+    `diary_id` INT NOT NULL,
+    `sequence` INT NOT NULL,
+    `keyword` VARCHAR(255) NOT NULL,
+    `summary` TEXT NOT NULL,
+    `russell_x` double NULL,
+    `russell_y` double NULL,
     FOREIGN KEY (`diary_id`) REFERENCES `diary`(`diary_id`) ON DELETE CASCADE
 );
 
