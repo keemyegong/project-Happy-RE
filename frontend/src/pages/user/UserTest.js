@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
+import {universeVariable} from '../../App';
+
 import axios from 'axios';
 import './UserTest.css';
 
 const UserTest = () => {
+  const universal = useContext(universeVariable);
   const [selectedChoices, setSelectedChoices] = useState([]);
 
   const choiceLabels = [
@@ -61,9 +64,8 @@ const UserTest = () => {
     };
 
     const token = 'eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJ1c2VyaWQiOjQsImlhdCI6MTcyMTc5NjQyOCwiZXhwIjoxNzIyMDEyNDI4fQ.S_BaHSzoZQ8Trql3o9bAd5OxXm6K4n96KnMyOBg5xv4'; // 여기에 실제 토큰 값을 넣으세요
-    const serverUrl = `http://192.168.31.228:8080/api/user/russell`;
 
-    axios.put(serverUrl, data, {
+    axios.put(`${universal.defaultUrl}/api/user/russel`, data, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
