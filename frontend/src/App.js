@@ -5,6 +5,7 @@ import Nav from './components/navbar/Navbar';
 import Main from './pages/main/Main';
 import Login from './pages/login/Login';
 import SignUp from './pages/signup/SignUp';
+import SignUpAgreement from './pages/signup/SignUpAgreement';
 import UserTest from './pages/user/UserTest';
 import UserUpdate from './pages/userUpdate/UserUpdate';
 
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/usertest" element={<UserTest />} />
             <Route path="/emotion" element={<EmotionGraph />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/signup/agreement" element={<SignUpAgreement />} />
             <Route path="/user/update" element={<UserUpdate />} />
 
           </Routes>

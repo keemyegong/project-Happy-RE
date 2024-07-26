@@ -103,7 +103,7 @@ function Login() {
         <div className='go-signup-div'>
           <p>Doesn't have an account?</p>
           <p>
-            <Link className='go-signup' to={'/signup'}>Sign Up</Link>
+            <Link className='go-signup' to={'/signup/agreement'}>Sign Up</Link>
           </p>
         </div>
       </div>
