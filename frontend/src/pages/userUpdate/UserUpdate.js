@@ -54,7 +54,15 @@ const UserUpdate = ()=>{
           })
         }
       }} />
-      <Button className='btn light-btn middle' content='Sign Out' />
+      <Button className='btn light-btn middle' content='Sign Out' onClick={()=>{
+        axios.delete(
+          `${universal.defaultUrl}/api/user/me`,
+          {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
+        ).then((Response)=>{
+          Cookies.remove('Authorization',{path:'/'});
+          navigate('/');
+        })
+      }} />
     </div>
   );
 }
