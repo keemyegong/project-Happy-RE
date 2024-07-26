@@ -62,10 +62,17 @@ public class UserController {
 
     //유저정보 등록 (회원가입)
     @PostMapping("/join")
-    public String joinUser(@RequestBody JoinUserDTO joinUserDTO) {
-        System.out.println(joinUserDTO);
-        userService.joinProcess(joinUserDTO);
-        return null;
+    public ResponseEntity<?> joinUser(@RequestBody JoinUserDTO joinUserDTO) {
+        try {
+            System.out.println(joinUserDTO);
+            userService.joinProcess(joinUserDTO);
+            return ResponseEntity.ok("Join process successfully");
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+
+
+
     }
 
     @PutMapping("/russell")

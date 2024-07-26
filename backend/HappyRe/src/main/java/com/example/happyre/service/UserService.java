@@ -98,7 +98,7 @@ public class UserService {
 
         UserEntity isExist = userRepository.findByEmail(email);
         if (isExist != null) {
-            return;
+            throw new IllegalStateException("User with email " + email + " already exists");
         }
         System.out.println("joinProcess start");
         UserEntity data = new UserEntity();
