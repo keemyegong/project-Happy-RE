@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
+import {universeVariable} from '../../App';
+
 import './Login.css'
 import { Link } from 'react-router-dom';
 import loginTitle from '../../assets/login_title.png'
@@ -7,9 +9,9 @@ import { useNavigate  } from "react-router-dom";
 import Cookies from 'js-cookie';
 
 axios.defaults.withCredentials = true;
-const defaultUrl = 'http://192.168.31.228:8080'
-// const defaultUrl = 'http://localhost:8080'
+
 function Login() {
+  const universal = useContext(universeVariable);
   let navigate = useNavigate ();
   const [email,setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +19,7 @@ function Login() {
 
   const googleLogin = ()=>{
 
-    window.location.href = `${defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
     
   }
 
@@ -28,7 +30,7 @@ function Login() {
     }
 
     axios.post(
-      `${defaultUrl}/login`,
+      `${universal.defaultUrl}/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
