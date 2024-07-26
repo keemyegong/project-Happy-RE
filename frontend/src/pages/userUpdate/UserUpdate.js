@@ -67,10 +67,10 @@ const UserUpdate = ()=>{
         setNickname={setNickname} setPassword={setPassword} setPassword2={setPassword2} nickname={nickname}/>
       </div>
       <Button className='btn dark-btn middle mb-3' content='Update' onClick={()=>{
-        formData.append('name',nickname);
-        formData.append('password',password);
+        // formData.append('name',nickname);
+        // formData.append('password',password);
         if (imagefile){
-          formData.append('profileUrl',imagefile);
+          formData.append('file',imagefile);
         }
 
         if(password!==password2){
@@ -78,13 +78,31 @@ const UserUpdate = ()=>{
         } else{
           axios.put(
             `${universal.defaultUrl}/api/user/me`,
-            formData,
             {
-              headers: {'Content-Type': 'multipart/form-data',
-              Authorization : `Bearer ${Cookies.get('Authorization')}`}}
+              name:nickname,
+              password
+            },
+            {
+              headers: {
+              Authorization : `Bearer ${Cookies.get('Authorization')}`
+            }}
           ).then((Response)=>{
             console.log(Response.data);
-            navigate('/profile');
+            axios.post(
+              `${universal.defaultUrl}/api/user/uploadprofile`,
+              formData,
+              {
+                headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization : `Bearer ${Cookies.get('Authorization')}`
+              }}
+            )
+            // navigate('/profile');
+          }).then((Response)=>{
+            console.log(Response);
+            for (var key of formData.entries()) {
+              console.log(key[0] + ', ' + key[1]);
+            }
           })
           .catch((err)=>{
             console.log(err);
