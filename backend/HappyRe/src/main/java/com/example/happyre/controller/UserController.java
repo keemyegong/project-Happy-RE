@@ -64,17 +64,20 @@ public class UserController {
             headers.setContentType(MediaType.parseMediaType(contentType));
             headers.setContentLength(resource.contentLength()); // 파일 크기 설정
             headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
-            System.out.println("정상적입니다");
+            System.out.println("PROFILE IMAGE LOAD Success");
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(resource);
 
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            System.out.println("PROFILE IMAGE LOAD ERROR: "+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+
 
     //유저정보 수정
     @PutMapping("/me")
@@ -116,8 +119,10 @@ public class UserController {
             userService.joinProcess(joinUserDTO);
             return ResponseEntity.ok("Join process successfully");
         }catch(IllegalStateException e){
+            System.out.println("IllegalStateException : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }catch (Exception e){
+            System.out.println("Exception : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 

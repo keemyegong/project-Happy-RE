@@ -75,6 +75,7 @@ public class UserService {
             if(path == null || path.isEmpty()){
                 path = "/var/profileimg/0.jpg";
             }
+            System.out.println("myProfile Service path:"+ path);
             FileSystemResource resource = new FileSystemResource(path);
             if (!resource.exists()) {
                 throw new IOException("File not found: " + path);
@@ -187,9 +188,8 @@ public class UserService {
 
             // 파일 저장 (기존 파일이 있는 경우 덮어쓰기)
             Files.copy(file.getInputStream(), filePath);
-            userEntity.setProfileUrl(filePath.toUri().toString());
+            userEntity.setProfileUrl(filePath.toAbsolutePath().toString());
             userRepository.save(userEntity);
-
             System.out.println("File uploaded successfully: " + filePath.toString());
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file", e);
