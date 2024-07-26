@@ -6,6 +6,8 @@ import steel from '../../assets/characters/steel.png';
 import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import { Link } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min';
 
 const Main = () => {
   const containerWrapRef = useRef(null);
@@ -17,16 +19,27 @@ const Main = () => {
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
 
-  useEffect(() => { // 웹페이지 반응형 높이 설정하는 부분
-    const containerWrap = containerWrapRef.current; 
-    if (containerWrap) {
+  const scrollIntervalRef = useRef(null);
+
+  useEffect(() => {
+    const containerWrap = containerWrapRef.current;
+    const html = document.documentElement;
+    const body = document.body;
+
+    const setHeights = () => {
       const width = containerWrap.offsetWidth;
-      containerWrap.style.height = `${width * 1.875}px`;
+      const height = `${width * 1.875}px`;
+      containerWrap.style.height = height;
+      html.style.height = height;
+      body.style.height = height;
+    };
+
+    if (containerWrap) {
+      setHeights();
     }
 
     const handleResize = () => {
-      const width = containerWrapRef.current.offsetWidth;
-      containerWrapRef.current.style.height = `${width * 1.875}px`;
+      setHeights();
     };
 
     window.addEventListener('resize', handleResize);
@@ -35,7 +48,7 @@ const Main = () => {
     };
   }, []);
 
-  useEffect(() => { // 캐릭터 위치 및 점프 부분
+  useEffect(() => {
     const initializeCanvas = (canvasRef, characters, initialPositions) => {
       const canvas = canvasRef.current;
       if (canvas) {
@@ -88,12 +101,12 @@ const Main = () => {
       }
     };
 
-    const initialPositions1 = [ // 캐릭터 포지션
+    const initialPositions1 = [
       { x: 0.6, y: 0.3 },
       { x: 0.3, y: 0.4 },
     ];
 
-    const initialPositions2 = [ // 캐릭터 포지션
+    const initialPositions2 = [
       { x: 0.3, y: 0.3 },
       { x: 0.1, y: 0.4 },
       { x: 0.5, y: 0.5 },
@@ -140,11 +153,11 @@ const Main = () => {
       rootMargin: '0px',
       threshold: 0.1,
     };
-    // 페이즈 인 애니메이션 부분
-    const observerCallback = (entries, observer) => { 
+
+    const observerCallback = (entries, observer) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.style.animation = 'appear-from-bottom ease 2.5s';
+          entry.target.style.animation = 'appear-from-bottom ease 5s';
           entry.target.style.opacity = 1;
           entry.target.style.transform = 'translateY(0)';
           observer.unobserve(entry.target);
@@ -166,12 +179,30 @@ const Main = () => {
     };
   }, []);
 
+  const handleScroll = (direction) => {
+    const scrollAmount = direction === 'down' ? 700 : -700;
+    window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+  };
+  
+
   return (
-    <div className="container-wrap" ref={containerWrapRef}>
-      <div className="container-1">
+    <div className="container-wrap" ref={containerWrapRef} data-bs-spy="scroll" data-bs-target="#navbar-example">
+      <button
+        className="scroll-button up"
+        onClick={() => handleScroll('up')}
+      >
+        ▲
+      </button>
+      <button
+        className="scroll-button down"
+        onClick={() => handleScroll('down')}
+      >
+        ▼
+      </button>
+      <div id="container-1" className="container-1">
         <h1>Happy:Re</h1>
       </div>
-      <div className="container-2">
+      <div id="container-2" className="container-2">
         <div>
           <p className="description-1">RE:CORD YOUR</p>
         </div>
@@ -189,7 +220,7 @@ const Main = () => {
           </div>
         </div>
       </div>
-      <div className="container-3">
+      <div id="container-3" className="container-3">
         <div className="information">
           <h2>mood</h2>
           <p>해피리는 당신과 함께 감정을 공유하며 기록하고,</p>
