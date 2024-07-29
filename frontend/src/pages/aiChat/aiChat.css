@@ -1,0 +1,7 @@
+.ai-chat-container {
+  display: flex;
+  margin: auto;
+  margin-top: 150px;
+  text-align: center;
+  color: white;
+}
