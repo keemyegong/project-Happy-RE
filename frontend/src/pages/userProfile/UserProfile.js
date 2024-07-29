@@ -9,7 +9,8 @@ import userProfileImage from '../../assets/sampleUserImage.jpg'
 import WordCloud from 'react-d3-cloud';
 import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
-
+import Calendar from '../../components/calander/Calander';
+import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 
 const UserProfile =  ()=>{
   const data = [
@@ -23,13 +24,14 @@ const UserProfile =  ()=>{
     { text: 'duck', value: 20 },
     { text: 'first impression', value: 30 },
     { text: 'very cool', value: 40 },
-    { text: 'duck', value: 10 },
+    { text: 'duck', value: 10, color:'red'},
   ]
 
   const [image,setImage] = useState('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [words, setWords] = useState('');
+  const [emotionData, setEmotionData] = useState([]); 
   const universal = useContext(universeVariable);
   let navigate = useNavigate ();
   
@@ -63,8 +65,9 @@ const UserProfile =  ()=>{
 
   return(
     <div className='container-fluid user-profile-container'>
-      <div className='row'>
-        <div className='col-12 col-md-4 col-xxl-2 default-info'>
+      <div className='row' >
+        <div className='col-12 col-md-4 col-xxl-2 '>
+          <div className='default-info'>
           <div className='user-avatar'>
             <img className='profile-image' src={image}/>
           </div>
@@ -74,19 +77,19 @@ const UserProfile =  ()=>{
             <Button className='btn dark-btn small' content='Edit Profile' onClick={()=>{
               navigate('/user/update')
             }} />
-
+          </div>
           </div>
         </div>
         <div className='col-12 col-md-8 col-xxl-10'>
           <div className='row'>
           <div className='col-12 col-xxl-6'> 
             <h3 className='text-white'>My Words</h3>
-            <hr className='border-light border-1'></hr>
+            <hr className='border-white border-2'></hr>
             <div className='wordcloud-container'>
             <WordCloud 
               data={data}
               width={500}
-              height={200}
+              height={300}
               font="Times"
               fontWeight="bold"
               fontSize={(word) => Math.log2(word.value) * 5}
@@ -94,14 +97,27 @@ const UserProfile =  ()=>{
               rotate={(word) => (word.value*100)% 360}
               padding={5}
               random={Math.random}
-              fill={(d, i) => schemeCategory10ScaleOrdinal(i)}
+              fill={(d, i) => {
+                console.log(d.size)
+              }}
               
               />
               </div>
+              <div className='my-5'>
+                <Calendar/>
+
+              </div>
           </div>
-          <div className='col-12 col-xxl-6'> 
+          <div className='col-12 col-xxl-6 '> 
             <h3 className='text-white'>Emotion Graph</h3>
-            <hr className='border-light border-1'></hr>
+            <hr className='border-white border-2'></hr>
+            <div className='emotion-graph-container'>
+              <EmotionGraph data={emotionData} />
+            </div>
+
+            <div className='change-happyre-persona'>
+
+            </div>
 
           </div>
           </div>
