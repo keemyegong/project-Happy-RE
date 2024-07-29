@@ -47,7 +47,7 @@ const App = () => {
   return (
     <universeVariable.Provider value={{
       defaultUrl : 'http://192.168.31.228:8080',
-      // defaultUrl : 'localhost:8080',
+      // defaultUrl : 'http://localhost:8080',
 
     }}>
       <Router>
@@ -63,7 +63,7 @@ const App = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signup/agreement" element={<SignUpAgreement />} />
               <Route path="/user/update" element={<UserUpdate />} />
-
+              <Route path="/with-happyre" element={<AIChat />} />
             </Routes>
           </div>
         </div>
