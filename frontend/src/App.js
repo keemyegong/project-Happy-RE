@@ -63,7 +63,7 @@ const App = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signup/agreement" element={<SignUpAgreement />} />
               <Route path="/user/update" element={<UserUpdate />} />
-
+              <Route path="/with-happyre" element={<AIChat />} />
             </Routes>
           </div>
         </div>
