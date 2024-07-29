@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useContext } from "react";
 import {universeVariable} from '../../App';
-import ReactDOM from "react-dom/client";
-import { AudioRecorder } from 'react-audio-voice-recorder';
 import Cookies from 'js-cookie';
-
+import MicRecorder from 'mic-recorder-to-mp3';
 import './aiChat.css'
 import axios from "axios";
+
 
 const AIChat = () => {
 
@@ -107,6 +106,49 @@ const AIChat = () => {
     })
   }, [audioUrl]);
 
+  const recorder = new MicRecorder({
+    bitRate: 128
+  });
+
+  // mp3 파일 제작용 레코드(녹음시작)
+  const newRecord = ()=>{
+    recorder.start().then(() => {
+    // something else
+  }).catch((e) => {
+    console.error(e);
+  });
+  }
+
+  // mp3 파일 제작용 레코드(정지)
+  const newRecordStop = ()=>{
+    recorder
+    .stop()
+    .getMp3().
+    then(([buffer, blob]) => {
+      // do what ever you want with buffer and blob
+      // Example: Create a mp3 file and play
+      const file = new File(buffer, 'me-at-thevoice.mp3', {
+        type: blob.type,
+        lastModified: Date.now()
+      });
+      const player = new Audio(URL.createObjectURL(file));
+      player.play();
+
+      const formData = new FormData();
+      formData.append('file',file);
+      axios.post(
+        `${universal.fastUrl}/ai-api/emotion/`,
+        formData,
+        {headers: {
+          'Content-Type': 'audio/mpeg',
+          Authorization : `Bearer ${Cookies.get('Authorization')}`
+  
+        }})
+
+      })
+    }
+
+
   return (
     <div className='AIChat'>
       <div className="AIChat-continaer">
@@ -116,9 +158,14 @@ const AIChat = () => {
         <button onClick={onSubmitAudioFile}>결과 확인</button>
         <button onClick={downloadAudioFile}>다운로드</button>
 
+        <button onClick={newRecord}>다른 레코드</button>
+        <button onClick={newRecordStop}>다른 방식 녹음 끝 + 전송</button>
       </div>
     </div>    
   );
+
+
 };
 
 export default AIChat;
+

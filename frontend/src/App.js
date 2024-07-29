@@ -48,6 +48,7 @@ const App = () => {
     <universeVariable.Provider value={{
       defaultUrl : 'http://192.168.31.228:8080',
       fastUrl : 'http://192.168.31.229:8000'
+      // fastUrl : 'http://localhost:8000'
       // defaultUrl : 'http://localhost:8080',
 
     }}>
