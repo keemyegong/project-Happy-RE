@@ -45,22 +45,19 @@ const UserUpdate = ()=>{
     axios.get(`${universal.defaultUrl}/api/user/me`,
       {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
     ).then((Response)=>{
-      // console.log(Response.data);
       setNickname(Response.data.name);
     }).then(()=>{
       axios.get(`${universal.defaultUrl}/api/user/profileimg`,
-      {headers:
-        {"content-type": "image/jpeg",
-          Authorization : `Bearer ${Cookies.get('Authorization')}`}
+      {headers:{Authorization : `Bearer ${Cookies.get('Authorization')}`},
+      responseType:'blob',
       }
       ).then((Response)=>{
-        let base64_to_imgsrc = Buffer.from(Response.data, "base64").toString();
-        console.log(base64_to_imgsrc);
-        // setImage("data:image/jpeg;base64," + base64_to_imgsrc);
-      }).then(()=>{
-        console.log(image);
+        const blobData = new Blob([Response.data], { type: 'image/jpeg' });
+        const url = window.URL.createObjectURL(blobData);
+        setImage(url);
+
       }).catch(()=>{
-        console.log('error')
+        console.log('이미지 파일이 존재하지 않습니다.')
       })
     })
   },[])
@@ -114,7 +111,7 @@ const UserUpdate = ()=>{
                 Authorization : `Bearer ${Cookies.get('Authorization')}`
               }}
             )
-            // navigate('/profile');
+            navigate('/profile');
           }).then((Response)=>{
             console.log(Response);
             for (var key of formData.entries()) {
