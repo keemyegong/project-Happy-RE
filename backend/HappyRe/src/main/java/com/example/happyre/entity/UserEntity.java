@@ -15,13 +15,13 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Column(name = "password")
-    private String password ;
+    private String password;
 
     @Column(name = "name", nullable = false)
     private String name;

@@ -6,48 +6,29 @@ import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Data;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+@Data
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JWTUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.jwtUtil = jwtUtil;
-    }
-
-    public UserEntity findInfoByEmail(HttpServletRequest request){
-
-        String email = null;
-//        Cookie[] cookies = request.getCookies();
-//
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//
-//                if ("Authorization".equals(cookie.getName())) {
-//                    String token = cookie.getValue();
-//
-//                    email = jwtUtil.getEmail(token);
-//                    break;
-//                }
-//            }
-//        }
+    //TODO: 유저를 찾을 수 없는 경우의 예외 처리
+    public UserEntity findByRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
-        email = jwtUtil.getEmail(token);
-        UserEntity user = userRepository.findByEmail(email);
+        UserEntity user = userRepository.findByEmail(jwtUtil.getEmail(token));
         return user;
     }
 
-    public void fistRussell(HttpServletRequest request, Map<String,Double> body) {
-        UserEntity user = findInfoByEmail(request);
-        if(user == null) {
+    public void fistRussell(HttpServletRequest request, Map<String, Double> body) {
+        UserEntity user = findByRequest(request);
+        if (user == null) {
             throw new RuntimeException("User not found");
         }
         user.setRussellX(body.get("x"));
@@ -57,9 +38,8 @@ public class UserService {
     }
 
 
-
-    public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request){
-        UserEntity userEntity = findInfoByEmail(request);
+    public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request) {
+        UserEntity userEntity = findByRequest(request);
         if (userEntity != null) {
             if (modifyUserDTO.getName() != null) {
                 userEntity.setName(modifyUserDTO.getName());
@@ -81,8 +61,8 @@ public class UserService {
 
     }
 
-    public void deleteUserInfo(HttpServletRequest request){
-        UserEntity userEntity= findInfoByEmail(request);
+    public void deleteUserInfo(HttpServletRequest request) {
+        UserEntity userEntity = findByRequest(request);
         if (userEntity != null) {
             userRepository.delete(userEntity); // 유저 정보를 삭제
         } else {

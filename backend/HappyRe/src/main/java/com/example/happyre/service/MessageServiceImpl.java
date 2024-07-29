@@ -1,7 +1,10 @@
 package com.example.happyre.service;
 
+import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.repository.MessageRepository;
+import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +13,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class MessageServiceImpl implements MessageService{
+public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
 
@@ -20,13 +23,14 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
-    public List<MessageEntity> findAll() {
-        return messageRepository.findAll();
+    public List<MessageEntity> findByDiaryEntity(DiaryEntity diaryEntity) {
+        return messageRepository.findByDiaryEntity(diaryEntity);
     }
 
     @Override
-    public MessageEntity insert(MessageEntity diaryEntity) {
-        return messageRepository.save(diaryEntity);
+    public MessageEntity insert(MessageEntity messageEntity) {
+        Assert.notNull(messageEntity.getDiaryEntity(), "diaryEntity.diaryEntity must not be null");
+        return messageRepository.save(messageEntity);
     }
 
     @Override
@@ -39,8 +43,8 @@ public class MessageServiceImpl implements MessageService{
     }
 
     @Override
-    public void delete(int id) {
-        MessageEntity matchingEntity = messageRepository.findById(id).get();
+    public void delete(MessageEntity messageDTOEntity) {
+        MessageEntity matchingEntity = messageRepository.findById(messageDTOEntity.getMessageId()).get();
         messageRepository.delete(matchingEntity);
     }
 

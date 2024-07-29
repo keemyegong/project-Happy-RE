@@ -1,4 +1,5 @@
 package com.example.happyre.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,9 +13,11 @@ public class DiaryEmotionEntity {
     @Column(name = "diary_emotion_id")
     private Integer diaryEmotionId;
 
-    @Column(name="diary_id")
-    private Integer diaryId;
+    @ManyToOne
+    @JoinColumn(name = "diary_id")
+    private DiaryEntity diaryEntity;
 
-    @Column(name="emotion_id")
-    private Integer emotionId;
+    @ManyToOne
+    @JoinColumn(name = "emotion_id")
+    private EmotionEntity emotionEntity;
 }

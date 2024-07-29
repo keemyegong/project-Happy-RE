@@ -1,21 +1,20 @@
 package com.example.happyre.service;
 
+import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface MessageService {
+    MessageEntity insert(MessageEntity messageEntity);
 
-    //### Spring Data JPA Repository 에서 기본으로 만들어주는 Method들의 Wrapper
-    Optional<MessageEntity> findById(int id);
+    Optional<MessageEntity> findById(int messageId);
 
-    List<MessageEntity> findAll();
+    List<MessageEntity> findByDiaryEntity(DiaryEntity diaryEntity);
 
-    MessageEntity insert(MessageEntity diaryEntity);
+    MessageEntity update(MessageEntity messageDTOEntity);
 
-    MessageEntity update(MessageEntity diaryDTOEntity);
-
-    void delete(int id);
-
+    void delete(MessageEntity messageDTOEntity);
 }

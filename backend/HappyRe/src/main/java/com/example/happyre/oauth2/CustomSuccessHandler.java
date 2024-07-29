@@ -41,18 +41,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
-        UserEntity user =  userRepository.findByEmail(email);
-        String token = jwtUtil.createJwt(email, role, 60*60*60*1000*500L, user.getId());
+        UserEntity user = userRepository.findByEmail(email);
+        String token = jwtUtil.createJwt(email, role, 60 * 60 * 60 * 1000 * 500L, user.getId());
 
         response.addCookie(createCookie("Authorization", token));
-        response.addHeader( "Authorization", "Bearer " + token);
+        response.addHeader("Authorization", "Bearer " + token);
         response.sendRedirect("http://localhost:3000/");
     }
 
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60*60*60*1000);
+        cookie.setMaxAge(60 * 60 * 60 * 1000);
         //https 설정
         //cookie.setSecure(true);
         cookie.setPath("/");

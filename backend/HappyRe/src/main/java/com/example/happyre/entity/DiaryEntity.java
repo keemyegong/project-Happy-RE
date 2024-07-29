@@ -15,8 +15,9 @@ public class DiaryEntity {
     @Column(name = "diary_id")
     private Integer diaryId;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "id")
+    private UserEntity userEntity;
 
     @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp date;

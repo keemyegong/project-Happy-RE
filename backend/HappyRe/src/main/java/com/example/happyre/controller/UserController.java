@@ -1,12 +1,12 @@
 package com.example.happyre.controller;
 
 import com.example.happyre.dto.user.JoinUserDTO;
-
 import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,19 +17,15 @@ import java.util.Map;
 @Tag(name = "User")
 @Controller
 @ResponseBody
+@RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-
     //유저정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getUser(HttpServletRequest request) {
-        UserEntity userEntity = userService.findInfoByEmail(request);
+        UserEntity userEntity = userService.findByRequest(request);
         if (userEntity != null) {
             return ResponseEntity.ok(userEntity);
         } else {
@@ -48,13 +44,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
     //회원 탈퇴
     @DeleteMapping("/me")
     public ResponseEntity<?> deleteUser(HttpServletRequest request) {
-        try{
+        try {
             userService.deleteUserInfo(request);
             return ResponseEntity.ok("User deleted successfully");
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
@@ -66,27 +63,25 @@ public class UserController {
         try {
             System.out.println(joinUserDTO);
             userService.joinProcess(joinUserDTO);
-            return ResponseEntity.ok("Join process successfully");
-        }catch(IllegalStateException e){
+            return ResponseEntity.ok("Join process Successful");
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-
 
 
     }
 
     @PutMapping("/russell")
-    public  ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String,Double> body){
+    public ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String, Double> body) {
         try {
             userService.fistRussell(request, body);
             return ResponseEntity.ok("First russell setting successfully");
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
 
 
 }
