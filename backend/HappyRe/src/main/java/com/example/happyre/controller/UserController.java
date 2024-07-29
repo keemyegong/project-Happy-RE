@@ -62,7 +62,9 @@ public class UserController {
             // HTTP 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
+            System.out.println("parseMediaType :" + MediaType.parseMediaType(contentType));
             headers.setContentLength(resource.contentLength()); // 파일 크기 설정
+            System.out.println("resource.contentLength() : " + resource.contentLength());
             headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
             System.out.println("PROFILE IMAGE LOAD Success");
             return ResponseEntity.ok()
@@ -107,6 +109,7 @@ public class UserController {
             userService.uploadProfile(request, file);
             return ResponseEntity.ok("upload profile successfully");
         }catch (RuntimeException e){
+            System.out.println("upload profile ERROR: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
