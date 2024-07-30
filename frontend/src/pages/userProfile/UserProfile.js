@@ -89,7 +89,7 @@ const UserProfile =  ()=>{
             <WordCloud 
               data={data}
               width={500}
-              height={300}
+              height={200}
               font="Times"
               fontWeight="bold"
               fontSize={(word) => Math.log2(word.value) * 5}
@@ -98,12 +98,13 @@ const UserProfile =  ()=>{
               padding={5}
               random={Math.random}
               fill={(d, i) => {
-                console.log(d.size)
+                const rand = Math.floor(Math.random() * 10);
+                return `rgba(${rand*20},200,150,0.7)`
               }}
               
               />
               </div>
-              <div className='my-5'>
+              <div className='my-5 calender-container'>
                 <Calendar/>
 
               </div>
