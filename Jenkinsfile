@@ -8,7 +8,9 @@ pipeline {
             }
         }
         stage('Deploy') { 
-            sh(script: 'docker-compose up -d') 
+            steps{
+                sh(script: 'docker-compose up -d') 
+            }
         }  
     }
 }
