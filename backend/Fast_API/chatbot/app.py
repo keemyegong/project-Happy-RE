@@ -13,24 +13,8 @@ from packages.dependencies import decode_jwt
 router = APIRouter()
 load_dotenv()
 api_key = os.environ.get('OPENAI_API_KEY')  # OPEN AI 키
-# key = os.environ.get("JWT_KEY")   # 시크릿 키
-
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# api_instance = Chatbot(api_key)
 
 user_session = {}
-
-# def get_current_user(token: str = Depends(oauth2_scheme)):
-#     try:
-#         payload = jwt.decode(token, key, algorithms=["HS256"])
-#         user_id : str = payload.get("email")
-#         if user_id == None:
-#             raise HTTPException(status_code=401, detail="Invalid user ID in token")
-#         return user_id
-#     except jwt.PyJWTError as e:
-#         print(e)
-#         raise HTTPException(status_code=401, detail="Could not validate credential")
 
 
 # Get 요청 테스트 용 함수
