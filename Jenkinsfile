@@ -59,6 +59,11 @@ pipeline {
                 }
             }
         }
+        stage('Deploy') { 
+            steps{
+                sh(script: 'docker-compose up -d') 
+            }
+        }  
     }
 
     post {
