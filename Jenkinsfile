@@ -16,9 +16,9 @@ pipeline {
                         def happyReImage = docker.build('happyre-image', '.')
                     }
                     // Build Fast_API Docker image
-                    dir('backend/Fast_API') {
-                        def fastApiImage = docker.build('fastapi-image', '.')
-                    }
+                    //dir('backend/Fast_API') {
+                        //def fastApiImage = docker.build('fastapi-image', '.')
+                    //}
                 }
             }
         }
@@ -40,7 +40,7 @@ pipeline {
                     // Push images to Docker Hub or another registry
                     docker.withRegistry('https://index.docker.io/v1/', "${env.DOCKER_CREDENTIALS_ID}") {
                         docker.image('happyre-image').push('latest')
-                        docker.image('fastapi-image').push('latest')
+                        //docker.image('fastapi-image').push('latest')
                         docker.image('frontend-image').push('latest')
                     }
                 }
