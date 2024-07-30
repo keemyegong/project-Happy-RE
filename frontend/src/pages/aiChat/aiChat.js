@@ -119,7 +119,7 @@ const AIChat = () => {
         <ChatCam />
         <ChatBox />
       </div>
-    </div>    
+    </div>
   );
 };
 

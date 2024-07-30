@@ -10,6 +10,7 @@ import SignUp from './pages/signup/SignUp';
 import SignUpAgreement from './pages/signup/SignUpAgreement';
 import UserTest from './pages/user/UserTest';
 import UserUpdate from './pages/userUpdate/UserUpdate';
+import UserProfile from './pages/userProfile/UserProfile';
 import AIChat from './pages/aiChat/aiChat';
 
 import StarryBackground from './components/starry-background/StarryBackground';
@@ -65,6 +66,7 @@ const App = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signup/agreement" element={<SignUpAgreement />} />
               <Route path="/user/update" element={<UserUpdate />} />
+              <Route path="/profile" element={<UserProfile />} />
               <Route path="/with-happyre" element={<AIChat />} />
             </Routes>
           </div>
