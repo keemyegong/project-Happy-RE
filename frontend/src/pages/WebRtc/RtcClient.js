@@ -24,18 +24,18 @@ function RtcClient() {
 
   useEffect(() => {
     const coordinatesGraph = coordinatesGraphRef.current;
-  
+
     const setHeights = () => {
       if (coordinatesGraph) {
         const width = coordinatesGraph.offsetWidth;
         coordinatesGraph.style.height = `${width}px`;
       }
     };
-  
+
     setHeights();
-  
+
     window.addEventListener('resize', setHeights);
-    
+
     return () => {
       window.removeEventListener('resize', setHeights);
     };
@@ -64,7 +64,7 @@ function RtcClient() {
             const distance = Math.sqrt(
               Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
             );
-            if (distance <= 0.1) {
+            if (distance <= 0.2) {
               if (!peerConnections[user.id]) {
                 const peerConnection = createPeerConnection(user.id);
                 peerConnection.createOffer()
@@ -79,7 +79,7 @@ function RtcClient() {
                   });
                 peerConnections[user.id] = peerConnection;
               }
-            } else if (distance > 0.1) {
+            } else if (distance > 0.2) {
               if (peerConnections[user.id]) {
                 peerConnections[user.id].close();
                 delete peerConnections[user.id];
@@ -205,7 +205,7 @@ function RtcClient() {
 
   const nearbyUsers = users.filter(user => {
     const distance = Math.sqrt(Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2));
-    return distance <= 0.1;
+    return distance <= 0.2;
   });
 
   return (
@@ -229,11 +229,9 @@ function RtcClient() {
             />
           ))}
           {users.map(user => (
-            <img
+            <div 
               key={user.id}
-              src={user.image}
-              alt="character"
-              className="character-image"
+              className="radar-pulse-small"
               style={{
                 left: `calc(${((user.x + 1) / 2) * 100}%)`,
                 top: `calc(${((1 - user.y) / 2) * 100}%)`
@@ -267,7 +265,7 @@ function RtcClient() {
             <div className="controls controls-down">
               <button onClick={() => movePosition(0, -0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
                 </svg>
               </button>
             </div>
@@ -285,16 +283,18 @@ function RtcClient() {
         <div className="scroll-buttons">
           <button onClick={() => handleScroll('up')}>
             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+              <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
             </svg>
           </button>
         </div>
         <div className="character-list">
-          <img 
-            src={userImage} 
-            alt="your character"
-            className="character-image-small"
-          />
+          <div className={`character-image-small-wrapper ${talkingUsers.includes(position.id) ? 'talking' : ''}`}>
+            <img 
+              src={userImage} 
+              alt="your character"
+              className="character-image-small"
+            />
+          </div>
           {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
             <div 
               key={user.id}

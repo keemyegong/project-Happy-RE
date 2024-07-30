@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const kurento = require('kurento-client');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -116,7 +117,6 @@ async function connectWebRtcEndpoints(senderWebRtc, recipientWebRtc) {
   });
 }
 
-// React 애플리케이션 빌드 파일을 제공
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('*', (req, res) => {
