@@ -11,6 +11,7 @@ import SignUpAgreement from './pages/signup/SignUpAgreement';
 import UserTest from './pages/user/UserTest';
 import UserUpdate from './pages/userUpdate/UserUpdate';
 import AIChat from './pages/aiChat/aiChat';
+import RtcClient from './pages/WebRtc/RtcClient'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test'
@@ -63,7 +64,7 @@ const App = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signup/agreement" element={<SignUpAgreement />} />
               <Route path="/user/update" element={<UserUpdate />} />
-
+              <Route path='/webrtc' element={<RtcClient/>}/>
             </Routes>
           </div>
         </div>

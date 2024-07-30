@@ -1,0 +1,300 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+import art from '../../assets/characters/art.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+import defaultImg from '../../assets/characters/default.png';
+import butler from '../../assets/characters/butler.png';
+import './RtcClient.css';
+
+const client = new W3CWebSocket('wss://your-ec2-public-ip:8000');
+const peerConnections = {};
+const activeConnections = {};
+
+function RtcClient() {
+  const [position, setPosition] = useState({ x: 0, y: 0, id: null });
+  const [users, setUsers] = useState([]);
+  const [stream, setStream] = useState(null);
+  const [displayStartIndex, setDisplayStartIndex] = useState(0);
+  const [userImage, setUserImage] = useState(defaultImg);
+  const localVideoRef = useRef(null);
+  const containerRef = useRef(null);
+  const coordinatesGraphRef = useRef(null);
+
+  useEffect(() => {
+    const coordinatesGraph = coordinatesGraphRef.current;
+  
+    const setHeights = () => {
+      if (coordinatesGraph) {
+        const width = coordinatesGraph.offsetWidth;
+        coordinatesGraph.style.height = `${width}px`;
+      }
+    };
+  
+    setHeights();
+  
+    window.addEventListener('resize', setHeights);
+    
+    return () => {
+      window.removeEventListener('resize', setHeights);
+    };
+  }, []);
+
+  useEffect(() => {
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+    };
+
+    client.onmessage = (message) => {
+      const dataFromServer = JSON.parse(message.data);
+      if (dataFromServer.type === 'assign_id') {
+        const assignedPosition = dataFromServer.position;
+        setPosition(assignedPosition);
+        setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
+      } else if (dataFromServer.users) {
+        setUsers(dataFromServer.users.map(user => ({
+          ...user,
+          image: getImageForPosition(user.x, user.y)
+        })));
+
+        dataFromServer.users.forEach(user => {
+          if (user.id === undefined || position.id === null) return;
+          if (position && position.x !== undefined && position.y !== undefined) {
+            const distance = Math.sqrt(
+              Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
+            );
+            if (distance <= 0.1) {
+              if (!peerConnections[user.id]) {
+                const peerConnection = createPeerConnection(user.id);
+                peerConnection.createOffer()
+                  .then(offer => {
+                    peerConnection.setLocalDescription(offer);
+                    client.send(JSON.stringify({
+                      type: 'offer',
+                      offer: offer,
+                      recipient: user.id,
+                      sender: position.id
+                    }));
+                  });
+                peerConnections[user.id] = peerConnection;
+              }
+            } else if (distance > 0.1) {
+              if (peerConnections[user.id]) {
+                peerConnections[user.id].close();
+                delete peerConnections[user.id];
+                delete activeConnections[user.id];
+              }
+            }
+          }
+        });
+      } else if (dataFromServer.type === 'offer') {
+        handleOffer(dataFromServer.offer, dataFromServer.sender);
+      } else if (dataFromServer.type === 'answer') {
+        handleAnswer(dataFromServer.answer, dataFromServer.sender);
+      } else if (dataFromServer.type === 'candidate') {
+        handleCandidate(dataFromServer.candidate, dataFromServer.sender);
+      }
+    };
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(currentStream => {
+          setStream(currentStream);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = currentStream;
+          }
+        }).catch(error => {
+          console.error('Error accessing media devices.', error);
+        });
+    } else {
+      console.error('getUserMedia is not supported in this browser.');
+    }
+  }, [position]);
+
+  const createPeerConnection = (userId) => {
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:turnserver.example.com', username: 'user', credential: 'pass' }
+      ]
+    });
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        client.send(JSON.stringify({
+          type: 'candidate',
+          candidate: event.candidate,
+          sender: position.id,
+          recipient: userId
+        }));
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      // 이벤트 처리 로직을 비워둡니다. 비디오를 사용하지 않기 때문입니다.
+    };
+
+    if (stream) {
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+    }
+
+    return peerConnection;
+  };
+
+  const handleOffer = async (offer, sender) => {
+    const peerConnection = createPeerConnection(sender);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    client.send(JSON.stringify({
+      type: 'answer',
+      answer: answer,
+      sender: position.id,
+      recipient: sender
+    }));
+    peerConnections[sender] = peerConnection;
+  };
+
+  const handleAnswer = async (answer, sender) => {
+    const peerConnection = peerConnections[sender];
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+  };
+
+  const handleCandidate = async (candidate, sender) => {
+    const peerConnection = peerConnections[sender];
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  };
+
+  const movePosition = (dx, dy) => {
+    const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: position.id };
+    setPosition(newPosition);
+    client.send(JSON.stringify({ type: 'move', position: newPosition }));
+  };
+
+  const getImageForPosition = (x, y) => {
+    if (x === 0 && y === 0) return defaultImg;
+    if (x > 0 && y > 0) return soldier;
+    if (x < 0 && y > 0) return art;
+    if (x < 0 && y < 0) return steel;
+    if (x > 0 && y < 0) return butler;
+  };
+
+  const handleScroll = (direction) => {
+    if (direction === 'up') {
+      setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
+    } else {
+      setDisplayStartIndex(Math.min(displayStartIndex + 1, users.length - 4));
+    }
+  };
+
+  return (
+    <div className="chat-room-container" ref={containerRef}>
+      <div className="coordinates-graph" ref={coordinatesGraphRef}>
+        <div className="axes">
+          {/* X축 선 */}
+          <div className="x-axis" />
+          {/* Y축 선 */}
+          <div className="y-axis" />
+          {/* X축 눈금 */}
+          {[...Array(21)].map((_, i) => (
+            <div
+              key={`x-tick-${i}`}
+              className="x-tick"
+              style={{ left: `${(i / 20) * 100}%` }}
+            />
+          ))}
+          {/* Y축 눈금 */}
+          {[...Array(21)].map((_, i) => (
+            <div
+              key={`y-tick-${i}`}
+              className="y-tick"
+              style={{ top: `${(i / 20) * 100}%` }}
+            />
+          ))}
+          {/* 사용자 캐릭터 */}
+          {users.map(user => (
+            <img
+              key={user.id}
+              src={user.image}
+              alt="character"
+              className="character-image"
+              style={{
+                left: `calc(${((user.x + 1) / 2) * 100}%)`,
+                top: `calc(${((1 - user.y) / 2) * 100}%)`
+              }}
+            />
+          ))}
+          {/* 자기 캐릭터 */}
+          <div className="your-character-container" style={{
+              left: `calc(${((position.x + 1) / 2) * 100}%)`,
+              top: `calc(${((1 - position.y) / 2) * 100}%)`
+            }}>
+            <div className="radar-pulse" />
+            <img
+              src={userImage}
+              alt="your character"
+              className="character-image your-character"
+            />
+            <div className="controls controls-up">
+              <button onClick={() => movePosition(0, 0.025)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-right">
+              <button onClick={() => movePosition(0.025, 0)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-right" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-down">
+              <button onClick={() => movePosition(0, -0.025)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-left">
+              <button onClick={() => movePosition(-0.025, 0)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="right-panel">
+        <div className="scroll-buttons">
+          <button onClick={() => handleScroll('up')}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+            </svg>
+          </button>
+        </div>
+        <div className="character-list">
+          {users.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
+            <img 
+              key={user.id}
+              src={user.image} 
+              alt="character"
+              className="character-image-small"
+            />
+          ))}
+        </div>
+        <div className="scroll-buttons">
+          <button onClick={() => handleScroll('down')}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default RtcClient;
