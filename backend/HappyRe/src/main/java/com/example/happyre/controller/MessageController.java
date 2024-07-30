@@ -36,12 +36,9 @@ public class MessageController {
             UserEntity userEntity = userService.findByRequest(request);
             Optional<DiaryEntity> opDiaryEntity = diaryService.findById(messageEntityDTO.getDiaryId());
             DiaryEntity diaryEntity;
+            //다이어리가 있는지 체크
             if (opDiaryEntity.isEmpty()) {
-                //새 Diary 생성
-                logger.debug("Diary 없음. 새 Diary를 생성. **주의** Diary Id가 요청한 것과 달라짐");
-                DiaryEntity newDiaryEntity = new DiaryEntity();
-                newDiaryEntity.setUserEntity(userEntity);
-                diaryEntity = diaryService.insert(newDiaryEntity);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("다이어리 없음");
             } else {
                 logger.debug("Diary 있음. 재사용.");
                 diaryEntity = opDiaryEntity.get();
@@ -77,7 +74,7 @@ public class MessageController {
         }
     }
 
-    @GetMapping("/{diaryId}")
+    @GetMapping("/diary/{diaryId}")
     public ResponseEntity<?> getMessageByDiaryId(HttpServletRequest request, @PathVariable Integer diaryId) {
         try {
             Optional<DiaryEntity> opDiaryEntity = diaryService.findById(diaryId);

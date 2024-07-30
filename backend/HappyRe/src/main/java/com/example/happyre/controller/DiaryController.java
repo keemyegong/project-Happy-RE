@@ -1,6 +1,6 @@
 package com.example.happyre.controller;
 
-import com.example.happyre.dto.diary.ReportResponse;
+import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
@@ -30,12 +30,12 @@ public class DiaryController {
     private final UserService userService;
 
     @PostMapping("/")
-    public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody ReportResponse reportResponse) {
+    public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody DiaryEntityDTO diaryEntityDTO) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
             DiaryEntity diaryEntity = new DiaryEntity();
             diaryEntity.setUserEntity(userEntity);
-            diaryEntity.setSummary(reportResponse.getSummary());
+            diaryEntity.setSummary(diaryEntityDTO.getSummary());
             DiaryEntity savedDiary = diaryService.insert(diaryEntity);
             return ResponseEntity.ok(savedDiary);
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class DiaryController {
     }
 
     @PutMapping("/{diaryId}")
-    public ResponseEntity<?> editDiary(HttpServletRequest request, @PathVariable int diaryId, @RequestBody ReportResponse reportResponse) {
+    public ResponseEntity<?> editDiary(HttpServletRequest request, @PathVariable int diaryId, @RequestBody DiaryEntityDTO diaryEntityDTO) {
         try {
             Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryId);
             if (optionalDiary.isEmpty()) {
@@ -93,7 +93,7 @@ public class DiaryController {
                 throw new AccessDeniedException("권한 없음(유저 불일치)");
             }
 
-            diaryEntity.setSummary(reportResponse.getSummary());
+            diaryEntity.setSummary(diaryEntityDTO.getSummary());
             DiaryEntity updatedDiary = diaryService.update(diaryEntity);
             return ResponseEntity.ok(updatedDiary);
         } catch (AccessDeniedException ade) {

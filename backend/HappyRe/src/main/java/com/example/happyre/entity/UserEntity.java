@@ -39,8 +39,10 @@ public class UserEntity {
     private String profileUrl;
 
     // 새로운 컬럼 추가
+    @Column(name = "russell_x")
     private Double russellX;
 
+    @Column(name = "russell_y")
     private Double russellY;
 
     private Integer myfrog;
