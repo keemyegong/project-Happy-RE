@@ -5,3 +5,37 @@
   text-align: center;
   color: white;
 }
+
+.ai-chat-cam {
+  margin-top: 10%;
+}
+
+/* 미디어 쿼리 추가 */
+@media (max-width: 1200px) {
+  .ai-chat-box {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 992px) {
+  .ai-chat-cam {
+    display: none;
+  }
+  .ai-chat-box {
+    flex: 0 0 70%;
+    max-width: 70%;
+    margin-left: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-chat-cam {
+    display: none;
+  }
+  .ai-chat-box {
+    flex: 0 0 90%;
+    max-width: 90%;
+    margin-left: 0; /* 가운데 정렬을 위해 margin-left 제거 */
+  }
+}

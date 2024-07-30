@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './ChatBox.css';
 import Button from '../Button/Button';
 import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 
-const ChatBox = ({ chatHistory, onSendClick }) => {
+const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, setUserInput }) => {
   const ChatType = 1;
 
   const getChatData = (type) => {
@@ -44,12 +44,17 @@ const ChatBox = ({ chatHistory, onSendClick }) => {
     }
   };
 
-  const chatData = getChatData(ChatType);
-  const [isMicMuted, setIsMicMuted] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  const toggleMic = () => {
-    setIsMicMuted(!isMicMuted);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory]);
+
+  const chatData = getChatData(ChatType);
 
   return (
     <div className='container chat-box-container'>
@@ -74,13 +79,20 @@ const ChatBox = ({ chatHistory, onSendClick }) => {
         {chatHistory.map((chat, index) => (
           chat.type === 'user' ? <UserResponse key={index} content={chat.content} /> : <AIResponse key={index} content={chat.content} />
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className='row chat-box-footer-container'>
         <hr className="chat-box-title-border border-light border-1" />
         <div className='row chat-box-footer'>
           <div className='col-10 p-0 position-relative'>
-            <input type="text" className='chat-box-footer-input form-control' />
+            <input
+              type="text"
+              className='chat-box-footer-input form-control'
+              value={isMicMuted ? userInput : 'recording now'}
+              onChange={(e) => setUserInput(e.target.value)}
+              disabled={!isMicMuted}
+            />
             <span className='mic-icon' onClick={toggleMic}>
               {isMicMuted ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-mic-mute" viewBox="0 0 16 16">
@@ -89,8 +101,8 @@ const ChatBox = ({ chatHistory, onSendClick }) => {
                 </svg>
               ) : (
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-mic-fill" viewBox="0 0 16 16">
-                  <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z" />
-                  <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5" />
+                  <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z" />
+                  <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5h.5z" />
                 </svg>
               )}
             </span>
