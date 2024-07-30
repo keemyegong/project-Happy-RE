@@ -1,7 +1,5 @@
 import React, { useState,useContext, useEffect, useRef } from 'react';
 import {universeVariable} from '../../App';
-import { Buffer } from 'buffer';
-// import RNFetchBlob from "rn-fetch-blob";
 
 import axios from 'axios';
 import './UserUpdate.css';
@@ -13,7 +11,7 @@ import { useNavigate  } from "react-router-dom";
 
 const UserUpdate = ()=>{
 
-  const [image,setImage] = useState(userProfileImage);
+  const [image,setImage] = useState('');
   const [imagefile,setImageFile] = useState();
   const fileInput = useRef(null)
 
@@ -58,6 +56,7 @@ const UserUpdate = ()=>{
 
       }).catch(()=>{
         console.log('이미지 파일이 존재하지 않습니다.')
+        setImage(userProfileImage);
       })
     })
   },[])

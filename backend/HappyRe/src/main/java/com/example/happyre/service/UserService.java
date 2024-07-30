@@ -24,6 +24,7 @@ import java.net.http.HttpHeaders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 @Service
@@ -75,6 +76,7 @@ public class UserService {
             if(path == null || path.isEmpty()){
                 path = "/var/profileimg/0.jpg";
             }
+            System.out.println("myProfile Service path:"+ path);
             FileSystemResource resource = new FileSystemResource(path);
             if (!resource.exists()) {
                 throw new IOException("File not found: " + path);
@@ -186,12 +188,15 @@ public class UserService {
             Files.createDirectories(filePath.getParent());
 
             // 파일 저장 (기존 파일이 있는 경우 덮어쓰기)
-            Files.copy(file.getInputStream(), filePath);
-            userEntity.setProfileUrl(filePath.toUri().toString());
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // 파일 경로를 절대 경로로 설정
+            userEntity.setProfileUrl(filePath.toAbsolutePath().toString());
             userRepository.save(userEntity);
 
             System.out.println("File uploaded successfully: " + filePath.toString());
         } catch (IOException e) {
+            System.out.println("File uploaded failed: " + e.getMessage());
             throw new RuntimeException("Failed to upload file", e);
         }
 
