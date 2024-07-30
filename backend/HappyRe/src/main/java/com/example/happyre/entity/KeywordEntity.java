@@ -13,8 +13,9 @@ public class KeywordEntity {
     @Column(name = "keyword_id")
     private Integer keywordId;
 
-    @Column(name="diary_id")
-    private Integer diary_id;
+    @ManyToOne
+    @JoinColumn(name = "diary_id", nullable = false)
+    private DiaryEntity diaryEntity;
 
     @Column(nullable = false)
     private Integer sequence;
@@ -25,10 +26,10 @@ public class KeywordEntity {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @Column(name="russell_x" , nullable = false)
-    private double russellX;
+    @Column(name = "russell_x", nullable = false)
+    private Double russellX;
 
-    @Column(name="russell_y", nullable = false)
-    private double russelly;
+    @Column(name = "russell_y", nullable = false)
+    private Double russellY;
 
 }

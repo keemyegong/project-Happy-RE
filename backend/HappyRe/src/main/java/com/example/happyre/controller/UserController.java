@@ -1,14 +1,12 @@
 package com.example.happyre.controller;
 
 import com.example.happyre.dto.user.JoinUserDTO;
-
 import com.example.happyre.dto.user.ModifyUserDTO;
-import com.example.happyre.dto.user.UserWithProfile;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.core.io.InputStreamResource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -23,26 +21,23 @@ import java.util.Map;
 @Tag(name = "User")
 @Controller
 @ResponseBody
+@RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-
     //유저정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getUser(HttpServletRequest request) {
-        try{
-            UserEntity userEntity = userService.findInfoByEmail(request);
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
             return new ResponseEntity<>(userEntity, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
     }
+
     @GetMapping("/profileimg")
     public ResponseEntity<?> getProfileImg(HttpServletRequest request) {
         try {
@@ -72,13 +67,12 @@ public class UserController {
                     .body(resource);
 
         } catch (IOException e) {
-            System.out.println("PROFILE IMAGE LOAD ERROR: "+e.getMessage());
+            System.out.println("PROFILE IMAGE LOAD ERROR: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 
 
     //유저정보 수정
@@ -92,24 +86,25 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
     //회원 탈퇴
     @DeleteMapping("/me")
     public ResponseEntity<?> deleteUser(HttpServletRequest request) {
-        try{
+        try {
             userService.deleteUserInfo(request);
             return ResponseEntity.ok("User deleted successfully");
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
     @PostMapping("/uploadprofile")
-    public ResponseEntity<?> uploadProfile(HttpServletRequest request,@RequestParam("file") MultipartFile file) {
-        try{
+    public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+        try {
             userService.uploadProfile(request, file);
             return ResponseEntity.ok("upload profile successfully");
-        }catch (RuntimeException e){
-            System.out.println("upload profile ERROR: "+e.getMessage());
+        } catch (RuntimeException e) {
+            System.out.println("upload profile ERROR: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
@@ -121,28 +116,26 @@ public class UserController {
             System.out.println(joinUserDTO);
             userService.joinProcess(joinUserDTO);
             return ResponseEntity.ok("Join process successfully");
-        }catch(IllegalStateException e){
+        } catch (IllegalStateException e) {
             System.out.println("IllegalStateException : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Exception : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
 
-
     }
 
     @PutMapping("/russell")
-    public  ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String,Double> body){
+    public ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String, Double> body) {
         try {
             userService.fistRussell(request, body);
             return ResponseEntity.ok("First russell setting successfully");
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
 
 
 }
