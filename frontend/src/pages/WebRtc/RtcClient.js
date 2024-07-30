@@ -17,6 +17,7 @@ function RtcClient() {
   const [stream, setStream] = useState(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(defaultImg);
+  const [talkingUsers, setTalkingUsers] = useState([]);
   const localVideoRef = useRef(null);
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
@@ -93,6 +94,8 @@ function RtcClient() {
         handleAnswer(dataFromServer.answer, dataFromServer.sender);
       } else if (dataFromServer.type === 'candidate') {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
+      } else if (dataFromServer.type === 'talking') {
+        setTalkingUsers(dataFromServer.talkingUsers);
       }
     };
 
@@ -188,15 +191,29 @@ function RtcClient() {
     }
   };
 
+  // 더미 데이터 추가
+  useEffect(() => {
+    const dummyUsers = [
+      { id: 1, x: 0.5, y: 0.5, image: soldier },
+      { id: 2, x: -0.5, y: 0.5, image: art },
+      { id: 3, x: -0.5, y: -0.5, image: steel },
+      { id: 4, x: 0.5, y: -0.5, image: butler },
+      { id: 5, x: 0, y: 0, image: defaultImg }
+    ];
+    setUsers(dummyUsers);
+  }, []);
+
+  const nearbyUsers = users.filter(user => {
+    const distance = Math.sqrt(Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2));
+    return distance <= 0.1;
+  });
+
   return (
     <div className="chat-room-container" ref={containerRef}>
       <div className="coordinates-graph" ref={coordinatesGraphRef}>
         <div className="axes">
-          {/* X축 선 */}
           <div className="x-axis" />
-          {/* Y축 선 */}
           <div className="y-axis" />
-          {/* X축 눈금 */}
           {[...Array(21)].map((_, i) => (
             <div
               key={`x-tick-${i}`}
@@ -204,7 +221,6 @@ function RtcClient() {
               style={{ left: `${(i / 20) * 100}%` }}
             />
           ))}
-          {/* Y축 눈금 */}
           {[...Array(21)].map((_, i) => (
             <div
               key={`y-tick-${i}`}
@@ -212,7 +228,6 @@ function RtcClient() {
               style={{ top: `${(i / 20) * 100}%` }}
             />
           ))}
-          {/* 사용자 캐릭터 */}
           {users.map(user => (
             <img
               key={user.id}
@@ -225,7 +240,6 @@ function RtcClient() {
               }}
             />
           ))}
-          {/* 자기 캐릭터 */}
           <div className="your-character-container" style={{
               left: `calc(${((position.x + 1) / 2) * 100}%)`,
               top: `calc(${((1 - position.y) / 2) * 100}%)`
@@ -276,13 +290,22 @@ function RtcClient() {
           </button>
         </div>
         <div className="character-list">
-          {users.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
-            <img 
+          <img 
+            src={userImage} 
+            alt="your character"
+            className="character-image-small"
+          />
+          {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
+            <div 
               key={user.id}
-              src={user.image} 
-              alt="character"
-              className="character-image-small"
-            />
+              className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
+            >
+              <img 
+                src={user.image} 
+                alt="character"
+                className="character-image-small"
+              />
+            </div>
           ))}
         </div>
         <div className="scroll-buttons">
