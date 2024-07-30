@@ -10,7 +10,8 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
-        vendor = JvmVendorSpec.AMAZON //Amazon Corretto 사용. LTS이고, 최소한의 라이센스이며, OpenJDK 소스를 변경하지 않았다(https://en.wikipedia.org/wiki/OpenJDK)
+        vendor = JvmVendorSpec.AMAZON
+        //Amazon Corretto 사용. LTS이고, 최소한의 라이센스이며, OpenJDK 소스를 변경하지 않았다(https://en.wikipedia.org/wiki/OpenJDK)
     }
 }
 
@@ -45,8 +46,4 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
     // Documentation https://springdoc.org/#Introduction
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }

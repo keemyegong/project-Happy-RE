@@ -1,61 +1,130 @@
 package com.example.happyre.controller;
 
-import com.example.happyre.dto.diary.ReportResponse;
+import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.UserEntity;
-import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.service.DiaryService;
-import com.example.happyre.service.DiaryServiceImpl;
+import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "Diary")
 @RestController
 @RequestMapping("/api/diary")
+@RequiredArgsConstructor
 public class DiaryController {
 
-    private final DiaryServiceImpl diaryService;
-    private final JWTUtil jwtUtil;
+    private static final Logger logger = LoggerFactory.getLogger(DiaryController.class);//no useage, just in case
 
-    public DiaryController(DiaryServiceImpl diaryService, JWTUtil jwtUtil){
-        this.diaryService = diaryService;
-        this.jwtUtil = jwtUtil;
+    private final DiaryService diaryService;
+    private final UserService userService;
 
+    @PostMapping("/")
+    public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody DiaryEntityDTO diaryEntityDTO) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            DiaryEntity diaryEntity = new DiaryEntity();
+            diaryEntity.setUserEntity(userEntity);
+            diaryEntity.setSummary(diaryEntityDTO.getSummary());
+            DiaryEntity savedDiary = diaryService.insert(diaryEntity);
+            return ResponseEntity.ok(savedDiary);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 추가중 에러: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<?> getDiary(HttpServletRequest request, @PathVariable int diaryId) {
+        try {
+            Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryId);
+            if (optionalDiary.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+            }
+
+            DiaryEntity diaryEntity = optionalDiary.get();
+            UserEntity userEntity = userService.findByRequest(request);
+            if (!userEntity.getId().equals(diaryEntity.getUserEntity().getId())) {
+                throw new AccessDeniedException("권한 없음(유저 불일치)");
+            }
+
+            return ResponseEntity.ok(diaryEntity);
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 가져오는중 에러: " + e.getMessage());
+        }
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> getMyDiary(HttpServletRequest request){
+    public ResponseEntity<?> getMyDiaries(HttpServletRequest request) {
         try {
-            int userId = jwtUtil.getUserId(request.getHeader("Authorization").substring(7));
-            List<DiaryEntity> diaryEntity = diaryService.findByUserId(userId);
-            return new ResponseEntity<>(diaryEntity, HttpStatus.OK);
-        }catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            UserEntity userEntity = userService.findByRequest(request);
+            List<DiaryEntity> diaries = diaryService.findByUserEntity(userEntity);
+            return ResponseEntity.ok(diaries);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 가져오는중 에러: " + e.getMessage());
         }
-
     }
 
-
-    @PostMapping("/report")
-    public ResponseEntity<?> addReport(HttpServletRequest request, @RequestBody ReportResponse reportResponse){
+    @PutMapping("/{diaryId}")
+    public ResponseEntity<?> editDiary(HttpServletRequest request, @PathVariable int diaryId, @RequestBody DiaryEntityDTO diaryEntityDTO) {
         try {
-            System.out.println("Controller : addReport");
-            int userId = jwtUtil.getUserId(request.getHeader("Authorization").substring(7));
-            diaryService.addReport(reportResponse,userId);
-            return null;
-        }catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+            Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryId);
+            if (optionalDiary.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+            }
 
+            DiaryEntity diaryEntity = optionalDiary.get();
+            UserEntity userEntity = userService.findByRequest(request);
+            if (!userEntity.getId().equals(diaryEntity.getUserEntity().getId())) {
+                throw new AccessDeniedException("권한 없음(유저 불일치)");
+            }
+
+            diaryEntity.setSummary(diaryEntityDTO.getSummary());
+            DiaryEntity updatedDiary = diaryService.update(diaryEntity);
+            return ResponseEntity.ok(updatedDiary);
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 편집중 에러: " + e.getMessage());
+        }
     }
 
+    @DeleteMapping("/{diaryId}")
+    public ResponseEntity<?> deleteDiary(HttpServletRequest request, @PathVariable Integer diaryId) {
+        try {
+            Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryId);
+            if (optionalDiary.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+            }
 
+            DiaryEntity diaryEntity = optionalDiary.get();
+            UserEntity userEntity = userService.findByRequest(request);
+            if (!userEntity.getId().equals(diaryEntity.getUserEntity().getId())) {
+                throw new AccessDeniedException("권한 없음(유저 불일치)");
+            }
 
+            diaryService.delete(diaryEntity);
+            return ResponseEntity.ok().build();
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 삭제중 에러: " + e.getMessage());
+        }
+    }
 }

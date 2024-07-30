@@ -17,7 +17,8 @@ import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
-    private final List<String> skipUrls = List.of("/oauth2", "/login/oauth2/code","login");
+    private final List<String> skipUrls = List.of("/oauth2", "/login/oauth2/code", "login");
+
     public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -27,7 +28,6 @@ public class JWTFilter extends OncePerRequestFilter {
         //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
         String authorization = null;
         Cookie[] cookies = request.getCookies();
-
 
 
         String path = request.getRequestURI();
@@ -41,9 +41,9 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
         System.out.println(path);
-        authorization =request.getHeader("Authorization") ;
+        authorization = request.getHeader("Authorization");
         System.out.println("Header: tokennnnnn :" + authorization);
-        boolean flag= true;
+        boolean flag = true;
 
         if (cookies != null && authorization == null) {
 
@@ -70,9 +70,9 @@ public class JWTFilter extends OncePerRequestFilter {
         //토큰
 //        String token = authorization;
         String token;
-        if(flag){
+        if (flag) {
             token = authorization.substring(7);
-        }else{
+        } else {
             token = authorization;
         }
         System.out.println("Now Token : " + token);
