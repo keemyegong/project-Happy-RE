@@ -10,7 +10,7 @@ class Chatbot:
         self,
         api_key,
         model="gpt-4o",
-        temperature=0.4,
+        temperature=0.7,
         promptTemplate=[
             (
                 "system",
@@ -26,7 +26,7 @@ class Chatbot:
             MessagesPlaceholder(variable_name="messages"),
         ],
         persona={
-            "pname": "Happyre",
+            "pname": "Happy:Re",
             "mbtie": "0.5",
             "mbtis": "0.5",
             "mbtit": "0.5",
