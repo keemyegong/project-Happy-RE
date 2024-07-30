@@ -1,6 +1,7 @@
 /* Response.css */
 
 .user-response-container {
+  font-size: 13px;
   display: flex;
   justify-content: flex-end;
   margin-bottom: 10px;
@@ -32,6 +33,7 @@
 }
 
 .ai-response-container {
+  font-size: 13px;
   display: flex;
   justify-content: flex-start;
   margin-bottom: 10px;

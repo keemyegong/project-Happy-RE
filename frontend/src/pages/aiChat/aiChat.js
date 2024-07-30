@@ -11,7 +11,10 @@ const AIChat = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const universal = useContext(universeVariable);
   const [number, setNumber] = useState(0);
-  const recorder = new MicRecorder({ bitRate: 128 });
+  const [recorder] = useState(new MicRecorder({ bitRate: 128 }));
+  const [isRecording, setIsRecording] = useState(false);
+  const [isMicMuted, setIsMicMuted] = useState(true);
+  const [userInput, setUserInput] = useState('');
 
   // 처음 인삿말 받아오기
   useEffect(() => {
@@ -30,21 +33,26 @@ const AIChat = () => {
     }).catch((error) => {
       console.error("Error fetching initial message: ", error);
     });
-  }, []);
+  }, [universal.fastUrl]);
 
   // 녹음 시작
-  const newRecord = () => {
-    recorder.start().catch((e) => console.error(e));
+  const startRecording = () => {
+    recorder.start().then(() => {
+      setIsRecording(true);
+    }).catch((e) => console.error(e));
   };
 
   // 녹음 정지 및 전송
-  const newRecordStop = () => {
+  const sendRecording = () => {
+    if (!isRecording) return;
+
     recorder.stop().getMp3().then(([buffer, blob]) => {
       const file = new File(buffer, `record-${number}.mp3`, {
         type: blob.type,
         lastModified: Date.now()
       });
       setNumber(number + 1);
+      setIsRecording(false);
 
       // 녹음된 파일 재생 (테스트용)
       const player = new Audio(URL.createObjectURL(file));
@@ -79,27 +87,80 @@ const AIChat = () => {
         ).then((response) => {
           const chatbotReply = response.data;
           setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
+          startRecording(); // 녹음 재시작
         }).catch((error) => {
           console.error("Error fetching chatbot response: ", error);
+          startRecording(); // 녹음 재시작
         });
 
       }).catch((error) => {
         console.error("Error recognizing speech: ", error);
+        startRecording(); // 녹음 재시작
       });
     }).catch((error) => {
       console.error("Error stopping recorder: ", error);
+      startRecording(); // 녹음 재시작
     });
+  };
+
+  // 텍스트 전송
+  const sendText = () => {
+    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: userInput }]);
+    
+    axios.post(
+      `${universal.fastUrl}/ai-api/chatbot/`,
+      { user_input: userInput },
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }
+    ).then((response) => {
+      const chatbotReply = response.data;
+      setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
+    }).catch((error) => {
+      console.error("Error fetching chatbot response: ", error);
+    });
+
+    setUserInput('');
+  };
+
+  const handleSendClick = () => {
+    if (isMicMuted) {
+      sendText();
+    } else {
+      sendRecording();
+    }
+  };
+
+  const toggleMic = () => {
+    if (isMicMuted) {
+      startRecording();
+    } else {
+      setIsRecording(false);
+    }
+    setIsMicMuted(!isMicMuted);
   };
 
   return (
     <div className='AIChat'>
-      <div className="ai-chat-container">
-        <h1 className="text-white">{number}</h1>
-        <button onClick={newRecord}>녹음 시작</button>
-      </div>
-      <div className='ai-chat-container'>
-        <ChatCam />
-        <ChatBox chatHistory={chatHistory} onSendClick={newRecordStop} />
+      <div className='container ai-chat-container'>
+        <div className='row ai-chat-components'>
+          <div className='offset-1 col-4 ai-chat-cam'>
+            <ChatCam />
+          </div>
+          <div className='offset-1 col-6 ai-chat-box'>
+            <ChatBox
+              chatHistory={chatHistory}
+              onSendClick={handleSendClick}
+              isMicMuted={isMicMuted}
+              toggleMic={toggleMic}
+              userInput={userInput}
+              setUserInput={setUserInput}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
