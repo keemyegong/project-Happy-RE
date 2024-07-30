@@ -12,6 +12,7 @@ import UserTest from './pages/user/UserTest';
 import UserUpdate from './pages/userUpdate/UserUpdate';
 import UserProfile from './pages/userProfile/UserProfile';
 import AIChat from './pages/aiChat/aiChat';
+import RtcClient from './pages/WebRtc/RtcClient'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test'
@@ -68,6 +69,7 @@ const App = () => {
               <Route path="/user/update" element={<UserUpdate />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/with-happyre" element={<AIChat />} />
+              <Route path='/webrtc' element={<RtcClient/>}/>
             </Routes>
           </div>
         </div>
