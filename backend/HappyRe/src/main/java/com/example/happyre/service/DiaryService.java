@@ -16,6 +16,6 @@ public interface DiaryService {
 
     DiaryEntity update(DiaryEntity diaryDTOEntity);
 
-    DiaryEntity delete(DiaryEntity diaryDTOEntity);
+    void delete(DiaryEntity diaryDTOEntity);
 
 }

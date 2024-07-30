@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
+import {universeVariable} from '../../App';
+
 import './SignUp.css'
 import signUpTitle from '../../assets/signup_title.png'
 import Button from '../../components/Button/Button';
@@ -6,12 +8,11 @@ import UserInfoInput from '../../components/UserInfoInput/UserInfoInput';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate  } from "react-router-dom";
-
-// const defaultUrl = 'http://localhost:8080'
-const defaultUrl = 'http://192.168.31.228:8080'
-
+ 
 const SignUp = () => {
   let navigate = useNavigate ();
+  const universal = useContext(universeVariable);
+
 
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
@@ -19,7 +20,7 @@ const SignUp = () => {
   const [password2, setPassword2] = useState('');
   const googleSignIn = ()=>{
 
-    window.location.href = `${defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
     
   }
 
@@ -52,11 +53,11 @@ const SignUp = () => {
             }
 
             axios.post(
-              `${defaultUrl}/api/user/join`,
+              `${universal.defaultUrl}/api/user/join`,
               inputUserInfo,
             ).then((Response)=>{
               axios.post(
-                `${defaultUrl}/login`,
+                `${universal.defaultUrl}/login`,
                 {email, password}
               ).then((Response)=>{
                 const jwtToken = Response.headers.authorization;

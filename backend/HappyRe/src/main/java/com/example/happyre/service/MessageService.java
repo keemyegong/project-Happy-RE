@@ -1,7 +1,6 @@
 package com.example.happyre.service;
 
 import com.example.happyre.entity.DiaryEntity;
-import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
 
 import java.util.List;

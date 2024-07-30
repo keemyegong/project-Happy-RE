@@ -15,12 +15,10 @@ import java.util.Optional;
 public class DiaryServiceImpl implements DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final UserRepository userRepository;
 
     @Override
     public DiaryEntity insert(DiaryEntity diaryEntity) {
-        diaryRepository.save(diaryEntity);
-        return null;
+        return diaryRepository.save(diaryEntity);
     }
 
     @Override
@@ -42,10 +40,9 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Override
-    public DiaryEntity delete(DiaryEntity diaryDTOEntity) {
+    public void delete(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).orElseThrow();
         diaryRepository.delete(matchingEntity);
-        return matchingEntity;
     }
 
 }

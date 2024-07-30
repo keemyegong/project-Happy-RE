@@ -32,20 +32,21 @@ public class MessageController {
 
     @PostMapping
     public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody MessageEntityDTO messageEntityDTO) {
-        try{
+        try {
             UserEntity userEntity = userService.findByRequest(request);
             Optional<DiaryEntity> opDiaryEntity = diaryService.findById(messageEntityDTO.getDiaryId());
             DiaryEntity diaryEntity;
-            if(opDiaryEntity.isEmpty()){
+            if (opDiaryEntity.isEmpty()) {
                 //새 Diary 생성
                 logger.debug("Diary 없음. 새 Diary를 생성. **주의** Diary Id가 요청한 것과 달라짐");
                 DiaryEntity newDiaryEntity = new DiaryEntity();
                 newDiaryEntity.setUserEntity(userEntity);
                 diaryEntity = diaryService.insert(newDiaryEntity);
-            }else{
+            } else {
                 logger.debug("Diary 있음. 재사용.");
                 diaryEntity = opDiaryEntity.get();
-                if(!userService.findByRequest(request).getId().equals(diaryEntity.getUserEntity().getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
+                if (!userService.findByRequest(request).getId().equals(diaryEntity.getUserEntity().getId()))
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
             }
             MessageEntity messageEntity = new MessageEntity();
             messageEntity.setDiaryEntity(diaryEntity);
@@ -55,69 +56,73 @@ public class MessageController {
             messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
 
             return ResponseEntity.ok(messageService.insert(messageEntity));
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 생성중 에러: " + e.getMessage());
         }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getMessageById(HttpServletRequest request, @PathVariable Integer id) {
-        try{
+        try {
             Optional<MessageEntity> optionalMessageEntity = messageService.findById(id);
             if (optionalMessageEntity.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message 없음");
 
             MessageEntity messageEntity = optionalMessageEntity.get();
             UserEntity userEntity = userService.findByRequest(request);
-            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId())) ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
+            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId()))
+                ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
             return ResponseEntity.ok(messageEntity);
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 검색중 에러: " + e.getMessage());
         }
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseEntity<?> getMessageByDiaryId(HttpServletRequest request, @PathVariable Integer diaryId){
-        try{
+    public ResponseEntity<?> getMessageByDiaryId(HttpServletRequest request, @PathVariable Integer diaryId) {
+        try {
             Optional<DiaryEntity> opDiaryEntity = diaryService.findById(diaryId);
-            if(opDiaryEntity.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+            if (opDiaryEntity.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
             DiaryEntity diaryEntity = opDiaryEntity.get();
-            if(!userService.findByRequest(request).getId().equals(diaryEntity.getUserEntity().getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
+            if (!userService.findByRequest(request).getId().equals(diaryEntity.getUserEntity().getId()))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
             List<MessageEntity> messages = messageService.findByDiaryEntity(diaryEntity);
             return ResponseEntity.ok(messages);
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Diary Id로 Message 검색중 에러: " + e.getMessage());
         }
     }
 
     @PutMapping("/")
     public ResponseEntity<?> updateMessage(HttpServletRequest request, @RequestBody MessageEntityDTO messageEntityDTO) {
-        try{
+        try {
             Optional<MessageEntity> optionalMessageEntity = messageService.findById(messageEntityDTO.getMessageId());
             if (optionalMessageEntity.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message 없음");
             MessageEntity messageEntity = optionalMessageEntity.get();
             UserEntity userEntity = userService.findByRequest(request);
-            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId())) ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
+            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId()))
+                ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
             messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
             messageEntity.setSequence(messageEntityDTO.getSequence());
             messageEntity.setContent(messageEntityDTO.getContent());
             messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
             return ResponseEntity.ok(messageService.update(messageEntity));
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 수정중 에러: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMessage(HttpServletRequest request, @PathVariable Integer id) {
-        try{
+        try {
             Optional<MessageEntity> optionalMessageEntity = messageService.findById(id);
             if (optionalMessageEntity.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message 없음");
             MessageEntity messageEntity = optionalMessageEntity.get();
             UserEntity userEntity = userService.findByRequest(request);
-            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId())) ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
+            if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId()))
+                ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
             messageService.delete(messageEntity);
             return ResponseEntity.ok().build();
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 삭제중 에러: " + e.getMessage());
         }
     }

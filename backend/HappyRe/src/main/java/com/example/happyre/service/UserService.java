@@ -7,9 +7,19 @@ import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 @Data
@@ -18,12 +28,38 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     //TODO: 유저를 찾을 수 없는 경우의 예외 처리
     public UserEntity findByRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
         UserEntity user = userRepository.findByEmail(jwtUtil.getEmail(token));
         return user;
+    }
+
+    public Resource myProfile(HttpServletRequest req) throws Exception {
+        UserEntity userEntity;
+        FileInputStream fileInputStream = null;
+
+        try {
+            userEntity = findByRequest(req);
+            String path = userEntity.getProfileUrl();
+            if (path == null || path.isEmpty()) {
+                path = "/var/profileimg/0.jpg";
+            }
+            System.out.println("myProfile Service path:" + path);
+            FileSystemResource resource = new FileSystemResource(path);
+            if (!resource.exists()) {
+                throw new IOException("File not found: " + path);
+            }
+
+            return resource;
+        } catch (Exception e) {
+            throw new IOException("File not found: ");
+        }
+
+
     }
 
     public void fistRussell(HttpServletRequest request, Map<String, Double> body) {
@@ -91,5 +127,56 @@ public class UserService {
         userRepository.save(data);
 
 
+    }
+
+
+    public void uploadProfile(HttpServletRequest req, MultipartFile file) {
+        UserEntity userEntity = findByRequest(req);
+        if (userEntity == null) throw new RuntimeException("User not found");
+        int userId = userEntity.getId();
+
+        // 파일명 설정: userId + 원래 파일 확장자
+        String originalFileName = file.getOriginalFilename();
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            throw new RuntimeException("Invalid file");
+        }
+
+        // 파일 확장자 추출
+        String fileExtension = getFileExtension(originalFileName);
+        if (fileExtension == null || fileExtension.isEmpty()) {
+            throw new RuntimeException("File must have an extension");
+        }
+
+        // 최종 파일명 설정
+        String fileName = userId + "." + fileExtension;
+
+        Path filePath = Paths.get(uploadDir).resolve(fileName);
+
+        try {
+            // 디렉토리가 존재하지 않으면 생성
+            Files.createDirectories(filePath.getParent());
+
+            // 파일 저장 (기존 파일이 있는 경우 덮어쓰기)
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // 파일 경로를 절대 경로로 설정
+            userEntity.setProfileUrl(filePath.toAbsolutePath().toString());
+            userRepository.save(userEntity);
+
+            System.out.println("File uploaded successfully: " + filePath.toString());
+        } catch (IOException e) {
+            System.out.println("File uploaded failed: " + e.getMessage());
+            throw new RuntimeException("Failed to upload file", e);
+        }
+
+
+    }
+
+    private String getFileExtension(String fileName) {
+        int lastIndexOfDot = fileName.lastIndexOf('.');
+        if (lastIndexOfDot == -1) {
+            return ""; // 확장자가 없는 경우 빈 문자열 반환
+        }
+        return fileName.substring(lastIndexOfDot + 1);
     }
 }

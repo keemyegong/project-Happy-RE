@@ -189,3 +189,24 @@ html, body {
     transform: translateY(0);
   }
 }
+
+.scroll-button {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background-color: #33375800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.scroll-button.up {
+  top: 10px;
+}
+
+.scroll-button.down {
+  bottom: 10px;
+}

@@ -1,7 +1,6 @@
 package com.example.happyre.repository;
 
 import com.example.happyre.entity.DiaryEntity;
-import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
