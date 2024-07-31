@@ -43,7 +43,7 @@ pipeline {
                         sh 'docker build -t happyjellyfish/frontend-image .'
                     }
 
-                    dir('frontend/src/server'){
+                    dir('server'){
                         sh 'docker build -t happyjellyfish/webrtc-server .'
                     }
                 }
