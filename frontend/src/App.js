@@ -12,7 +12,7 @@ import UserUpdate from './pages/userUpdate/UserUpdate';
 import UserProfile from './pages/userProfile/UserProfile';
 import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
-
+import Message from './pages/message/Message'
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
 
@@ -40,6 +40,7 @@ const AppContent = () => {
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
           <Route path="/usertest" element={<UserTest />} />
+          <Route path="/message" element={<Message/>} />
           <Route path="/emotion" element={<EmotionGraph />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signup/agreement" element={<SignUpAgreement />} />
