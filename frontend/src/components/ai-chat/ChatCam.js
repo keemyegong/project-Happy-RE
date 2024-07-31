@@ -35,12 +35,21 @@ const ChatCam = () => {
     }
   };
   const chatData = getChatData(ChatType);
+  const today = new Date();
 
-  // 유저 데이터 가져오기
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const date = String(today.getDate()).padStart(2, '0');
+  const day = today.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+
+  const formattedDate = `${year}.${month}.${date}.${day}`;
 
   return (
-    <div className='chat-cam-container'>
-      <img className='chat-cam-ai-profile-img' src={chatData.imageSrc}/>
+    <div className='ChatCam'>
+      <div className='chat-cam-date'>{formattedDate}</div>
+      <div className='chat-cam-container'>
+        <img className='chat-cam-ai-profile-img' src={chatData.imageSrc}/>
+      </div>
     </div>
   );
 };

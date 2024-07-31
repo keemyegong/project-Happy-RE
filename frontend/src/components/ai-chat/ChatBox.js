@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import './ChatBox.css';
 import Button from '../Button/Button';
 import AIResponse from './AIResponse';
@@ -44,16 +44,6 @@ const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, s
     }
   };
 
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatHistory]);
-
   const chatData = getChatData(ChatType);
 
   return (
@@ -76,10 +66,9 @@ const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, s
       </div>
 
       <div className='chat-box-content-container'>
-        {chatHistory.map((chat, index) => (
+        {[...chatHistory].reverse().map((chat, index) => (
           chat.type === 'user' ? <UserResponse key={index} content={chat.content} /> : <AIResponse key={index} content={chat.content} />
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
       <div className='row chat-box-footer-container'>

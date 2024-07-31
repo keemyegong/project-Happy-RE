@@ -68,6 +68,8 @@
   max-height: 400px; /* Adjust based on your needs */
   overflow-y: auto;
   padding: 10px;
+  display:flex;
+  flex-direction: column-reverse;
 }
 
 /* 아래의 모든 코드는 영역::코드로 사용 */
@@ -84,3 +86,4 @@
 .chat-box-content-container::-webkit-scrollbar-track {
     background: #595B63;  /*스크롤바 뒷 배경 색상*/
 }
+

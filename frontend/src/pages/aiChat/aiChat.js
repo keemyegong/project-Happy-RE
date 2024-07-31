@@ -35,6 +35,12 @@ const AIChat = () => {
     });
   }, [universal.fastUrl]);
 
+  // 현재 시간을 문자열로 반환하는 함수
+  const getCurrentTimeString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}_${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}_${String(now.getMinutes()).padStart(2, '0')}_${String(now.getSeconds()).padStart(2, '0')}`;
+  };
+
   // 녹음 시작
   const startRecording = () => {
     recorder.start().then(() => {
@@ -47,7 +53,8 @@ const AIChat = () => {
     if (!isRecording) return;
 
     recorder.stop().getMp3().then(([buffer, blob]) => {
-      const file = new File(buffer, `record-${number}.mp3`, {
+      const fileName = `record-${getCurrentTimeString()}.mp3`;
+      const file = new File(buffer, fileName, {
         type: blob.type,
         lastModified: Date.now()
       });
