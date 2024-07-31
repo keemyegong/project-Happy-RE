@@ -39,37 +39,37 @@ wss.on('connection', (socket) => {
       }
       broadcast({ users });
     }
-    // else if (data.type === 'offer') {
-    //   const sender = data.sender;
-    //   const recipient = data.recipient;
-    //   const offer = data.offer;
+    else if (data.type === 'offer') {
+      const sender = data.sender;
+      const recipient = data.recipient;
+      const offer = data.offer;
 
-    //   const senderUser = users.find(user => user.id === sender);
-    //   const recipientUser = users.find(user => user.id === recipient);
+      const senderUser = users.find(user => user.id === sender);
+      const recipientUser = users.find(user => user.id === recipient);
 
-    //   if (senderUser && recipientUser) {
-    //     const pipeline = await createPipeline();
-    //     const senderWebRtc = await createWebRtcEndpoint(pipeline);
-    //     const recipientWebRtc = await createWebRtcEndpoint(pipeline);
+      if (senderUser && recipientUser) {
+        const pipeline = await createPipeline();
+        const senderWebRtc = await createWebRtcEndpoint(pipeline);
+        const recipientWebRtc = await createWebRtcEndpoint(pipeline);
 
-    //     await senderWebRtc.processOffer(offer);
-    //     const answer = await senderWebRtc.generateAnswer();
-    //     socket.send(JSON.stringify({ type: 'answer', answer, recipient: sender }));
+        await senderWebRtc.processOffer(offer);
+        const answer = await senderWebRtc.generateAnswer();
+        socket.send(JSON.stringify({ type: 'answer', answer, recipient: sender }));
 
-    //     connectWebRtcEndpoints(senderWebRtc, recipientWebRtc);
+        connectWebRtcEndpoints(senderWebRtc, recipientWebRtc);
 
-    //     socket.on('close', () => {
-    //       pipeline.release();
-    //     });
-    //   }
-    // } else if (data.type === 'candidate') {
-    //   const userId = data.sender;
-    //   const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
-    //   const user = users.find(user => user.id === userId);
-    //   if (user && user.webRtcEndpoint) {
-    //     user.webRtcEndpoint.addIceCandidate(candidate);
-    //   }
-    // }
+        socket.on('close', () => {
+          pipeline.release();
+        });
+      }
+    } else if (data.type === 'candidate') {
+      const userId = data.sender;
+      const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
+      const user = users.find(user => user.id === userId);
+      if (user && user.webRtcEndpoint) {
+        user.webRtcEndpoint.addIceCandidate(candidate);
+      }
+    }
   });
 
   socket.on('close', () => {
@@ -86,38 +86,38 @@ function broadcast(message) {
   });
 }
 
-// async function createPipeline() {
-//   return new Promise((resolve, reject) => {
-//     kurentoClient.create('MediaPipeline', (error, pipeline) => {
-//       if (error) {
-//         return reject(error);
-//       }
-//       resolve(pipeline);
-//     });
-//   });
-// }
+async function createPipeline() {
+  return new Promise((resolve, reject) => {
+    kurentoClient.create('MediaPipeline', (error, pipeline) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(pipeline);
+    });
+  });
+}
 
-// async function createWebRtcEndpoint(pipeline) {
-//   return new Promise((resolve, reject) => {
-//     pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-//       if (error) {
-//         return reject(error);
-//       }
-//       resolve(webRtcEndpoint);
-//     });
-//   });
-// }
+async function createWebRtcEndpoint(pipeline) {
+  return new Promise((resolve, reject) => {
+    pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(webRtcEndpoint);
+    });
+  });
+}
 
-// async function connectWebRtcEndpoints(senderWebRtc, recipientWebRtc) {
-//   return new Promise((resolve, reject) => {
-//     senderWebRtc.connect(recipientWebRtc, (error) => {
-//       if (error) {
-//         return reject(error);
-//       }
-//       resolve();
-//     });
-//   });
-// }
+async function connectWebRtcEndpoints(senderWebRtc, recipientWebRtc) {
+  return new Promise((resolve, reject) => {
+    senderWebRtc.connect(recipientWebRtc, (error) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve();
+    });
+  });
+}
 
 // React 애플리케이션 빌드 파일을 제공
 app.use(express.static(path.join(__dirname, 'build')));
