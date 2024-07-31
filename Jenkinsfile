@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Docker Hub or other Docker registry details (if needed)
-        DOCKER_CREDENTIALS_ID = 'your-docker-credentials-id' // Jenkins에 설정된 Docker 자격 증명 ID
+        DOCKER_CREDENTIALS_ID = '7bd2b4d4-c43e-4bcf-b761-d6f42b4472b2' // Jenkins에 설정된 Docker 자격 증명 ID
     }
 
     stages {
