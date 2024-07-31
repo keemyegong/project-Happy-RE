@@ -1,6 +1,6 @@
 import React, { useState,useContext } from 'react';
 import {universeVariable} from '../../App';
-
+import Cookies from 'js-cookie';
 import axios from 'axios';
 import './UserTest.css';
 
@@ -63,12 +63,13 @@ const UserTest = () => {
       y: averageCoordinates[1].toFixed(2),
     };
 
-    const token = 'eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJ1c2VyaWQiOjQsImlhdCI6MTcyMTc5NjQyOCwiZXhwIjoxNzIyMDEyNDI4fQ.S_BaHSzoZQ8Trql3o9bAd5OxXm6K4n96KnMyOBg5xv4'; // 여기에 실제 토큰 값을 넣으세요
+    // const token = 'eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJ1c2VyaWQiOjQsImlhdCI6MTcyMTc5NjQyOCwiZXhwIjoxNzIyMDEyNDI4fQ.S_BaHSzoZQ8Trql3o9bAd5OxXm6K4n96KnMyOBg5xv4'; // 여기에 실제 토큰 값을 넣으세요
 
     axios.put(`${universal.defaultUrl}/api/user/russel`, data, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
         }
       })
       .then((response) => {
