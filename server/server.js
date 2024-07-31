@@ -8,8 +8,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // const kurento = require('kurento-client');
-// const kurentoUri = 'ws://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
-// let kurentoClient = null;
+// const kurentoUri = 'ws://localhost:8888/kurento'; // Kurento Media Server 주소
+let kurentoClient = null;
 let users = [];
 let idCounter = 0;
 
@@ -21,9 +21,8 @@ let idCounter = 0;
 // });
 
 wss.on('connection', (socket) => {
-  console.log('WebSocket Client Connected');
   const userId = idCounter++;
-  let userPosition = { id: userId, x: (Math.random() * 2) - 1, y: (Math.random() * 2) - 1 };
+  let userPosition = { id: userId, x: (Math.random() * 2) - 1, y: (Math.random() * 2) - 1, image: null };
   users.push(userPosition);
 
   socket.send(JSON.stringify({ type: 'assign_id', position: userPosition }));

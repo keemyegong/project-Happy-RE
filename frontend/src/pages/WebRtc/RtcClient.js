@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('ws://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -53,44 +53,12 @@ function RtcClient() {
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        const filteredUsers = dataFromServer.users
-          .filter(user => user.id !== position.id)
-          .map(user => ({
-            ...user,
-            image: getImageForPosition(user.x, user.y)
-          }));
-        setUsers(filteredUsers);
+        setUsers(dataFromServer.users.map(user => ({
+          ...user,
+          image: getImageForPosition(user.x, user.y)
+        })));
 
-        filteredUsers.forEach(user => {
-          if (user.id === undefined || position.id === null) return;
-          if (position && position.x !== undefined && position.y !== undefined) {
-            const distance = Math.sqrt(
-              Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
-            );
-            if (distance <= 0.2) {
-              if (!peerConnections[user.id]) {
-                const peerConnection = createPeerConnection(user.id);
-                peerConnection.createOffer()
-                  .then(offer => {
-                    peerConnection.setLocalDescription(offer);
-                    client.send(JSON.stringify({
-                      type: 'offer',
-                      offer: offer,
-                      recipient: user.id,
-                      sender: position.id
-                    }));
-                  });
-                peerConnections[user.id] = peerConnection;
-              }
-            } else if (distance > 0.2) {
-              if (peerConnections[user.id]) {
-                peerConnections[user.id].close();
-                delete peerConnections[user.id];
-                delete activeConnections[user.id];
-              }
-            }
-          }
-        });
+        handleProximityConnections(dataFromServer.users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -116,6 +84,43 @@ function RtcClient() {
       console.error('getUserMedia is not supported in this browser.');
     }
   }, [position]);
+
+  const handleProximityConnections = (allUsers) => {
+    const nearbyUsers = allUsers.filter(user => {
+      if (user.id === position.id) return false;
+      const distance = Math.sqrt(
+        Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
+      );
+      return distance <= 0.2;
+    });
+
+    const connectedUsers = Object.keys(peerConnections);
+
+    nearbyUsers.forEach(user => {
+      if (!connectedUsers.includes(String(user.id))) {
+        const peerConnection = createPeerConnection(user.id);
+        peerConnection.createOffer()
+          .then(offer => {
+            peerConnection.setLocalDescription(offer);
+            client.send(JSON.stringify({
+              type: 'offer',
+              offer: offer,
+              recipient: user.id,
+              sender: position.id
+            }));
+          });
+        peerConnections[user.id] = peerConnection;
+      }
+    });
+
+    connectedUsers.forEach(userId => {
+      if (!nearbyUsers.find(user => String(user.id) === userId)) {
+        peerConnections[userId].close();
+        delete peerConnections[userId];
+        delete activeConnections[userId];
+      }
+    });
+  };
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
@@ -196,13 +201,6 @@ function RtcClient() {
       setDisplayStartIndex(Math.min(displayStartIndex + 1, users.length - 4));
     }
   };
-
-  useEffect(() => {
-    const dummyUsers = [
-      
-    ];
-    setUsers(dummyUsers);
-  }, []);
 
   const nearbyUsers = users.filter(user => {
     const distance = Math.sqrt(Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2));
