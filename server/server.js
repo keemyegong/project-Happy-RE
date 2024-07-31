@@ -6,28 +6,28 @@ const WebSocket = require('ws');
 const path = require('path');
 
 const app = express();
-const server = http.createServer(app);
-// const server = https.createServer({
-//   cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
-//   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
-// });
+// const server = http.createServer(app);
+const server = https.createServer({
+  cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
+});
 
 
 const wss = new WebSocket.Server({ server });
 
-const kurento = require('kurento-client');
-const kurentoUri = 'http://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
-let kurentoClient = null;
+// const kurento = require('kurento-client');
+// const kurentoUri = 'http://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
+// let kurentoClient = null;
 let users = [];
 let idCounter = 0;
 
-kurento(kurentoUri, (error, client) => {
-  if (error) {
-    return console.error('Could not find Kurento media server at address ' + kurentoUri);
-  }
-  kurentoClient = client;
+// kurento(kurentoUri, (error, client) => {
+//   if (error) {
+//     return console.error('Could not find Kurento media server at address ' + kurentoUri);
+//   }
+//   kurentoClient = client;
   
-});
+// });
 
 wss.on('connection', (socket) => {
   const userId = idCounter++;
