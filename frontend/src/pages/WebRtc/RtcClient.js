@@ -21,6 +21,7 @@ function RtcClient() {
   const localVideoRef = useRef(null);
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const coordinatesGraph = coordinatesGraphRef.current;
@@ -44,6 +45,7 @@ function RtcClient() {
   useEffect(() => {
     client.onopen = () => {
       console.log('WebSocket Client Connected');
+      setIsConnected(true);
     };
 
     client.onmessage = (message) => {
@@ -97,6 +99,10 @@ function RtcClient() {
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
       }
+    };
+
+    client.onclose = () => {
+      setIsConnected(false);
     };
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -170,6 +176,11 @@ function RtcClient() {
   };
 
   const movePosition = (dx, dy) => {
+    if (!isConnected) {
+      console.error('WebSocket is not connected.');
+      return;
+    }
+
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: position.id };
     setPosition(newPosition);
     client.send(JSON.stringify({ type: 'move', position: newPosition }));
