@@ -1,5 +1,5 @@
-import React, { useState,useContext } from 'react';
-import {universeVariable} from '../../App';
+import React, { useState, useContext } from 'react';
+import { universeVariable } from '../../App';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import './UserTest.css';
@@ -33,7 +33,7 @@ const UserTest = () => {
     { label: '행복', coordinates: [0.9, 0.2] },
     { label: '흥분', coordinates: [0.7, 0.4] },
     { label: '유쾌한', coordinates: [0.6, 0.5] },
-];
+  ];
 
   const handleChoiceChange = (index) => {
     setSelectedChoices((prev) =>
@@ -63,15 +63,13 @@ const UserTest = () => {
       y: averageCoordinates[1].toFixed(2),
     };
 
-    // const token = 'eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InFxcXFxcXFxcXFxcSIsInJvbGUiOiJST0xFX1VTRVIiLCJ1c2VyaWQiOjQsImlhdCI6MTcyMTc5NjQyOCwiZXhwIjoxNzIyMDEyNDI4fQ.S_BaHSzoZQ8Trql3o9bAd5OxXm6K4n96KnMyOBg5xv4'; // 여기에 실제 토큰 값을 넣으세요
-
     axios.put(`${universal.defaultUrl}/api/user/russel`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${Cookies.get('Authorization')}`,
-          withCredentials: true,
-        }
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Cookies.get('Authorization')}`,
+      },
+      withCredentials: true,
+    })
       .then((response) => {
         console.log('Data sent successfully:', response.data);
       })
