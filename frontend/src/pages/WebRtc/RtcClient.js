@@ -53,11 +53,13 @@ function RtcClient() {
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
-        setUsers(filteredUsers.map(user => ({
-          ...user,
-          image: getImageForPosition(user.x, user.y)
-        })));
+        const filteredUsers = dataFromServer.users
+          .filter(user => user.id !== position.id)
+          .map(user => ({
+            ...user,
+            image: getImageForPosition(user.x, user.y)
+          }));
+        setUsers(filteredUsers);
 
         filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
