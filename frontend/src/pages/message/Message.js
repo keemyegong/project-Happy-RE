@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import userProfileImage from '../../assets/sampleUserImage.jpg';
 import Button from '../../components/Button/Button';
 import MessageCard from '../../components/message-card/MessageCard';
+import MessageInput from '../../components/message-input/MessageInput';
 
 const Message = () => {
   const [image, setImage] = useState('');
@@ -113,7 +114,7 @@ const Message = () => {
         ))}
       </div>
       <div className="input-container">
-        
+        <MessageInput />
       </div>
     </main>
   );
