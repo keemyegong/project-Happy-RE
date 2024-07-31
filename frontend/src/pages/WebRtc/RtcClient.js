@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('http://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -53,12 +53,13 @@ function RtcClient() {
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        setUsers(dataFromServer.users.map(user => ({
+        const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
+        setUsers(filteredUsers.map(user => ({
           ...user,
           image: getImageForPosition(user.x, user.y)
         })));
 
-        dataFromServer.users.forEach(user => {
+        filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
           if (position && position.x !== undefined && position.y !== undefined) {
             const distance = Math.sqrt(
@@ -196,7 +197,12 @@ function RtcClient() {
 
   useEffect(() => {
     const dummyUsers = [
-      
+      // 예시 데이터
+      { id: 1, x: 0.5, y: 0.5, image: soldier },
+      { id: 2, x: -0.5, y: 0.5, image: art },
+      { id: 3, x: -0.5, y: -0.5, image: steel },
+      { id: 4, x: 0.5, y: -0.5, image: butler },
+      { id: 5, x: 0, y: 0, image: defaultImg }
     ];
     setUsers(dummyUsers);
   }, []);
@@ -250,7 +256,7 @@ function RtcClient() {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
