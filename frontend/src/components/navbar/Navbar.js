@@ -14,6 +14,10 @@ function Nav() {
   // 현재 경로가 메인 페이지인지 확인
   const isMainPage = location.pathname === '/';
 
+  if (isMainPage) {
+    return null; // Main 페이지에서는 Nav를 렌더링하지 않음
+  }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light" data-bs-theme="dark">
       <div className="container">

@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-style: normal;
+}
+
+.ChatCam {
+  width: 303px;
+  height: 286.009px;
+}
+
+.chat-cam-container {
+  width: 303px;
+  height: 286.009px;
+  border-radius: 30px;
+  background: #333758;
+}
+
+.chat-cam-date {
+  color: white;
+  font-family: 'Pretendard-Regular';
+  margin: auto;
+  padding-bottom: 10px;
+}
+
+.chat-cam-ai-profile-img {
+  width: 257.677px;
+}
+
+
+.chat-cam-user-profile-img {
+  width: 67.22px;
+}

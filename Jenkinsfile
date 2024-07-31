@@ -24,7 +24,7 @@ pipeline {
                 script {
                     // Build HappyRe Docker image
                     dir('backend/HappyRe') {
-                        sh 'docker build -t happyre-image .'
+                        sh 'docker build -t happyjellyfish/happyre-image .'
                     }
                     // Build Fast_API Docker image
                     // dir('backend/Fast_API') {
@@ -40,7 +40,7 @@ pipeline {
                 script {
                     // Build Frontend Docker image
                     dir('frontend') {
-                        sh 'docker build -t frontend-image .'
+                        sh 'docker build -t happyjellyfish/frontend-image .'
                     }
                 }
             }
@@ -51,31 +51,39 @@ pipeline {
                 echo 'Pushing Docker Images to Registry...'
                 script {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
-                        // sh 'docker push happyre-image:latest'
-                        //sh 'docker push fastapi-image:latest'
-                        sh 'docker push frontend-image:latest'
+                        sh 'docker push happyjellyfish/happyre-image:latest'
+                        //sh 'docker push happyjellyfish/fastapi-image:latest'
+                        sh 'docker push happyjellyfish/frontend-image:latest'
                     }
                 }
             }
         }
 
+
         // stage('Deploy Containers') {
         //     steps {
         //         echo 'Deploying Docker Containers...'
         //         script {
-        //             // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
         //             sh '''
-        //             docker run -d --name frontend-container -p 3000:3000 frontend-image:latest
+        //             docker stop happyre-container
+        //             docker rm happyre-container
+        //             docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
+        //             '''
+        //             sh '''
+        //             docker stop frontend-container
+        //             docker rm frontend-container
+        //             docker run -d --name frontend-container -p 3000:3000 happyjellyfish/frontend-image:latest
         //             '''
         //         }
         //         //docker run -d --name fastapi-container -p 8000:8000 fastapi-image:latest
         //     }
         // }
+
         
         stage('Deploy using Docker Compose') { 
             steps{
                 echo 'Deploying using Docker Compose...'
-                sh 'docker-compose up -d' 
+                // sh 'docker-compose up -d' 
             }
         }  
     }
