@@ -196,11 +196,7 @@ function RtcClient() {
 
   useEffect(() => {
     const dummyUsers = [
-      { id: 1, x: 0.5, y: 0.5, image: soldier },
-      { id: 2, x: -0.5, y: 0.5, image: art },
-      { id: 3, x: -0.5, y: -0.5, image: steel },
-      { id: 4, x: 0.5, y: -0.5, image: butler },
-      { id: 5, x: 0, y: 0, image: defaultImg }
+      
     ];
     setUsers(dummyUsers);
   }, []);
