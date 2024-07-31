@@ -24,7 +24,7 @@ pipeline {
                 script {
                     // Build HappyRe Docker image
                     dir('backend/HappyRe') {
-                        sh 'docker build -t happyre-image .'
+                        sh 'docker build -t happyjellyfish/happyre-image .'
                     }
                     // Build Fast_API Docker image
                     // dir('backend/Fast_API') {
@@ -40,7 +40,7 @@ pipeline {
                 script {
                     // Build Frontend Docker image
                     dir('frontend') {
-                        sh 'docker build -t frontend-image .'
+                        sh 'docker build -t happyjellyfish/frontend-image .'
                     }
                 }
             }
@@ -53,7 +53,7 @@ pipeline {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
                         // sh 'docker push happyre-image:latest'
                         //sh 'docker push fastapi-image:latest'
-                        sh 'docker push frontend-image:latest'
+                        sh 'docker push happyjellyfish/frontend-image:latest'
                     }
                 }
             }
@@ -65,7 +65,7 @@ pipeline {
                 script {
                     // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
                     sh '''
-                    docker run -d --name frontend-container -p 3000:3000 frontend-image:latest
+                    docker run -d --name frontend-container -p 3000:3000 happyjellyfish/frontend-image:latest
                     '''
                 }
                 //docker run -d --name fastapi-container -p 8000:8000 fastapi-image:latest
