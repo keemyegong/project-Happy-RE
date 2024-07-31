@@ -1,10 +1,17 @@
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const WebSocket = require('ws');
 const path = require('path');
 
 const app = express();
-const server = http.createServer(app);
+// const server = http.createServer(app);
+const server = https.createServer({
+  cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
+});
+
+
 const wss = new WebSocket.Server({ server });
 
 const kurento = require('kurento-client');
