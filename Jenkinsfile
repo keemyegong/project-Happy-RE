@@ -64,7 +64,8 @@ pipeline {
                 echo 'Deploying Docker Containers...'
                 script {
                     sh '''
-                    
+                    docker stop happyre-container
+                    docker rm happyre-container
                     docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
                     '''
                     sh '''
