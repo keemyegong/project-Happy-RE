@@ -22,6 +22,14 @@ services:
                         - ./data/certbot/www:/var/www/certbot
                 networks:
                         - local
+        happyre:
+                image: happyjellyfish/frontend-image:latest
+                container_name: frontend-container
+                ports:
+                        - "3000:3000"
+                networks:
+                        - local
+                       
 networks:
         local:
                 driver: bridge
