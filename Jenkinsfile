@@ -12,6 +12,7 @@ pipeline {
                 script {
                     dir('backend/HappyRe') {
                         // Gradle 빌드
+                        sh 'chmod +x gradlew'
                         sh './gradlew build'
                     }
                 }
