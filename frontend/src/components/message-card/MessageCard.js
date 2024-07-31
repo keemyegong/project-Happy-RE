@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import './MessageCard.css';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-const MessageCard = ({ profileImageUrl, userName, content }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+const MessageCard = ({ messageId, profileImageUrl, userName, content }) => {
+  const [favorite, setFavorite] = useState(false);
 
   const handleFavoriteClick = () => {
-    setIsFavorite(!isFavorite);
+    const newFavoriteStatus = !favorite;
+    const url = newFavoriteStatus ? '/api/messages/archive' : '/api/messages/unarchive';
+
+    axios
+      .post(
+        url,
+        { messageId },
+        {
+          headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
+        }
+      )
+      .then(() => {
+        setFavorite(newFavoriteStatus);
+      })
+      .catch((error) => {
+        console.error('Failed to update favorite status:', error);
+      });
   };
 
   return (
@@ -14,8 +32,8 @@ const MessageCard = ({ profileImageUrl, userName, content }) => {
         {profileImageUrl && <img src={profileImageUrl} alt={userName} className="profile-image" />}
         <div className="user-info">
           <h3 className="user-name">{userName}</h3>
-          <button className={`favorite-button ${isFavorite ? 'favorite' : ''}`} onClick={handleFavoriteClick}>
-            {isFavorite ? '★' : '☆'}
+          <button className={`favorite-button ${favorite ? 'favorite' : ''}`} onClick={handleFavoriteClick}>
+            {favorite ? '★' : '☆'}
           </button>
         </div>
       </div>
