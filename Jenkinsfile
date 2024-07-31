@@ -51,8 +51,8 @@ pipeline {
                 echo 'Pushing Docker Images to Registry...'
                 script {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
-                        // sh 'docker push happyre-image:latest'
-                        //sh 'docker push fastapi-image:latest'
+                        sh 'docker push happyjellyfish/happyre-image:latest'
+                        //sh 'docker push happyjellyfish/fastapi-image:latest'
                         sh 'docker push happyjellyfish/frontend-image:latest'
                     }
                 }
@@ -63,7 +63,10 @@ pipeline {
             steps {
                 echo 'Deploying Docker Containers...'
                 script {
-                    // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
+                    sh '''
+                    
+                    docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
+                    '''
                     sh '''
                     docker stop frontend-container
                     docker rm frontend-container
