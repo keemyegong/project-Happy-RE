@@ -13,12 +13,13 @@ let kurentoClient = null;
 let users = [];
 let idCounter = 0;
 
-// kurento(kurentoUri, (error, client) => {
-//   if (error) {
-//     return console.error('Could not find Kurento media server at address ' + kurentoUri);
-//   }
-//   kurentoClient = client;
-// });
+kurento(kurentoUri, (error, client) => {
+  if (error) {
+    return console.error('Could not find Kurento media server at address ' + kurentoUri);
+  }
+  kurentoClient = client;
+  
+});
 
 wss.on('connection', (socket) => {
   const userId = idCounter++;
