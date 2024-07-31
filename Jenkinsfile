@@ -7,21 +7,21 @@ pipeline {
     }
 
     stages {
-        stage('Build Backend Images') {
-            steps {
-                echo 'Building Backend Docker Images...'
-                script {
-                    // Build HappyRe Docker image
-                    dir('backend/HappyRe') {
-                        sh 'docker build -t happyre-image .'
-                    }
-                    // Build Fast_API Docker image
-                    // dir('backend/Fast_API') {
-                    //     sh 'docker build -t fastapi-image .'
-                    // }
-                }
-            }
-        }
+        // stage('Build Backend Images') {
+        //     steps {
+        //         echo 'Building Backend Docker Images...'
+        //         script {
+        //             // Build HappyRe Docker image
+        //             dir('backend/HappyRe') {
+        //                 sh 'docker build -t happyre-image .'
+        //             }
+        //             // Build Fast_API Docker image
+        //             // dir('backend/Fast_API') {
+        //             //     sh 'docker build -t fastapi-image .'
+        //             // }
+        //         }
+        //     }
+        // }
 
         stage('Build Frontend Image') {
             steps {
@@ -40,7 +40,7 @@ pipeline {
                 echo 'Pushing Docker Images to Registry...'
                 script {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
-                        sh 'docker push happyre-image:latest'
+                        // sh 'docker push happyre-image:latest'
                         //sh 'docker push fastapi-image:latest'
                         sh 'docker push frontend-image:latest'
                     }
@@ -52,8 +52,8 @@ pipeline {
             steps {
                 echo 'Deploying Docker Containers...'
                 script {
+                    // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
                     sh '''
-                    docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
                     docker run -d --name frontend-container -p 3000:3000 frontend-image:latest
                     '''
                 }
