@@ -59,18 +59,18 @@ pipeline {
             }
         }
 
-        stage('Deploy Containers') {
-            steps {
-                echo 'Deploying Docker Containers...'
-                script {
-                    // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
-                    sh '''
-                    docker run -d --name frontend-container -p 3000:3000 frontend-image:latest
-                    '''
-                }
-                //docker run -d --name fastapi-container -p 8000:8000 fastapi-image:latest
-            }
-        }
+        // stage('Deploy Containers') {
+        //     steps {
+        //         echo 'Deploying Docker Containers...'
+        //         script {
+        //             // docker run -d --name happyre-container -p 8080:8080 happyre-image:latest
+        //             sh '''
+        //             docker run -d --name frontend-container -p 3000:3000 frontend-image:latest
+        //             '''
+        //         }
+        //         //docker run -d --name fastapi-container -p 8000:8000 fastapi-image:latest
+        //     }
+        // }
         
         stage('Deploy using Docker Compose') { 
             steps{
