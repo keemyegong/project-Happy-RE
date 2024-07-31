@@ -83,7 +83,7 @@ pipeline {
         stage('Deploy using Docker Compose') { 
             steps{
                 echo 'Deploying using Docker Compose...'
-                sh 'docker-compose up -d' 
+                sh 'docker-compose -f /home/ubuntu/data/docker-compose.yml up -d'
             }
         }  
     }
