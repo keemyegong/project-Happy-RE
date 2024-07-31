@@ -7,21 +7,21 @@ pipeline {
     }
 
     stages {
-        // stage('Build Backend Images') {
-        //     steps {
-        //         echo 'Building Backend Docker Images...'
-        //         script {
-        //             // Build HappyRe Docker image
-        //             dir('backend/HappyRe') {
-        //                 sh 'docker build -t happyre-image .'
-        //             }
-        //             // Build Fast_API Docker image
-        //             // dir('backend/Fast_API') {
-        //             //     sh 'docker build -t fastapi-image .'
-        //             // }
-        //         }
-        //     }
-        // }
+        stage('Build Backend Images') {
+            steps {
+                echo 'Building Backend Docker Images...'
+                script {
+                    // Build HappyRe Docker image
+                    dir('backend/HappyRe') {
+                        sh 'docker build -t happyre-image .'
+                    }
+                    // Build Fast_API Docker image
+                    // dir('backend/Fast_API') {
+                    //     sh 'docker build -t fastapi-image .'
+                    // }
+                }
+            }
+        }
 
         stage('Build Frontend Image') {
             steps {
