@@ -65,8 +65,8 @@
 }
 
 .radar-pulse {
-  width: 100px;
-  height: 100px;
+  width: 50px;
+  height: 50px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -114,7 +114,6 @@
   z-index: 1;
   transform: translate( 2%, -10%);
 }
-
 .controls {
   position: absolute;
   background-color: rgba(0, 0, 0, 0);
@@ -127,10 +126,10 @@
 .controls button {
   background-color: rgba(255, 255, 255, 0);
   border: 0px;
+  color: white; /* 버튼 텍스트 색상 설정 */
 }
 
 .controls-up {
-  background-color: rgba(255, 255, 255, 0);
   top: -27px;
   left: 50%;
   transform: translateX(-50%);

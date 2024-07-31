@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const kurentoUri = 'ws://localhost:8888/kurento';
+const kurentoUri = 'ws://i11b204.p.ssafy.io:8888/kurento'; // 변경된 부분
 let kurentoClient = null;
 let users = [];
 let idCounter = 0;
@@ -117,6 +117,7 @@ async function connectWebRtcEndpoints(senderWebRtc, recipientWebRtc) {
   });
 }
 
+// React 애플리케이션 빌드 파일을 제공
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('*', (req, res) => {
