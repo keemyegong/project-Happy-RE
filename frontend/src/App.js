@@ -12,6 +12,8 @@ import UserUpdate from './pages/userUpdate/UserUpdate';
 import UserProfile from './pages/userProfile/UserProfile';
 import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
+import Message from './pages/message/Message'
+import Diary from './pages/diary/Diary'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
