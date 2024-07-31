@@ -22,9 +22,8 @@ kurento(kurentoUri, (error, client) => {
 });
 
 wss.on('connection', (socket) => {
-  console.log('WebSocket Client Connected');
   const userId = idCounter++;
-  let userPosition = { id: userId, x: (Math.random() * 2) - 1, y: (Math.random() * 2) - 1 };
+  let userPosition = { id: userId, x: (Math.random() * 2) - 1, y: (Math.random() * 2) - 1, image: null };
   users.push(userPosition);
 
   socket.send(JSON.stringify({ type: 'assign_id', position: userPosition }));
