@@ -42,6 +42,10 @@ pipeline {
                     dir('frontend') {
                         sh 'docker build -t happyjellyfish/frontend-image .'
                     }
+
+                    dir('frontend/src/server'){
+                        sh 'docker build -t happyjellyfish/webrtc-server .'
+                    }
                 }
             }
         }
@@ -54,6 +58,7 @@ pipeline {
                         sh 'docker push happyjellyfish/happyre-image:latest'
                         //sh 'docker push happyjellyfish/fastapi-image:latest'
                         sh 'docker push happyjellyfish/frontend-image:latest'
+                        sh 'docker push happyjellyfish/webrtc-server:latest'
                     }
                 }
             }
