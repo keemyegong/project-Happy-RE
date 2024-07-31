@@ -18,7 +18,7 @@ function RtcClient() {
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
-  const localVideoRef = useRef(null);
+  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
 
@@ -100,11 +100,11 @@ function RtcClient() {
     };
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      navigator.mediaDevices.getUserMedia({ audio: true })  // Only request audio
         .then(currentStream => {
           setStream(currentStream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = currentStream;
+          if (localAudioRef.current) {
+            localAudioRef.current.srcObject = currentStream;
           }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
@@ -134,7 +134,10 @@ function RtcClient() {
     };
 
     peerConnection.ontrack = (event) => {
-      // 이벤트 처리 로직을 비워둡니다. 비디오를 사용하지 않기 때문입니다.
+      // Attach the incoming stream to an audio element
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
+      }
     };
 
     if (stream) {
@@ -191,7 +194,6 @@ function RtcClient() {
     }
   };
 
-  // 더미 데이터 추가
   useEffect(() => {
     const dummyUsers = [
       { id: 1, x: 0.5, y: 0.5, image: soldier },
@@ -248,10 +250,11 @@ function RtcClient() {
               alt="your character"
               className="character-image your-character"
             />
+            <audio ref={localAudioRef} autoPlay />
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
@@ -282,8 +285,8 @@ function RtcClient() {
       <div className="right-panel">
         <div className="scroll-buttons">
           <button onClick={() => handleScroll('up')}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
             </svg>
           </button>
         </div>
