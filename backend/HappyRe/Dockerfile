@@ -1,4 +1,3 @@
 FROM openjdk:17-jdk
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} happyre.jar
-ENTRYPOINT ["java","-jar","/happyre.jar"]
+COPY build/libs/myapp.jar /happyre.jar
+ENTRYPOINT ["java", "-jar", "/happyre.jar"]
