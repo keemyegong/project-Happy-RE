@@ -8,7 +8,6 @@
 .dark-btn:hover{
     background-color: #54587E;
     color: white;
-    
 }
 
 .dark-btn:active{
@@ -49,5 +48,4 @@
 
 .small{
     padding: 10px;
-    
 }

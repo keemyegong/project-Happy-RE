@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './Main.css';
 import art from '../../assets/characters/art.png';
 import soldier from '../../assets/characters/soldier.png';
@@ -16,6 +16,9 @@ const Main = () => {
   const characterRefs = useRef([]);
   const jumpHeight = 50;
   const jumpDuration = 1000;
+  const [showUpButton, setShowUpButton] = useState(false);
+const [showDownButton, setShowDownButton] = useState(true);
+
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
 
@@ -42,9 +45,21 @@ const Main = () => {
       setHeights();
     };
 
+    const handleScrollButtons = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      setShowUpButton(scrollTop > 0);
+      setShowDownButton(scrollTop + clientHeight < scrollHeight);
+    };
+  
     window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScrollButtons);
+    handleScrollButtons(); // 초기 상태 설정
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScrollButtons);
     };
   }, []);
 
@@ -187,20 +202,25 @@ const Main = () => {
 
   return (
     <div className="container-wrap" ref={containerWrapRef} data-bs-spy="scroll" data-bs-target="#navbar-example">
-      <button
-        className="scroll-button up"
-        onClick={() => handleScroll('up')}
-      >
-        ▲
-      </button>
-      <button
-        className="scroll-button down"
-        onClick={() => handleScroll('down')}
-      >
-        ▼
-      </button>
+      {showUpButton && (
+        <button className="scroll-button up" onClick={() => handleScroll('up')}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+          </svg>
+        </button>
+      )}
+      {showDownButton && (
+        <button className="scroll-button down" onClick={() => handleScroll('down')}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+          </svg>
+        </button>
+      )}
       <div id="container-1" className="container-1">
         <h1>Happy:Re</h1>
+        <div className='to-login'>
+          <Link className='text-login' to='/login'>Login</Link>
+        </div>
       </div>
       <div id="container-2" className="container-2">
         <div>
