@@ -7,6 +7,16 @@ pipeline {
     }
 
     stages {
+        stage('Build Backend') {
+            steps {
+                script {
+                    dir('backend/HappyRe') {
+                        // Gradle 빌드
+                        sh './gradlew build'
+                    }
+                }
+            }
+        }
         stage('Build Backend Images') {
             steps {
                 echo 'Building Backend Docker Images...'
