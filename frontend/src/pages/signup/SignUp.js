@@ -57,7 +57,7 @@ const SignUp = () => {
               inputUserInfo,
             ).then((Response)=>{
               axios.post(
-                `${universal.defaultUrl}/login`,
+                `${universal.defaultUrl}/api/login`,
                 {email, password}
               ).then((Response)=>{
                 const jwtToken = Response.headers.authorization;
