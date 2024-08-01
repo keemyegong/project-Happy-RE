@@ -229,8 +229,8 @@ function RtcClient() {
               key={user.id}
               className="radar-pulse-small"
               style={{
-                left: `calc(${((user.x + 1) / 2) * 100}%)`,
-                top: `calc(${((1 - user.y) / 2) * 100}%)`
+                left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
+                top: `calc(${((1 - user.position.y) / 2) * 100}%)`
               }}
             />
           ))}
