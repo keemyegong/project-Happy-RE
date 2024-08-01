@@ -202,10 +202,7 @@ function RtcClient() {
     }
   };
 
-  const nearbyUsers = users.filter(user => {
-    const distance = Math.sqrt(Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2));
-    return distance <= 0.2;
-  });
+  const nearbyUsers = Object.values(peerConnections).filter(pc => pc.connectionState === 'connected').map(pc => pc.user);
 
   return (
     <div className="chat-room-container" ref={containerRef}>
@@ -251,7 +248,7 @@ function RtcClient() {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
@@ -288,13 +285,6 @@ function RtcClient() {
           </button>
         </div>
         <div className="character-list">
-          <div className={`character-image-small-wrapper ${talkingUsers.includes(position.id) ? 'talking' : ''}`}>
-            <img 
-              src={userImage} 
-              alt="your character"
-              className="character-image-small"
-            />
-          </div>
           {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
             <div 
               key={user.id}
