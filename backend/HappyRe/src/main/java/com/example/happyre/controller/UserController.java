@@ -107,6 +107,7 @@ public class UserController {
     @PostMapping("/uploadprofile")
     public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         try {
+            System.out.println("uploadProfile Controller Successful connect");
             userService.uploadProfile(request, file);
             return ResponseEntity.ok("upload profile successfully");
         } catch (RuntimeException e) {
