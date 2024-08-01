@@ -96,8 +96,8 @@ const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, s
               )}
             </span>
           </div>
-          <div className='col-2 p-0'>
-            <Button className='btn light-btn middle' content='SEND' onClick={onSendClick} />
+          <div className='chat-box-send-btn col-2 p-0'>
+            <Button className='btn light-btn middle m-2' content='SEND' onClick={onSendClick} />
           </div>
         </div>
       </div>

@@ -15,12 +15,13 @@ const AIChat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [userInput, setUserInput] = useState('');
+  const [audioData, setAudioData] = useState('');
 
   // 처음 인삿말 받아오기
   useEffect(() => {
     axios.post(
-      `${universal.fastUrl}/ai-api/chatbot/`,
-      { user_input: '안녕하세요' },
+      `${universal.fastUrl}/fastapi/chatbot/`,
+      { user_input: '안녕하세요', 'audio': '' },
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -35,12 +36,6 @@ const AIChat = () => {
     });
   }, [universal.fastUrl]);
 
-  // 현재 시간을 문자열로 반환하는 함수
-  const getCurrentTimeString = () => {
-    const now = new Date();
-    return `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}_${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}_${String(now.getMinutes()).padStart(2, '0')}_${String(now.getSeconds()).padStart(2, '0')}`;
-  };
-
   // 녹음 시작
   const startRecording = () => {
     recorder.start().then(() => {
@@ -53,8 +48,7 @@ const AIChat = () => {
     if (!isRecording) return;
 
     recorder.stop().getMp3().then(([buffer, blob]) => {
-      const fileName = `record-${getCurrentTimeString()}.mp3`;
-      const file = new File(buffer, fileName, {
+      const file = new File(buffer, `record-${Date.now()}.mp3`, {
         type: blob.type,
         lastModified: Date.now()
       });
@@ -69,7 +63,7 @@ const AIChat = () => {
       formData.append('file', file);
 
       axios.post(
-        `${universal.fastUrl}/fastapi/`,
+        `${universal.fastUrl}/fastapi/api/`,
         formData,
         {
           headers: {
@@ -79,12 +73,14 @@ const AIChat = () => {
           }
         }
       ).then((response) => {
-        const recognizedText = response.data.text;
+        console.log(response.data)
+        const { text: recognizedText, audio } = response.data;
         setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: recognizedText }]);
-
+        setAudioData(audio);
+        
         axios.post(
-          `${universal.fastUrl}/ai-api/chatbot/`,
-          { user_input: recognizedText },
+          `${universal.fastUrl}/fastapi/chatbot/`,
+          { user_input: recognizedText, audio },
           {
             headers: {
               Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -93,6 +89,7 @@ const AIChat = () => {
           }
         ).then((response) => {
           const chatbotReply = response.data;
+          console.log(response.data)
           setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
           startRecording(); // 녹음 재시작
         }).catch((error) => {
@@ -114,9 +111,17 @@ const AIChat = () => {
   const sendText = () => {
     setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: userInput }]);
     
+    const payload = {
+      user_input: userInput,
+    };
+
+    if (audioData) {
+      payload.audio = audioData;
+    }
+
     axios.post(
-      `${universal.fastUrl}/ai-api/chatbot/`,
-      { user_input: userInput },
+      `${universal.fastUrl}/fastapi/chatbot/`,
+      payload,
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,

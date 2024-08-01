@@ -1,65 +1,132 @@
 .Message {
-    display: flex;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  min-width: 375px;
+  
+}
+
+.hidden {
+  align-content: center;
+  padding : 5px;
+}
+
+.visible{
+  align-content: center;
+  padding: 5px;
+}
+
+.profile-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fffcfc00;
+  padding: 20px;
+}
+
+.message-container {
+  flex: 3;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+  background-color: (0, 0, 0, 0);
+  padding: 10px;
+  overflow-y: auto;
+  align-self: center;
+  height: 80%;
+}
+
+.input-container {
+  flex: 2;
+  background-color: #e1e1e100;
+  padding: 10px;
+  align-self: center;
+  height: 80%;
+}
+
+.default-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0px;
+}
+
+.user-avatar .profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.default-info-container {
+  text-align: center;
+}
+
+.nickname {
+  font-size: 1.5em;
+  margin: 10px 0;
+}
+
+.email {
+  font-size: 1em;
+  margin: 10px 0;
+}
+
+.btn {
+  margin-top: 10px;
+}
+
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 1024px) {
+  .Message {
     flex-direction: row;
-    height: 100vh;
   }
-  
+
   .profile-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f1f1f1;
-    padding: 20px;
+    display: none;
   }
-  
-  .message-container {
-    flex: 3;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 20px;
-    background-color: (0,0,0,0);
-    padding: 20px;
-    overflow-y: auto;
-    align-self: center;
+
+  .message-container,
+  .input-container {
+    flex: 1;
+    width: 100%;
     height: 80%;
   }
-  
-  .input-container {
-    flex: 2;
-    background-color: #e1e1e100;
-    padding: 20px;
-  }
-  
-  .default-info {
-    display: flex;
+}
+
+@media (max-width: 768px) {
+  .Message {
     flex-direction: column;
-    align-items: center;
+    overflow-x: hidden;
   }
-  
-  .user-avatar .profile-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+
+  .profile-container {
+    display: none;
   }
-  
-  .default-info-container {
-    text-align: center;
+
+  .container {
+    display: none;
+    width: 100%;
+    height: 100%;
   }
-  
-  .nickname {
-    font-size: 1.5em;
-    margin: 10px 0;
+
+  .container.visible {
+    display: flex;
   }
-  
-  .email {
-    font-size: 1em;
-    margin: 10px 0;
+
+  .toggle-btn {
+    display: block;
+    margin: 10px auto;
+    color: white;
+    background-color: rgba(255, 255, 255, 0);
+    border: 0px;
   }
-  
-  .btn {
-    margin-top: 10px;
+}
+
+@media (min-width: 769px) {
+  .toggle-btn {
+    display: none;
   }
-  
+}

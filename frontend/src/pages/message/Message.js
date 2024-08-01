@@ -14,6 +14,7 @@ const Message = () => {
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [messages, setMessages] = useState([]);
+  const [showContainer, setShowContainer] = useState('messages'); // 'messages' or 'input'
   const universal = useContext(universeVariable);
   let navigate = useNavigate();
 
@@ -82,6 +83,10 @@ const Message = () => {
     setMessages(dummyMessages);
   }, []);
 
+  const toggleContainer = () => {
+    setShowContainer(showContainer === 'messages' ? 'input' : 'messages');
+  };
+
   return (
     <main className="Message">
       <div className="profile-container">
@@ -102,20 +107,25 @@ const Message = () => {
           </div>
         </div>
       </div>
-      <div className="message-container">
-        {messages.map((message) => (
-          <MessageCard
-            key={message.id}
-            messageId={message.id}
-            profileImageUrl={message.profileImageUrl}
-            userName={message.userName}
-            content={message.content}
-          />
-        ))}
+      <div className={`container ${showContainer === 'messages' ? 'visible' : 'hidden'}`}>
+        <div className="message-container">
+          {messages.map((message) => (
+            <MessageCard
+              key={message.id}
+              messageId={message.id}
+              profileImageUrl={message.profileImageUrl}
+              userName={message.userName}
+              content={message.content}
+            />
+          ))}
+        </div>
       </div>
-      <div className="input-container">
-        <MessageInput />
+      <div className={`container ${showContainer === 'input' ? 'visible' : 'hidden'}`}>
+        <div className="input-container">
+          <MessageInput />
+        </div>
       </div>
+      <Button className="toggle-btn" content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'} onClick={toggleContainer} />
     </main>
   );
 };
