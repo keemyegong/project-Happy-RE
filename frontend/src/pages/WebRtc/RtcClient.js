@@ -9,7 +9,6 @@ import './RtcClient.css';
 
 const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
-const activeConnections = {};
 
 function RtcClient() {
   const [position, setPosition] = useState({ x: 0, y: 0, id: null });
@@ -69,32 +68,25 @@ function RtcClient() {
 
         filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
-          if (position && position.x !== undefined && position.y !== undefined) {
-            const distance = Math.sqrt(
-              Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
-            );
-            if (distance <= 0.2) {
-              if (!peerConnections[user.id]) {
-                const peerConnection = createPeerConnection(user.id);
-                peerConnection.createOffer()
-                  .then(offer => {
-                    peerConnection.setLocalDescription(offer);
-                    client.send(JSON.stringify({
-                      type: 'offer',
-                      offer: offer,
-                      recipient: user.id,
-                      sender: position.id
-                    }));
-                  });
-                peerConnections[user.id] = peerConnection;
-              }
-            } else if (distance > 0.2) {
-              if (peerConnections[user.id]) {
-                peerConnections[user.id].close();
-                delete peerConnections[user.id];
-                delete activeConnections[user.id];
-              }
-            }
+          const distance = Math.sqrt(
+            Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
+          );
+          if (distance <= 0.2 && !peerConnections[user.id]) {
+            const peerConnection = createPeerConnection(user.id);
+            peerConnection.createOffer()
+              .then(offer => {
+                peerConnection.setLocalDescription(offer);
+                client.send(JSON.stringify({
+                  type: 'offer',
+                  offer: offer,
+                  recipient: user.id,
+                  sender: position.id
+                }));
+              });
+            peerConnections[user.id] = peerConnection;
+          } else if (distance > 0.2 && peerConnections[user.id]) {
+            peerConnections[user.id].close();
+            delete peerConnections[user.id];
           }
         });
       } else if (dataFromServer.type === 'offer') {
@@ -109,7 +101,7 @@ function RtcClient() {
     };
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ audio: true })  // Only request audio
+      navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
           if (localAudioRef.current) {
@@ -123,15 +115,15 @@ function RtcClient() {
     }
 
     return () => {
-      //client.close(); // Ensure the WebSocket connection is closed when the component is unmounted
+      // Ensure the WebSocket connection is closed when the component is unmounted
+      client.close();
     };
   }, [position]);
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
       iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'turn:turnserver.example.com', username: 'user', credential: 'pass' }
+        { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
 
@@ -147,7 +139,6 @@ function RtcClient() {
     };
 
     peerConnection.ontrack = (event) => {
-      // Attach the incoming stream to an audio element
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
       }
@@ -258,7 +249,7 @@ function RtcClient() {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
