@@ -75,15 +75,14 @@ wss.on('connection', (ws) => {
 
 function handleMove(userId, position) {
   users[userId].position = position;
-  const message = { users: Object.values(users).map(user => ({ id: user.id, position: user.position })) };
-  const excludeClient = users[userId].ws;
-  broadcast(message, excludeClient);
+  broadcast({ users: Object.values(users).map(user => ({ id: user.id, position: user.position })) });
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {
     // connectUsers(userId, nearbyUsers[0]); // Kurento 관련 부분 주석 처리
   }
 }
+
 function getNearbyUsers(userId, distance) {
   const currentUser = users[userId];
   return Object.values(users).filter(user => {
@@ -158,14 +157,13 @@ function getNearbyUsers(userId, distance) {
 //   }
 // }
 
-function broadcast(message, excludeClient) {
+function broadcast(message) {
   wss.clients.forEach(client => {
-    if (client !== excludeClient && client.readyState === WebSocket.OPEN) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(message));
     }
   });
 }
-
 
 app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
