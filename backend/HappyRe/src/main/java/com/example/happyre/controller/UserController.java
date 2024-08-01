@@ -2,6 +2,7 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.user.JoinUserDTO;
 import com.example.happyre.dto.user.ModifyUserDTO;
+import com.example.happyre.dto.user.UserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,11 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
+
+    @GetMapping("/test")
+    public  ResponseEntity<?> me(HttpServletRequest request) {
+        return ResponseEntity.ok().body("test!!!!!!!!!!!!!!");
+    }
 
     //유저정보 조회
     @GetMapping("/me")
