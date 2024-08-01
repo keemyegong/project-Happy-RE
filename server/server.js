@@ -8,7 +8,7 @@ const app = express();
 const server = https.createServer({
   cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
-});
+}, app);
 
 const wss = new WebSocket.Server({ server });
 
@@ -26,7 +26,7 @@ wss.on('connection', (socket) => {
   socket.send(JSON.stringify({ type: 'assign_id', position: userPosition }));
   broadcast({ users });
 
-  socket.on('message', (message) => {
+  socket.on('message', async (message) => {
     const data = JSON.parse(message);
     if (data.type === 'move') {
       const user = users.find(user => user.id === data.position.id);

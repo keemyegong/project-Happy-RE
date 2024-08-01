@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:8000');
+const client = new W3CWebSocket('ws://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -44,6 +44,14 @@ function RtcClient() {
   useEffect(() => {
     client.onopen = () => {
       console.log('WebSocket Client Connected');
+    };
+
+    client.onclose = () => {
+      console.log('WebSocket Client Disconnected');
+    };
+
+    client.onerror = (error) => {
+      console.error('WebSocket Error: ', error);
     };
 
     client.onmessage = (message) => {
@@ -114,7 +122,7 @@ function RtcClient() {
     }
 
     return () => {
-      client.close(); // WebSocket 연결 종료
+      client.close(); // Ensure the WebSocket connection is closed when the component is unmounted
     };
   }, [position]);
 
@@ -179,14 +187,16 @@ function RtcClient() {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: position.id };
     setPosition(newPosition);
-    client.send(JSON.stringify({ type: 'move', position: newPosition }));
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'move', position: newPosition }));
+    }
   };
 
   const getImageForPosition = (x, y) => {
     if (x === 0 && y === 0) return defaultImg;
-    if (x > 0 && y > 0) return soldier;
+    if (x >= 0 && y >= 0) return soldier;
     if (x < 0 && y > 0) return art;
-    if (x < 0 && y < 0) return steel;
+    if (x <= 0 && y <= 0) return steel;
     if (x > 0 && y < 0) return butler;
   };
 
@@ -223,7 +233,7 @@ function RtcClient() {
               style={{ top: `${(i / 20) * 100}%` }}
             />
           ))}
-          {users.map(user => (
+          {users.filter(user => user.id !== position.id).map(user => (
             <div 
               key={user.id}
               className="radar-pulse-small"
@@ -247,7 +257,7 @@ function RtcClient() {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
@@ -261,14 +271,14 @@ function RtcClient() {
             <div className="controls controls-down">
               <button onClick={() => movePosition(0, -0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1-.448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
                 </svg>
               </button>
             </div>
             <div className="controls controls-left">
               <button onClick={() => movePosition(-0.025, 0)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
                 </svg>
               </button>
             </div>
