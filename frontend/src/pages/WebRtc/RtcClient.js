@@ -116,7 +116,7 @@ function RtcClient() {
 
     return () => {
       // Ensure the WebSocket connection is closed when the component is unmounted
-      client.close();
+      // client.close();
     };
   }, [position]);
 
