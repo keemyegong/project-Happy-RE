@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('ws://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -194,9 +194,9 @@ function RtcClient() {
 
   const getImageForPosition = (x, y) => {
     if (x === 0 && y === 0) return defaultImg;
-    if (x > 0 && y > 0) return soldier;
+    if (x >= 0 && y >= 0) return soldier;
     if (x < 0 && y > 0) return art;
-    if (x < 0 && y < 0) return steel;
+    if (x <= 0 && y <= 0) return steel;
     if (x > 0 && y < 0) return butler;
   };
 
