@@ -68,7 +68,7 @@ const UserUpdate = ()=>{
       formData.append('file',imagefile);
     }
     
-    const userInfo = {};
+    let userInfo = {};
 
     if(password!==password2){
       alert('비밀번호가 다릅니다!')
