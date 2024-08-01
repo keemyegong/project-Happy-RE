@@ -67,6 +67,7 @@ function RtcClient() {
         })));
 
         console.log('Current users list:', filteredUsers); // 콘솔에 현재 유저 리스트 출력
+        console.log('me : ', position.id)
 
         filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
