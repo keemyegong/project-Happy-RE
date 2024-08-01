@@ -15,19 +15,19 @@ const server = https.createServer({
 
 const wss = new WebSocket.Server({ server });
 
-// const kurento = require('kurento-client');
-// const kurentoUri = 'http://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
-// let kurentoClient = null;
+const kurento = require('kurento-client');
+const kurentoUri = 'http://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
+let kurentoClient = null;
 let users = [];
 let idCounter = 0;
 
-// kurento(kurentoUri, (error, client) => {
-//   if (error) {
-//     return console.error('Could not find Kurento media server at address ' + kurentoUri);
-//   }
-//   kurentoClient = client;
+kurento(kurentoUri, (error, client) => {
+  if (error) {
+    return console.error('Could not find Kurento media server at address ' + kurentoUri);
+  }
+  kurentoClient = client;
   
-// });
+});
 
 wss.on('connection', (socket) => {
   const userId = idCounter++;
