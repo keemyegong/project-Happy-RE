@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:8000');
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5001');
 const peerConnections = {};
 const activeConnections = {};
 
