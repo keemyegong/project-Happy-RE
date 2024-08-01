@@ -48,7 +48,7 @@ const users = {};
 wss.on('connection', (ws) => {
   const userId = idCounter++;
   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } }; // pipeline과 webRtcEndpoint 제거
-  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position }));
+  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId })); // id 추가
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
