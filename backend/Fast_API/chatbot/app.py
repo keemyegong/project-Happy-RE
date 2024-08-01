@@ -10,6 +10,7 @@ from models import ChatRequest
 import uuid
 import httpx
 from pprint import pprint
+from .HappyreKoBert import HappyreKoBert
 
 # ----------------------------전역 변수-------------------------------
 router = APIRouter()
@@ -22,6 +23,9 @@ user_emotion_russel = {}
 
 user_message = {}
 
+KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
+kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
+
 # 현재 경로와 BASE_DIR 경로
 current_dir = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
@@ -33,9 +37,9 @@ SPRING_MESSAGE_POST=os.getenv("SPRING_MESSAGE_POST")
 def emotion_analysis(text : str):
     '''
     텍스트 감정 추출 함수
-    추후 AI 모델 완성 시 수정
+    현재 Y만 작동
     '''
-    return (1,1)
+    return (1,kobert_y(text))
 
 def emotion_tagging(user_id: str, text: str):
     '''
