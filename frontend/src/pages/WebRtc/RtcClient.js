@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -53,7 +53,7 @@ function RtcClient() {
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        setUsers(dataFromServer.users.map(user => ({
+        setUsers(dataFromServer.users.filter(user => user.id !== position.id).map(user => ({
           ...user,
           image: getImageForPosition(user.x, user.y)
         })));
@@ -70,12 +70,14 @@ function RtcClient() {
                 peerConnection.createOffer()
                   .then(offer => {
                     peerConnection.setLocalDescription(offer);
-                    client.send(JSON.stringify({
-                      type: 'offer',
-                      offer: offer,
-                      recipient: user.id,
-                      sender: position.id
-                    }));
+                    if (client.readyState === W3CWebSocket.OPEN) {
+                      client.send(JSON.stringify({
+                        type: 'offer',
+                        offer: offer,
+                        recipient: user.id,
+                        sender: position.id
+                      }));
+                    }
                   });
                 peerConnections[user.id] = peerConnection;
               }
@@ -127,7 +129,7 @@ function RtcClient() {
     });
 
     peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
+      if (event.candidate && client.readyState === W3CWebSocket.OPEN) {
         client.send(JSON.stringify({
           type: 'candidate',
           candidate: event.candidate,
@@ -157,12 +159,14 @@ function RtcClient() {
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
-    client.send(JSON.stringify({
-      type: 'answer',
-      answer: answer,
-      sender: position.id,
-      recipient: sender
-    }));
+    if (client.readyState === W3CWebSocket.OPEN) {
+      client.send(JSON.stringify({
+        type: 'answer',
+        answer: answer,
+        sender: position.id,
+        recipient: sender
+      }));
+    }
     peerConnections[sender] = peerConnection;
   };
 
@@ -179,7 +183,9 @@ function RtcClient() {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: position.id };
     setPosition(newPosition);
-    client.send(JSON.stringify({ type: 'move', position: newPosition }));
+    if (client.readyState === W3CWebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'move', position: newPosition }));
+    }
   };
 
   const getImageForPosition = (x, y) => {
@@ -268,7 +274,7 @@ function RtcClient() {
             <div className="controls controls-left">
               <button onClick={() => movePosition(-0.025, 0)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
                 </svg>
               </button>
             </div>
