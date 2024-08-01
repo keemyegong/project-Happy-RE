@@ -1,11 +1,19 @@
 # 실사용 테스트
-import sys, io
+import sys, io, os
 from transformers import BertForSequenceClassification
 from kobert_tokenizer import KoBERTTokenizer
 from accelerate import Accelerator
 import torch
 
-SAVE_DIR = "./KoBertCheckpoint/"
+# SAVE_DIR = "./KoBertCheckpoint/"
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+SAVE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "KoBertCheckpoint/"))
+
+print(f"SAVE DIR : {SAVE_DIR}")
+
+
 
 def singleton(cls):
     instances = {}
@@ -20,7 +28,7 @@ class HappyreKoBert:
     def __init__(self, path):
         self.tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
         self.model = BertForSequenceClassification.from_pretrained('skt/kobert-base-v1', num_labels=1, ignore_mismatched_sizes=True)
-        self.load(path)
+        self.load(SAVE_DIR + path)
         self.model.eval()
         self.max_len = 512  # Set a max length for the tokenizer
 
@@ -54,7 +62,7 @@ if __name__ == "__main__":
     sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
     
     accelerator = Accelerator(cpu=True)
-    happyre_kobert = HappyreKoBert(SAVE_DIR + "HappyREKoBERT_y_slice_163923_epoch_12_flag_realnew.pth")
+    happyre_kobert = HappyreKoBert("HappyREKoBERT_y_slice_163923_epoch_12_flag_realnew.pth")
 
     while True:
         inputString = input("Enter input string (or 'exit' to quit): ")

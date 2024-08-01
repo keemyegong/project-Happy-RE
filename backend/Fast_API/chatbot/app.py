@@ -24,6 +24,7 @@ user_emotion_russel = {}
 user_message = {}
 
 KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
+print(KOBERT_CHECKPOINT_Y)
 kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 
 # 현재 경로와 BASE_DIR 경로
@@ -34,20 +35,24 @@ SPRING_MESSAGE_POST_URL=os.getenv("SPRING_MESSAGE_POST")
 
 # -------------------------------사용자 정의 함수-------------------------------
 
-def emotion_analysis(text : str):
+async def emotion_analysis(text : str):
     '''
     텍스트 감정 추출 함수
     현재 Y만 작동
     '''
     return (1,kobert_y(text))
 
-def emotion_tagging(user_id: str, text: str):
+async def emotion_tagging(user_id: str, text: str):
     '''
     user_emotion_russel 딕셔너리에 문장과 추출된 러셀 감정 좌표를 매칭
     '''
     if user_id not in user_emotion_russel:
         user_emotion_russel[user_id] = {}
-    user_emotion_russel[user_id][text] = emotion_analysis(text)
+    user_emotion_russel[user_id][text] = await emotion_analysis(text)
+    print(f"AI test : {user_emotion_russel[user_id][text]}")
+    print(f"user_emotion_russel: {user_emotion_russel}")
+    print("---------------------------------------")
+    
 
 
 def message_session_update(user_id:str, text:str, speaker:str, audio:str="None"):
@@ -66,9 +71,9 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     
 # Get 요청 테스트 용 함수
 @router.get('/test')
-def test(user_id:str=Depends(decode_jwt)):
+async def test(user_id:str=Depends(decode_jwt)):
     
-    return user_message
+    return user_emotion_russel
 
 # post 요청 테스트 용 함수
 @router.post('/test')
@@ -82,7 +87,7 @@ async def post_test(request:Request):
 # POST 요청으로 chabot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
 @router.post('/')
-def chatbot(request: ChatRequest, user_id: str = Depends(decode_jwt)):
+async def chatbot(request: ChatRequest, user_id: str = Depends(decode_jwt)):
     '''
     유저의 챗봇 세션이 없는 경우 챗봇 세션 생성
     들어온 텍스트를 OpenAI에 보내고 유저 메세지 세션 업데이트
@@ -104,14 +109,13 @@ def chatbot(request: ChatRequest, user_id: str = Depends(decode_jwt)):
     
     message_session_update(user_id, json_item_data, "ai", "Null")
     
-    emotion_tagging(user_id, user_input)
+    await emotion_tagging(user_id, user_input)
     
     print(f"response : {json_item_data}")
     print("---------------------------------------")
     print(f"user session: {user_session}")
     print("---------------------------------------")
-    print(f"user_emotion_russel: {user_emotion_russel}")
-    print("---------------------------------------")
+    
     pprint(f"message_session: {user_message}")
     return JSONResponse(content=json_item_data, status_code=200)
 
@@ -149,7 +153,7 @@ async def post_message_request(request:Request):
                 #     # jwt 토큰 같이 보내줘야함 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 #     await client.post(SPRING_MESSAGE_POST, json=message)
                 # print("킅")
-                response = requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
+                response = await requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
                 print(response.json())
             except Exception as e:
                 print(e)
