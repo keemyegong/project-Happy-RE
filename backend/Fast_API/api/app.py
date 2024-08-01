@@ -1,5 +1,6 @@
 import os
-import jwt
+
+from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException,UploadFile, File, Body, Request
 from fastapi.responses import JSONResponse
@@ -89,10 +90,12 @@ def test():
     return {'cur':current_dir, 'base':BASE_DIR}
 
 @router.post('/test')
-def post_test(request:Request):
-    token = request.headers["authorization"].split(' ')[-1]
-    result = decode_jwt(token)
-    return result
+async def post_test(request:Request):
+    # token = request.headers["authorization"].split(' ')[-1]
+    # result = decode_jwt(token)
+    body = await request.json()
+    print(body)
+    return body
 
 # clova API 사용
 @router.post('/')
