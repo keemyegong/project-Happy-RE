@@ -1,6 +1,7 @@
 // App.js
-import React, { createContext } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import React, { createContext, useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 import Nav from './components/navbar/Navbar';
 import Main from './pages/main/Main';
@@ -12,8 +13,8 @@ import UserUpdate from './pages/userUpdate/UserUpdate';
 import UserProfile from './pages/userProfile/UserProfile';
 import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
-import Message from './pages/message/Message'
-import Diary from './pages/diary/Diary'
+import Message from './pages/message/Message';
+import Diary from './pages/diary/Diary';
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
@@ -21,6 +22,14 @@ import EmotionGraph from './components/emotion-graph/Test';
 import './App.css';
 
 export const universeVariable = createContext();
+
+const PrivateRoute = ({ children }) => {
+  const token = Cookies.get('Authorization');
+  if (!token) {
+    return <Navigate to="/" />;
+  }
+  return children;
+};
 
 const AppContent = () => {
   const location = useLocation();
@@ -41,16 +50,17 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/usertest" element={<UserTest />} />
-          <Route path="/message" element={<Message/>} />
-          <Route path="/emotion" element={<EmotionGraph />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signup/agreement" element={<SignUpAgreement />} />
-          <Route path="/user/update" element={<UserUpdate />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/with-happyre" element={<AIChat />} />
-          <Route path="/webrtc" element={<RtcClient />} />
-          <Route path="/diary" element={<Diary />} />
+          <Route path="/emotion" element={<EmotionGraph />} />
+          
+          <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
+          <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
+          <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+          <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
+          <Route path="/webrtc" element={<PrivateRoute><RtcClient /></PrivateRoute>} />
+          <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
         </Routes>
       </div>
     </div>
