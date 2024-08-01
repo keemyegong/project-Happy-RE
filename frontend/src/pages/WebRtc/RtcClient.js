@@ -44,32 +44,31 @@ function RtcClient() {
     client.onopen = () => {
       console.log('WebSocket Client Connected');
     };
-
+  
     client.onclose = () => {
       console.log('WebSocket Client Disconnected');
     };
-
+  
     client.onerror = (error) => {
       console.error('WebSocket Error: ', error);
     };
-
+  
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       if (dataFromServer.type === 'assign_id') {
         const assignedPosition = dataFromServer.position;
-        setPosition(assignedPosition);
+        setPosition({ ...assignedPosition, id: dataFromServer.id });
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        console.log(position.id)
+        console.log(position.id);
         const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
         setUsers(filteredUsers.map(user => ({
           ...user,
           image: getImageForPosition(user.x, user.y)
         })));
-
+  
         console.log('Current users list:', filteredUsers); // 콘솔에 현재 유저 리스트 출력
-        
-
+  
         filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
           const distance = Math.sqrt(
@@ -103,7 +102,7 @@ function RtcClient() {
         setTalkingUsers(dataFromServer.talkingUsers);
       }
     };
-
+  
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
@@ -117,12 +116,20 @@ function RtcClient() {
     } else {
       console.error('getUserMedia is not supported in this browser.');
     }
-
+  
     return () => {
       // Ensure the WebSocket connection is closed when the component is unmounted
       // client.close();
     };
   }, [position]);
+  
+  useEffect(() => {
+    if (position.id !== null) {
+      const filteredUsers = users.filter(user => user.id !== position.id);
+      setUsers(filteredUsers);
+    }
+  }, [position.id]);
+  
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
