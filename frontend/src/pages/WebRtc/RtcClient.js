@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 const activeConnections = {};
 
@@ -46,6 +46,14 @@ function RtcClient() {
       console.log('WebSocket Client Connected');
     };
 
+    client.onclose = () => {
+      console.log('WebSocket Client Disconnected');
+    };
+
+    client.onerror = (error) => {
+      console.error('WebSocket Error: ', error);
+    };
+
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       if (dataFromServer.type === 'assign_id') {
@@ -53,7 +61,7 @@ function RtcClient() {
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        setUsers(dataFromServer.users.filter(user => user.id !== position.id).map(user => ({
+        setUsers(dataFromServer.users.map(user => ({
           ...user,
           image: getImageForPosition(user.x, user.y)
         })));
@@ -70,14 +78,12 @@ function RtcClient() {
                 peerConnection.createOffer()
                   .then(offer => {
                     peerConnection.setLocalDescription(offer);
-                    if (client.readyState === W3CWebSocket.OPEN) {
-                      client.send(JSON.stringify({
-                        type: 'offer',
-                        offer: offer,
-                        recipient: user.id,
-                        sender: position.id
-                      }));
-                    }
+                    client.send(JSON.stringify({
+                      type: 'offer',
+                      offer: offer,
+                      recipient: user.id,
+                      sender: position.id
+                    }));
                   });
                 peerConnections[user.id] = peerConnection;
               }
@@ -116,7 +122,7 @@ function RtcClient() {
     }
 
     return () => {
-      client.close(); // WebSocket 연결 종료
+      client.close(); // Ensure the WebSocket connection is closed when the component is unmounted
     };
   }, [position]);
 
@@ -129,7 +135,7 @@ function RtcClient() {
     });
 
     peerConnection.onicecandidate = (event) => {
-      if (event.candidate && client.readyState === W3CWebSocket.OPEN) {
+      if (event.candidate) {
         client.send(JSON.stringify({
           type: 'candidate',
           candidate: event.candidate,
@@ -159,14 +165,12 @@ function RtcClient() {
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
-    if (client.readyState === W3CWebSocket.OPEN) {
-      client.send(JSON.stringify({
-        type: 'answer',
-        answer: answer,
-        sender: position.id,
-        recipient: sender
-      }));
-    }
+    client.send(JSON.stringify({
+      type: 'answer',
+      answer: answer,
+      sender: position.id,
+      recipient: sender
+    }));
     peerConnections[sender] = peerConnection;
   };
 
@@ -183,7 +187,7 @@ function RtcClient() {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: position.id };
     setPosition(newPosition);
-    if (client.readyState === W3CWebSocket.OPEN) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'move', position: newPosition }));
     }
   };
@@ -229,7 +233,7 @@ function RtcClient() {
               style={{ top: `${(i / 20) * 100}%` }}
             />
           ))}
-          {users.map(user => (
+          {users.filter(user => user.id !== position.id).map(user => (
             <div 
               key={user.id}
               className="radar-pulse-small"
@@ -253,7 +257,7 @@ function RtcClient() {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
                 </svg>
               </button>
             </div>
@@ -267,7 +271,7 @@ function RtcClient() {
             <div className="controls controls-down">
               <button onClick={() => movePosition(0, -0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1-.448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
                 </svg>
               </button>
             </div>

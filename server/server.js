@@ -23,7 +23,7 @@ wss.on('connection', (socket) => {
   socket.send(JSON.stringify({ type: 'assign_id', position: userPosition }));
   broadcast({ users });
 
-  socket.on('message', (message) => {
+  socket.on('message', async (message) => {
     const data = JSON.parse(message);
     if (data.type === 'move') {
       const user = users.find(user => user.id === data.position.id);
