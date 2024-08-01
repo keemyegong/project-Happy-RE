@@ -66,6 +66,8 @@ function RtcClient() {
           image: getImageForPosition(user.x, user.y)
         })));
 
+        console.log('Current users list:', filteredUsers); // 콘솔에 현재 유저 리스트 출력
+
         filteredUsers.forEach(user => {
           if (user.id === undefined || position.id === null) return;
           const distance = Math.sqrt(
