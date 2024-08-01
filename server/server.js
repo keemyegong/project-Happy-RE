@@ -16,7 +16,7 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server });
 
 const kurento = require('kurento-client');
-const kurentoUri = 'http://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
+const kurentoUri = 'https://i11b204.p.ssafy.io:8888/kurento'; // Kurento Media Server 주소
 let kurentoClient = null;
 let users = [];
 let idCounter = 0;
