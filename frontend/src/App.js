@@ -33,6 +33,14 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
+const PublicRoute = ({ children }) => {
+  const token = Cookies.get('Authorization');
+  if (token) {
+    return <Navigate to="/profile" />;
+  }
+  return children;
+};
+
 const AppContent = () => {
   const location = useLocation();
 
@@ -50,10 +58,10 @@ const AppContent = () => {
       <Nav />
       <div className="content">
         <Routes>
-          <Route path="/" element={<Main />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/signup/agreement" element={<SignUpAgreement />} />
+          <Route path="/" element={<PublicRoute><Main /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+          <Route path="/signup/agreement" element={<PublicRoute><SignUpAgreement /></PublicRoute>} />
           <Route path="/emotion" element={<EmotionGraph />} />
           
           <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
