@@ -3,7 +3,7 @@ import { format, addWeeks, subWeeks, startOfWeek, addDays, isToday, isSameWeek, 
 import './Diary.css';
 import Button from '../../components/Button/Button';
 import { useNavigate } from 'react-router-dom';
-import DiaryReport from '../../components/diary-report/DiaryReport';
+import DiaryDetail from '../../components/diary-report/DiaryDetail';
 
 const Diary = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
@@ -131,7 +131,7 @@ const Diary = () => {
       </div>
       <div className='modal-container'>
         {showModal && (
-          <DiaryReport 
+          <DiaryDetail 
             selectedDay={selectedDay} // 전체 날짜 정보 전달
             onClose={() => setShowModal(false)}
           />

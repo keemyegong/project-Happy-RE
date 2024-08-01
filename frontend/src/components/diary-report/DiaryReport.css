@@ -1,6 +1,79 @@
-.modal-backdrop {
-  z-index: -1
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-style: normal;
 }
 
-.diary-report-container {
+.DiaryReport {
+  width: 600px;
+  height: 614px;
+  background-color: black;
+  padding: 10px;
+}
+
+.diary-report-header {
+  font-family: 'Pretendard-Regular';
+  font-size: 1.7vw;
+  color: white;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.diary-report-keyword-header {
+  font-family: 'Pretendard-Regular';
+  font-size: 1.3vw;
+  font-weight: 400;
+  color: white;
+  border-bottom: 0.5px solid white;
+}
+
+.diary-report-keyword-positive {
+  background-color: rgba(178, 194, 199, 0.40);
+}
+
+.diary-report-keyword-negative {
+  background-color: rgba(199, 178, 178, 0.40);
+}
+
+.diary-report-graph-header {
+  font-family: 'Pretendard-Regular';
+  font-size: 1.3vw;
+  font-weight: 400;
+  color: white;
+  border-bottom: 0.5px solid white;
+
+}
+
+/* 미디어 쿼리: 화면 너비가 1350px 이하일 때 */
+@media (max-width: 1350px) {
+  .diary-report-container {
+    margin: auto;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 1024px 이하일 때 */
+@media (max-width: 1024px) {
+  .DiaryReport {
+    margin: auto;
+    width: 500px;
+    height: 514px;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 768px 이하일 때 */
+@media (max-width: 768px) {
+  .DiaryReport {
+    margin: auto;
+    width: 400px;
+    height: 414px;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 480px 이하일 때 */
+@media (max-width: 480px) {
+  .DiaryReport {
+    width: 300px;
+    margin: auto;
+    height: 314px;
+  }
 }

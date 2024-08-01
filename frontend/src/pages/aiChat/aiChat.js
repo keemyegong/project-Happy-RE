@@ -20,7 +20,7 @@ const AIChat = () => {
   // 처음 인삿말 받아오기
   useEffect(() => {
     axios.post(
-      `${universal.fastUrl}/ai-api/chatbot/`,
+      `${universal.fastUrl}/fastapi/chatbot/`,
       { user_input: '안녕하세요', 'audio': '' },
       {
         headers: {
@@ -63,7 +63,7 @@ const AIChat = () => {
       formData.append('file', file);
 
       axios.post(
-        `${universal.fastUrl}/fastapi/`,
+        `${universal.fastUrl}/fastapi/api/`,
         formData,
         {
           headers: {
@@ -79,7 +79,7 @@ const AIChat = () => {
         setAudioData(audio);
         
         axios.post(
-          `${universal.fastUrl}/ai-api/chatbot/`,
+          `${universal.fastUrl}/fastapi/chatbot/`,
           { user_input: recognizedText, audio },
           {
             headers: {
@@ -120,7 +120,7 @@ const AIChat = () => {
     }
 
     axios.post(
-      `${universal.fastUrl}/ai-api/chatbot/`,
+      `${universal.fastUrl}/fastapi/chatbot/`,
       payload,
       {
         headers: {
