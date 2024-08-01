@@ -7,8 +7,8 @@ const path = require('path');
 
 const app = express();
 const server = https.createServer({
-  cert: fs.readFileSync('/etc/letsencrypt/live/your-domain/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/your-domain/privkey.pem')
+  cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
 const wss = new WebSocket.Server({ server });
