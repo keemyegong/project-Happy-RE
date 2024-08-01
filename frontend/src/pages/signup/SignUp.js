@@ -20,7 +20,7 @@ const SignUp = () => {
   const [password2, setPassword2] = useState('');
   const googleSignIn = ()=>{
 
-    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/google`
     
   }
 
