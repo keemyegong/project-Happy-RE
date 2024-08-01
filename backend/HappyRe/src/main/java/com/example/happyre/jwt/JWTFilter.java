@@ -69,11 +69,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //Authorization 헤더 검증
         if (authorization == null) {
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
+            System.out.println("토큰없음");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing.");
+            return;
+
 
             //조건이 해당되면 메소드 종료 (필수)
-            return;
+
         }
 
         //토큰
@@ -88,12 +90,10 @@ public class JWTFilter extends OncePerRequestFilter {
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
 
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
+            System.out.println("토큰만료");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired.");
             return;
-        }
+        }   
 
         //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
