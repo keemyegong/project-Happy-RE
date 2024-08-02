@@ -31,13 +31,6 @@ public class JWTFilter extends OncePerRequestFilter {
         System.out.println("JWTFilter!!!!!!!!!!11");
         System.out.println("JWTFilter!!!!!!!!!!11");
         System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
-        System.out.println("JWTFilter!!!!!!!!!!11");
 
         String path = request.getRequestURI();
         if (path.equals("/api/user/login") || path.equals("/api/user/join") || path.equals("/login")) {
@@ -70,8 +63,9 @@ public class JWTFilter extends OncePerRequestFilter {
         //Authorization 헤더 검증
         if (authorization == null) {
             System.out.println("토큰없음");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing.");
-            return;
+            filterChain.doFilter(request, response);
+            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing.");
+            //return;
 
 
             //조건이 해당되면 메소드 종료 (필수)
@@ -91,9 +85,10 @@ public class JWTFilter extends OncePerRequestFilter {
         if (jwtUtil.isExpired(token)) {
 
             System.out.println("토큰만료");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired.");
+            filterChain.doFilter(request, response);
+            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired.");
             return;
-        }   
+        }
 
         //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
