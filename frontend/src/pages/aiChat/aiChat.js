@@ -21,7 +21,7 @@ const AIChat = () => {
   useEffect(() => {
     axios.post(
       `${universal.fastUrl}/fastapi/chatbot/`,
-      { user_input: '안녕하세요', 'audio': '' },
+      { user_input: '안녕하세요', audio: '', request: 'chatbot' },
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -80,7 +80,7 @@ const AIChat = () => {
         
         axios.post(
           `${universal.fastUrl}/fastapi/chatbot/`,
-          { user_input: recognizedText, audio },
+          { user_input: recognizedText, audio, request: 'user' },
           {
             headers: {
               Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -113,11 +113,9 @@ const AIChat = () => {
     
     const payload = {
       user_input: userInput,
+      audio: audioData,
+      request: 'user'
     };
-
-    if (audioData) {
-      payload.audio = audioData;
-    }
 
     axios.post(
       `${universal.fastUrl}/fastapi/chatbot/`,
