@@ -27,9 +27,9 @@ pipeline {
                         sh 'docker build -t happyjellyfish/happyre-image .'
                     }
                     // Build Fast_API Docker image
-                    //dir('backend/Fast_API') {
-                    //     sh 'docker build -t happyjellyfish/fastapi .'
-                    //}
+                    dir('backend/Fast_API') {
+                        sh 'docker build -t happyjellyfish/fastapi .'
+                    }
                 }
             }
         }
