@@ -104,11 +104,9 @@ function RtcClient() {
   }, []); // 빈 배열을 의존성 배열로 설정
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (position.id !== null) {
       checkDistances(users);
-    }, 1000);
-
-    return () => clearInterval(interval);
+    }
   }, [position, users]);
 
   const checkDistances = (currentUsers) => {
@@ -135,6 +133,7 @@ function RtcClient() {
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
+        console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
     setNearbyUsers(newNearbyUsers);
@@ -306,7 +305,7 @@ function RtcClient() {
         <div className="scroll-buttons">
           <button onClick={() => handleScroll('up')}>
             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
+              <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448-.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
             </svg>
           </button>
         </div>
