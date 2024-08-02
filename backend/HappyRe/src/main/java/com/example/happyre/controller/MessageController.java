@@ -30,6 +30,7 @@ public class MessageController {
 
     @PostMapping
     public MessageEntity createMessage(@RequestBody MessageEntity message) {
+        System.out.println("온건가");
         return messageService.insert(message);
     }
 
