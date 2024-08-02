@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/ws');
+const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 
 function RtcClient() {
@@ -23,7 +23,10 @@ function RtcClient() {
   const coordinatesGraphRef = useRef(null);
 
   useEffect(() => {
-    if (window.location.pathname !== '/webrtc') return;
+    if (window.location.pathname !== '/webrtc') {
+      client.close();
+      return;
+    };
 
     const coordinatesGraph = coordinatesGraphRef.current;
 
