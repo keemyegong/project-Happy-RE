@@ -105,15 +105,15 @@ app.get('*', (req, res) => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-  const { pathname } = new URL(request.url, `https://${request.headers.host}`);
+  // const { pathname } = new URL(request.url, `https://${request.headers.host}`);
   
-  if (pathname === '/webrtc') {
+  // if (pathname === '/webrtc') {
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request);
     });
-  } else {
-    socket.destroy();
-  }
+  // } else {
+  //   socket.destroy();
+  // }
 });
 
 server.listen(5001, () => {
