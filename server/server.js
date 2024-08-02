@@ -12,16 +12,6 @@ const server = https.createServer({
 }, app);
 
 const wss = new WebSocket.Server({ server });
-// const kurentoUri = 'ws://i11b204.p.ssafy.io:8888/kurento';
-// let kurentoClient = null;
-
-// kurento(kurentoUri, (error, client) => {
-//   if (error) {
-//     return console.error('Could not find Kurento media server at address ' + kurentoUri);
-//   }
-//   kurentoClient = client;
-// });
-
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 
