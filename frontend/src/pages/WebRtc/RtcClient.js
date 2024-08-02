@@ -26,7 +26,7 @@ function RtcClient() {
     if (window.location.pathname !== '/webrtc') {
       client.close();
       return;
-    };
+    }
 
     const coordinatesGraph = coordinatesGraphRef.current;
 
@@ -72,7 +72,7 @@ function RtcClient() {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
         setUsers(filteredUsers.map(user => ({
           ...user,
-          image: getImageForPosition(user.x, user.y)
+          image: getImageForPosition(user.position.x, user.position.y)
         })));
         checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'offer') {
@@ -99,7 +99,7 @@ function RtcClient() {
 
     return () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
-      //client.close();
+      client.close();
     };
   }, []); // 빈 배열을 의존성 배열로 설정
 

@@ -34,17 +34,10 @@ const users = {};
 
 wss.on('connection', (ws, req) => {
   const userId = idCounter++;
-  // 사용자 ID가 이미 존재하는 경우 접속 차단
-  if (users[userId]) {
-    ws.close(4000, 'Duplicate connection');
-    return;
-  }
-
   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
   console.log(`User connected: ${userId}`);
   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
 
-  // 사용자 목록을 전달할 때 현재 사용자를 제외하고 전송
   const otherUsers = Object.values(users).filter(user => user.id !== userId);
   ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
 
@@ -57,11 +50,9 @@ wss.on('connection', (ws, req) => {
         break;
       case 'offer':
         console.log(`Received offer from user ${userId}`);
-        // handleOffer(userId, data); // Kurento 관련 부분 주석 처리
         break;
       case 'candidate':
         console.log(`Received candidate from user ${userId}`);
-        // handleCandidate(userId, data.candidate); // Kurento 관련 부분 주석 처리
         break;
       case 'disconnect':
         handleDisconnect(userId);
@@ -81,7 +72,7 @@ function handleMove(userId, position) {
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {
-    // connectUsers(userId, nearbyUsers[0]); // Kurento 관련 부분 주석 처리
+    console.log(`User ${userId} is near users:`, nearbyUsers.map(u => u.id));
   }
 }
 
@@ -108,13 +99,11 @@ function broadcast(message) {
   });
 }
 
-// 정적 파일 서빙 및 모든 경로에 대해 index.html 반환
 app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// WebSocket 연결 처리
 server.on('upgrade', (request, socket, head) => {
   const { pathname } = new URL(request.url, `https://${request.headers.host}`);
   
