@@ -5,7 +5,7 @@ FROM python:3.9.13-slim
 WORKDIR /app
 
 # requirements.txt 파일을 작업 디렉토리로 복사
-COPY requirements.txt .
+COPY requirementsImg.txt .
 
 # pip 업그레이드
 RUN pip install --upgrade pip
