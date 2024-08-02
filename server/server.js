@@ -11,34 +11,26 @@ const server = https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ noServer: true });
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
+let kurentoClient = null;
 
-kurento(ws_uri, (error, kurentoClient) => {
+kurento(ws_uri, (error, client) => {
   if (error) return console.error('Kurento connection error:', error);
-
-  kurentoClient.create('MediaPipeline', (error, pipeline) => {
-    if (error) return console.error('MediaPipeline error:', error);
-
-    pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-      if (error) return console.error('WebRtcEndpoint error:', error);
-
-      console.log('WebRtcEndpoint created successfully');
-    });
-  });
+  kurentoClient = client;
+  console.log('Kurento connected');
 });
 
 let idCounter = 0;
 const users = {};
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   const userId = idCounter++;
-  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
+  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 }, webRtcEndpoint: null };
   console.log(`User connected: ${userId}`);
   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
 
-  // 사용자 목록을 전달할 때 현재 사용자를 제외하고 전송
   const otherUsers = Object.values(users).filter(user => user.id !== userId);
   ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
 
@@ -50,12 +42,10 @@ wss.on('connection', (ws) => {
         handleMove(userId, data.position);
         break;
       case 'offer':
-        console.log(`Received offer from user ${userId}`);
-        // handleOffer(userId, data); // Kurento 관련 부분 주석 처리
+        await handleOffer(userId, data.offer);
         break;
       case 'candidate':
-        console.log(`Received candidate from user ${userId}`);
-        // handleCandidate(userId, data.candidate); // Kurento 관련 부분 주석 처리
+        await handleCandidate(userId, data.candidate);
         break;
       case 'disconnect':
         handleDisconnect(userId);
@@ -75,11 +65,42 @@ function handleMove(userId, position) {
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {
-    // connectUsers(userId, nearbyUsers[0]); // Kurento 관련 부분 주석 처리
+    console.log(`User ${userId} is near users:`, nearbyUsers.map(u => u.id));
   }
 }
 
+async function handleOffer(userId, offer) {
+  const user = users[userId];
+  if (!user) return;
+
+  if (!user.webRtcEndpoint) {
+    user.webRtcEndpoint = await createWebRtcEndpoint(userId);
+  }
+
+  user.webRtcEndpoint.processOffer(offer, (error, answer) => {
+    if (error) {
+      return console.error('Error processing offer:', error);
+    }
+    user.ws.send(JSON.stringify({ type: 'answer', answer }));
+  });
+}
+
+async function handleCandidate(userId, candidate) {
+  const user = users[userId];
+  if (!user || !user.webRtcEndpoint) return;
+
+  user.webRtcEndpoint.addIceCandidate(candidate, (error) => {
+    if (error) {
+      return console.error('Error adding ICE candidate:', error);
+    }
+  });
+}
+
 function handleDisconnect(userId) {
+  const user = users[userId];
+  if (user && user.webRtcEndpoint) {
+    user.webRtcEndpoint.release();
+  }
   delete users[userId];
   broadcast({ type: 'disconnect', id: userId });
 }
@@ -102,9 +123,44 @@ function broadcast(message) {
   });
 }
 
+function createWebRtcEndpoint(userId) {
+  return new Promise((resolve, reject) => {
+    kurentoClient.create('MediaPipeline', (error, pipeline) => {
+      if (error) return reject(error);
+
+      pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
+        if (error) return reject(error);
+
+        webRtcEndpoint.on('OnIceCandidate', (event) => {
+          const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
+          const user = users[userId];
+          if (user) {
+            user.ws.send(JSON.stringify({
+              type: 'candidate',
+              candidate
+            }));
+          }
+        });
+
+        webRtcEndpoint.gatherCandidates((error) => {
+          if (error) return reject(error);
+        });
+
+        resolve(webRtcEndpoint);
+      });
+    });
+  });
+}
+
 app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
 });
 
 server.listen(5001, () => {

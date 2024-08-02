@@ -1,6 +1,6 @@
 import sys, io, os
 from transformers import BertForSequenceClassification
-from kobert_tokenizer import KoBERTTokenizer
+from .kobert_tokenizer import KoBERTTokenizer
 from accelerate import Accelerator
 import torch
 

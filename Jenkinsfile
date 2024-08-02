@@ -28,7 +28,7 @@ pipeline {
                     }
                     // Build Fast_API Docker image
                     dir('backend/Fast_API') {
-                         sh 'docker build -t happyjellyfish/fastapi .'
+                        sh 'docker build -t happyjellyfish/fastapi .'
                     }
                 }
             }
@@ -56,13 +56,31 @@ pipeline {
                 script {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
                         sh 'docker push happyjellyfish/happyre-image:latest'
-                        //sh 'docker push happyjellyfish/fastapi-image:latest'
+                        sh 'docker push happyjellyfish/fastapi:latest'
                         sh 'docker push happyjellyfish/frontend-image:latest'
                         sh 'docker push happyjellyfish/webrtc-server:latest'
                     }
                 }
             }
         }
+
+       stage('Cleanup Old Images') {
+            steps {
+                script {
+                    sh '''
+                    # Remove dangling images
+                    docker image prune -f
+
+                    # Remove images that start with 'happyjellyfish/' and do not have the 'latest' tag
+                    docker images --filter "dangling=false" --format "{{.Repository}}:{{.Tag}}" | grep '^happyjellyfish/' | grep -v ':latest' | while read -r image; do
+                        docker rmi -f "$image" || true
+                    done
+                    '''
+                    
+                }
+            }
+        }
+
 
 
         // stage('Deploy Containers') {
