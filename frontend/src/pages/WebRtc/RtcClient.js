@@ -98,7 +98,7 @@ function RtcClient() {
     }
 
     return () => {
-      client.send(JSON.stringify({ type: 'disconnect' }));
+      //client.send(JSON.stringify({ type: 'disconnect' }));
       //client.close();
     };
   }, []); // 빈 배열을 의존성 배열로 설정
