@@ -107,7 +107,7 @@ const Message = () => {
           </div>
         </div>
       </div>
-      <div className={`container ${showContainer === 'messages' ? 'visible' : 'hidden'}`}>
+      <div className={`msg-container ${showContainer === 'messages' ? 'visible' : 'hidden'}`}>
         <div className="message-container">
           {messages.map((message) => (
             <MessageCard
@@ -120,7 +120,7 @@ const Message = () => {
           ))}
         </div>
       </div>
-      <div className={`container ${showContainer === 'input' ? 'visible' : 'hidden'}`}>
+      <div className={`msg-container ${showContainer === 'input' ? 'visible' : 'hidden'}`}>
         <div className="input-container">
           <MessageInput />
         </div>
