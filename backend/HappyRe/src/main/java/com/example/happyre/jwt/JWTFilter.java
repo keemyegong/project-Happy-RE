@@ -76,9 +76,9 @@ public class JWTFilter extends OncePerRequestFilter {
 //        String token = authorization;
         String token;
         if (flag) {
-            System.out.println("TOKEN FLAG AUTHORIZATION : ", authorization);
-            System.out.println("TOKEN FLAG AUTHORIZATION : ", authorization);
-            System.out.println("TOKEN FLAG AUTHORIZATION : ", authorization);
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
             token = authorization.substring(7);
         } else {
             token = authorization;
