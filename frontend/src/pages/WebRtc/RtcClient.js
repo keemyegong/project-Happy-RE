@@ -76,9 +76,6 @@ function RtcClient() {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
-      } else if (dataFromServer.type === 'remove_user') {
-        setUsers(users => users.filter(user => user.id !== dataFromServer.id));
-        delete peerConnections[dataFromServer.id];
       }
     };
 
@@ -94,9 +91,7 @@ function RtcClient() {
     }
 
     return () => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'leave', id: position.id }));
-      }
+      // Ensure the WebSocket connection is closed when the component is unmounted
       //client.close();
     };
   }, [position]);
