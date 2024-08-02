@@ -11,7 +11,7 @@ const server = https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ noServer: true });
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 
@@ -32,8 +32,14 @@ kurento(ws_uri, (error, kurentoClient) => {
 let idCounter = 0;
 const users = {};
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   const userId = idCounter++;
+  // 사용자 ID가 이미 존재하는 경우 접속 차단
+  if (users[userId]) {
+    ws.close(4000, 'Duplicate connection');
+    return;
+  }
+
   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
   console.log(`User connected: ${userId}`);
   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
@@ -102,9 +108,23 @@ function broadcast(message) {
   });
 }
 
+// 정적 파일 서빙 및 모든 경로에 대해 index.html 반환
 app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// WebSocket 연결 처리
+server.on('upgrade', (request, socket, head) => {
+  const { pathname } = new URL(request.url, `https://${request.headers.host}`);
+  
+  if (pathname === '/webrtc') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
 });
 
 server.listen(5001, () => {
