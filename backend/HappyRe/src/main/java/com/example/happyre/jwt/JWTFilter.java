@@ -66,7 +66,7 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing.");
             //return;
-
+            flag = false;
 
             //조건이 해당되면 메소드 종료 (필수)
 
