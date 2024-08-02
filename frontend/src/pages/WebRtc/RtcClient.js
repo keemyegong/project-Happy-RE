@@ -88,9 +88,9 @@ function RtcClient() {
                   sender: position.id
                 }));
               });
-            peerConnections[user.id] = peerConnection;
+            peerConnections[user.id] = { peerConnection, user };
           } else if (distance > 0.2 && peerConnections[user.id]) {
-            peerConnections[user.id].close();
+            peerConnections[user.id].peerConnection.close();
             delete peerConnections[user.id];
           }
         });
@@ -121,16 +121,52 @@ function RtcClient() {
 
     return () => {
       // Ensure the WebSocket connection is closed when the component is unmounted
-      // client.close();
+      //client.close();
     };
   }, [position]);
+
+  useEffect(() => {
+    const checkDistances = () => {
+      users.forEach(user => {
+        if (user.id === undefined || position.id === null) return;
+        const distance = Math.sqrt(
+          Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
+        );
+        if (distance <= 0.2 && !peerConnections[user.id]) {
+          const peerConnection = createPeerConnection(user.id);
+          peerConnection.createOffer()
+            .then(offer => {
+              peerConnection.setLocalDescription(offer);
+              client.send(JSON.stringify({
+                type: 'offer',
+                offer: offer,
+                recipient: user.id,
+                sender: position.id
+              }));
+            });
+          peerConnections[user.id] = { peerConnection, user };
+        } else if (distance > 0.2 && peerConnections[user.id]) {
+          peerConnections[user.id].peerConnection.close();
+          delete peerConnections[user.id];
+        }
+      });
+    };
+
+    checkDistances();
+
+    const interval = setInterval(checkDistances, 1000);
+
+    return () => clearInterval(interval);
+  }, [position, users]);
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
       ]
-    });
+    })
+    console.log('webrtc 연결완료')
+    ;
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -168,16 +204,16 @@ function RtcClient() {
       sender: position.id,
       recipient: sender
     }));
-    peerConnections[sender] = peerConnection;
+    peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
   };
 
   const handleAnswer = async (answer, sender) => {
-    const peerConnection = peerConnections[sender];
+    const peerConnection = peerConnections[sender].peerConnection;
     await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
   const handleCandidate = async (candidate, sender) => {
-    const peerConnection = peerConnections[sender];
+    const peerConnection = peerConnections[sender].peerConnection;
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
@@ -205,7 +241,7 @@ function RtcClient() {
     }
   };
 
-  const nearbyUsers = Object.values(peerConnections).filter(pc => pc.connectionState === 'connected').map(pc => pc.user);
+  const nearbyUsers = Object.values(peerConnections).filter(pc => pc.peerConnection.connectionState === 'connected').map(pc => pc.user);
 
   return (
     <div className="chat-room-container" ref={containerRef}>
