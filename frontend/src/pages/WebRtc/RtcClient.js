@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000'); // HTTPS에 맞게 WebSocket URL 설정
 const peerConnections = {};
 
 function RtcClient() {
@@ -17,6 +17,7 @@ function RtcClient() {
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
+  const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
@@ -55,47 +56,18 @@ function RtcClient() {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
-      console.log('Message from server:', dataFromServer);
-
       if (dataFromServer.type === 'assign_id') {
         const assignedPosition = dataFromServer.position;
         assignedPosition.id = dataFromServer.id; // 서버가 id를 전달하는 것으로 가정
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        console.log('Current position ID:', position.id);
         const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
         setUsers(filteredUsers.map(user => ({
           ...user,
           image: getImageForPosition(user.x, user.y)
         })));
-
-        console.log('Current users list:', filteredUsers); // 콘솔에 현재 유저 리스트 출력
-      
-
-        filteredUsers.forEach(user => {
-          if (user.id === undefined || position.id === null) return;
-          const distance = Math.sqrt(
-            Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
-          );
-          if (distance <= 0.2 && !peerConnections[user.id]) {
-            const peerConnection = createPeerConnection(user.id);
-            peerConnection.createOffer()
-              .then(offer => {
-                peerConnection.setLocalDescription(offer);
-                client.send(JSON.stringify({
-                  type: 'offer',
-                  offer: offer,
-                  recipient: user.id,
-                  sender: position.id
-                }));
-              });
-            peerConnections[user.id] = { peerConnection, user };
-          } else if (distance > 0.2 && peerConnections[user.id]) {
-            peerConnections[user.id].peerConnection.close();
-            delete peerConnections[user.id];
-          }
-        });
+        checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -111,9 +83,6 @@ function RtcClient() {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
-          if (localAudioRef.current) {
-            localAudioRef.current.srcObject = currentStream;
-          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -123,18 +92,26 @@ function RtcClient() {
 
     return () => {
       // Ensure the WebSocket connection is closed when the component is unmounted
-      //client.close();
+      client.close();
     };
   }, [position]);
 
   useEffect(() => {
-    const checkDistances = () => {
-      users.forEach(user => {
-        if (user.id === undefined || position.id === null) return;
-        const distance = Math.sqrt(
-          Math.pow(user.x - position.x, 2) + Math.pow(user.y - position.y, 2)
-        );
-        if (distance <= 0.2 && !peerConnections[user.id]) {
+    const interval = setInterval(() => {
+      checkDistances(users);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [position, users]);
+
+  const checkDistances = (currentUsers) => {
+    const newNearbyUsers = [];
+    currentUsers.forEach(user => {
+      if (user.id === undefined || position.id === null) return;
+      const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
+      if (distance <= 0.2) {
+        newNearbyUsers.push(user);
+        if (!peerConnections[user.id]) {
           const peerConnection = createPeerConnection(user.id);
           peerConnection.createOffer()
             .then(offer => {
@@ -147,19 +124,14 @@ function RtcClient() {
               }));
             });
           peerConnections[user.id] = { peerConnection, user };
-        } else if (distance > 0.2 && peerConnections[user.id]) {
-          peerConnections[user.id].peerConnection.close();
-          delete peerConnections[user.id];
         }
-      });
-    };
-
-    checkDistances();
-
-    const interval = setInterval(checkDistances, 1000);
-
-    return () => clearInterval(interval);
-  }, [position, users]);
+      } else if (peerConnections[user.id]) {
+        peerConnections[user.id].peerConnection.close();
+        delete peerConnections[user.id];
+      }
+    });
+    setNearbyUsers(newNearbyUsers);
+  };
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
@@ -167,23 +139,7 @@ function RtcClient() {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-    console.log('Creating PeerConnection with user:', userId);
-
-    peerConnection.oniceconnectionstatechange = () => {
-      if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
-        console.log('WebRTC connection established with user:', userId);
-        // 마이크를 on 상태로 유지
-        if (localAudioRef.current) {
-          localAudioRef.current.muted = false;
-        }
-      } else if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'closed') {
-        console.log('WebRTC connection closed with user:', userId);
-        // 마이크를 off 상태로 유지
-        if (localAudioRef.current) {
-          localAudioRef.current.muted = true;
-        }
-      }
-    };
+    console.log('webrtc 연결완료');
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -199,6 +155,14 @@ function RtcClient() {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
+        }
       }
     };
 
@@ -254,11 +218,9 @@ function RtcClient() {
     if (direction === 'up') {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
     } else {
-      setDisplayStartIndex(Math.min(displayStartIndex + 1, users.length - 4));
+      setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
     }
   };
-
-  const nearbyUsers = Object.values(peerConnections).filter(pc => pc.peerConnection.connectionState === 'connected').map(pc => pc.user);
 
   return (
     <div className="chat-room-container" ref={containerRef}>
