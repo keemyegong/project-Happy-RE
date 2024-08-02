@@ -219,7 +219,7 @@ const [showDownButton, setShowDownButton] = useState(true);
       <div id="container-1" className="container-1">
         <h1>Happy:Re</h1>
         <div className='to-login'>
-          <Link className='text-login' to='/login'>Login</Link>
+          <Link className='text-login' to='/signin'>Login</Link>
         </div>
       </div>
       <div id="container-2" className="container-2">
@@ -247,7 +247,7 @@ const [showDownButton, setShowDownButton] = useState(true);
           <p>하루에 대한 레포트를 제공합니다.</p>
           <p>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</p>
           <p>우리 함께 감정에 대해 알아가 볼까요?</p>
-          <Link className="go-login" to="/login">
+          <Link className="go-login" to="/signin">
             함께 할래요!
           </Link>
         </div>
