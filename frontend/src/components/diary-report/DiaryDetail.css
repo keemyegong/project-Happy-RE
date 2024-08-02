@@ -82,6 +82,7 @@
 
 .diary-detail-body::-webkit-scrollbar-track {
   background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  border-radius: 10px;
 }
 
 .diary-detail-components {

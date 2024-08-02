@@ -74,25 +74,26 @@ const UserProfile =  ()=>{
           <div className='default-info-container'>
             <p className='nickname'>{nickname}</p>
             <p className='email'>{email}</p>
-            <Button className='btn dark-btn small' content='Edit Profile' onClick={()=>{
+            <Button className='profile-edit-btn btn dark-btn small' content='Edit Profile' onClick={()=>{
               navigate('/user/update')
             }} />
           </div>
           </div>
         </div>
         <div className='col-12 col-md-8 col-xxl-10'>
-          <div className='row'>
+          <div className='user-emotion-info-container row'>
           <div className='col-12 col-xxl-6'> 
-            <h3 className='text-white'>My Words</h3>
-            <hr className='border-white border-2'></hr>
+            <div className='profile-mywords-title text-white'>
+              <p className='profile-mywords-title-text'>My Words</p>
+            </div>
             <div className='wordcloud-container'>
             <WordCloud 
               data={data}
-              width={500}
-              height={200}
+              width={300}
+              height={100}
               font="Times"
               fontWeight="bold"
-              fontSize={(word) => Math.log2(word.value) * 5}
+              fontSize={(word) => Math.log2(word.value) * 2.2}
               spiral="rectangular"
               rotate={(word) => (word.value*100)% 360}
               padding={5}
@@ -110,14 +111,15 @@ const UserProfile =  ()=>{
               </div>
           </div>
           <div className='col-12 col-xxl-6 '> 
-            <h3 className='text-white'>Emotion Graph</h3>
-            <hr className='border-white border-2'></hr>
+            <div className='profile-emotion-title text-white'>
+              <p className='profile-emotion-title-text'>Emotion Graph</p>
+            </div>
             <div className='emotion-graph-container'>
               <EmotionGraph data={emotionData} />
             </div>
 
             <div className='change-happyre-persona'>
-
+              {/* 해피리 페르소나 영역 */}
             </div>
 
           </div>

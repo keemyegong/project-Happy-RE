@@ -50,9 +50,9 @@ const AppContent = () => {
   return (
     <div
       className="App"
-      style={{
-        overflow: isUserProfile ? 'auto' : 'hidden',
-      }}
+      // style={{
+      //   overflow: isUserProfile ? 'auto' : 'hidden',
+      // }}
     >
       <StarryBackground />
       <Nav />
