@@ -7,7 +7,15 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
+const imageMapping = {
+  'default': defaultImg,
+  'soldier': soldier,
+  'art': art,
+  'steel': steel,
+  'butler': butler
+};
+
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/ws');
 const peerConnections = {};
 
 function RtcClient() {
@@ -26,7 +34,7 @@ function RtcClient() {
     if (window.location.pathname !== '/webrtc') {
       client.close();
       return;
-    }
+    };
 
     const coordinatesGraph = coordinatesGraphRef.current;
 
@@ -65,14 +73,14 @@ function RtcClient() {
       const dataFromServer = JSON.parse(message.data);
       if (dataFromServer.type === 'assign_id') {
         const assignedPosition = dataFromServer.position;
-        assignedPosition.id = dataFromServer.id; // 서버가 id를 전달하는 것으로 가정
+        assignedPosition.id = dataFromServer.id;
         setPosition(assignedPosition);
-        setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
-      } else if (dataFromServer.users) {
+        setUserImage(imageMapping[dataFromServer.image]);
+      } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
         setUsers(filteredUsers.map(user => ({
           ...user,
-          image: getImageForPosition(user.position.x, user.position.y)
+          image: imageMapping[user.image]
         })));
         checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'offer') {
@@ -213,14 +221,6 @@ function RtcClient() {
     }
   };
 
-  const getImageForPosition = (x, y) => {
-    if (x === 0 && y === 0) return defaultImg;
-    if (x >= 0 && y >= 0) return soldier;
-    if (x < 0 && y > 0) return art;
-    if (x <= 0 && y <= 0) return steel;
-    if (x > 0 && y < 0) return butler;
-  };
-
   const handleScroll = (direction) => {
     if (direction === 'up') {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
@@ -228,6 +228,7 @@ function RtcClient() {
       setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
     }
   };
+
 
   return (
     <div className="chat-room-container" ref={containerRef}>

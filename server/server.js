@@ -78,7 +78,7 @@ wss.on('connection', (ws, req) => {
 
 function handleMove(userId, position) {
   users[userId].position = position;
-  broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position, image: user.image })) });
+  broadcast({ users: Object.values(users).map(user => ({ id: user.id, position: user.position, image: user.image })) });
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {
