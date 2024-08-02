@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000');
+const client = new W3CWebSocket('https://i11b204.p.ssafy.io:5000');
 const peerConnections = {};
 
 function RtcClient() {
@@ -99,7 +99,7 @@ function RtcClient() {
 
     return () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
-      client.close();
+      //client.close();
     };
   }, []); // 빈 배열을 의존성 배열로 설정
 
