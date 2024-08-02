@@ -37,7 +37,10 @@ wss.on('connection', (ws) => {
   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
   console.log(`User connected: ${userId}`);
   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
-  ws.send(JSON.stringify({ type: 'all_users', users: Object.values(users).map(user => ({ id: user.id, position: user.position })) }));
+
+  // 사용자 목록을 전달할 때 현재 사용자를 제외하고 전송
+  const otherUsers = Object.values(users).filter(user => user.id !== userId);
+  ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -68,7 +71,7 @@ wss.on('connection', (ws) => {
 
 function handleMove(userId, position) {
   users[userId].position = position;
-  broadcast({ users: Object.values(users).map(user => ({ id: user.id, position: user.position })) });
+  broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position })) });
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {

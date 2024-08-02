@@ -91,7 +91,6 @@ function RtcClient() {
     }
 
     return () => {
-      // Ensure the WebSocket connection is closed when the component is unmounted
       client.send(JSON.stringify({ type: 'disconnect' }));
       client.close();
     };
@@ -161,6 +160,7 @@ function RtcClient() {
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+        console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
