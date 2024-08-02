@@ -72,8 +72,11 @@ pipeline {
                     docker image prune -f
 
                     # Remove images that start with 'happyjellyfish/' and do not have the 'latest' tag
-                    docker images --filter "dangling=false" --format "{{.Repository}}:{{.Tag}}" | grep '^happyjellyfish/' | grep -v ':latest' | xargs -r docker rmi -f
+                    docker images --filter "dangling=false" --format "{{.Repository}}:{{.Tag}}" | grep '^happyjellyfish/' | grep -v ':latest' | while read -r image; do
+                        docker rmi -f "$image" || true
+                    done
                     '''
+                    
                 }
             }
         }
