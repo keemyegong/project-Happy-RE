@@ -97,7 +97,7 @@ function RtcClient() {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ type: 'leave', id: position.id }));
       }
-      client.close();
+      //client.close();
     };
   }, [position]);
 
