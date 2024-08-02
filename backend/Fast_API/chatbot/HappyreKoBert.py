@@ -16,10 +16,10 @@ def singleton(cls):
         return instances[cls]
     return get_instance
 
-@singleton
 class HappyreKoBert:
     def __init__(self, path):
         LOAD_DIR = os.path.abspath(os.path.join(SAVE_DIR, path))
+        print(LOAD_DIR)
         
         self.tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
         self.model = BertForSequenceClassification.from_pretrained(LOAD_DIR, num_labels=1, ignore_mismatched_sizes=True)

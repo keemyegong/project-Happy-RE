@@ -13,10 +13,6 @@ app = FastAPI()
 origins = [
     # '*',
     os.getenv("TEST_LOCAL"),
-    # os.getenv("TEST_LOCAL_IP"),
-    # "http://",
-    # "https://"
-    
 ]
 
 app.add_middleware(
