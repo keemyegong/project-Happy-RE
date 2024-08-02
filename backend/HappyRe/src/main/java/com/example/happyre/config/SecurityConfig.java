@@ -86,21 +86,26 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());
 
         //filter 추가
+        // 필터 추가
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil)
-                        , UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
+                        UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
-                        .authorizeRequests()
-                        .antMatchers("/api/oauth2/authorization/**").authenticated() // 특정 경로에 대해 인증 요구
-                        .anyRequest().permitAll();
-        //oauth2
+                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+
+        // 경로별 인가 작업
+        http
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/api/oauth2/authorization/**").authenticated() // 특정 경로에 대해 인증 요구
+                        .anyRequest().permitAll());
+
+        // OAuth2 설정
         http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                );
+                        .successHandler(customSuccessHandler));
+
 
         //경로별 인가 작업
         http
