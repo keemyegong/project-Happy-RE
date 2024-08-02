@@ -26,9 +26,14 @@ def singleton(cls):
 @singleton
 class HappyreKoBert:
     def __init__(self, path):
+        LOAD_DIR = os.path.abspath(os.path.join(SAVE_DIR, path))
+        print(f"SAVE_DIR : {SAVE_DIR}")
+        print(f"path : {path}")
+        print(f"LOAD_DIR : {LOAD_DIR}")
+        
         self.tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
         self.model = BertForSequenceClassification.from_pretrained('skt/kobert-base-v1', num_labels=1, ignore_mismatched_sizes=True)
-        self.load(SAVE_DIR + path)
+        self.load(LOAD_DIR)
         self.model.eval()
         self.max_len = 512  # Set a max length for the tokenizer
 

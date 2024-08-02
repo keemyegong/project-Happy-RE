@@ -1,5 +1,6 @@
 import os
 import requests
+import math
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from typing import List
@@ -31,7 +32,8 @@ kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 
-SPRING_MESSAGE_POST_URL=os.getenv("SPRING_MESSAGE_POST")
+SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
+print(f"Spring url : {SPRING_MESSAGE_POST_URL}")
 
 # -------------------------------사용자 정의 함수-------------------------------
 
@@ -40,18 +42,54 @@ async def emotion_analysis(text : str):
     텍스트 감정 추출 함수
     현재 Y만 작동
     '''
-    return (1,kobert_y(text))
+    return (-1,kobert_y(text))
 
 async def emotion_tagging(user_id: str, text: str):
     '''
     user_emotion_russel 딕셔너리에 문장과 추출된 러셀 감정 좌표를 매칭
+    
+    - user_emotion_russel 구조
+    {
+    "user_id": {
+        "avg_coord": (0,0),
+        "logs": {
+                "text1":(1, 0.5),
+                "text2":(0.5, 1)
+            }
+        }
+    }
     '''
+    trigger = False
+    
+    russel_coord = await emotion_analysis(text)
+    
     if user_id not in user_emotion_russel:
-        user_emotion_russel[user_id] = {}
-    user_emotion_russel[user_id][text] = await emotion_analysis(text)
-    print(f"AI test : {user_emotion_russel[user_id][text]}")
-    print(f"user_emotion_russel: {user_emotion_russel}")
-    print("---------------------------------------")
+        user_emotion_russel[user_id] = {
+            "avg_coord":(0,0),
+            "logs":{}
+        }
+        
+    user_emotion_russel[user_id]["logs"][text] = russel_coord
+    logs_num = len(user_emotion_russel[user_id]["logs"].keys())
+    
+    cur_avg = user_emotion_russel[user_id]["avg_coord"]
+    # moved_dist = math.sqrt((russel_coord[0]-cur_avg[0])**2 + (russel_coord[1] - cur_avg[1])**2)
+    
+    if  russel_coord[0] < -0.5 and logs_num > 3:
+        trigger = True
+    
+    user_emotion_russel[user_id]["avg_coord"] = (
+        (cur_avg[0] * (logs_num - 1)+ russel_coord[0])/logs_num,
+        (cur_avg[1] * (logs_num - 1)+ russel_coord[1])/logs_num
+    )
+    
+    return trigger
+    
+    # user_emotion_russel[user_id].append(tagged_coord)
+    
+    # print(f"AI test : {user_emotion_russel[user_id][text]}")
+    # print(f"user_emotion_russel: {user_emotion_russel}")
+    # print("---------------------------------------")
     
 
 
@@ -78,12 +116,12 @@ async def test(user_id:str=Depends(decode_jwt)):
 # post 요청 테스트 용 함수
 @router.post('/test')
 async def post_test(request:Request):
-    # token = request.headers["authorization"].split(' ')[-1]
-    # result = decode_jwt(token)
-    body = await request.json()
-    print(body)
-    return body
-
+    token = request.headers["authorization"].split(" ")[-1]
+    user_id = decode_jwt(token)
+    bodies = await request.json()
+    user_session[user_id] = bodies
+    print(user_session)
+    return user_id
 # POST 요청으로 chabot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
 @router.post('/')
@@ -101,25 +139,35 @@ async def chatbot(request: ChatRequest, user_id: str = Depends(decode_jwt)):
     api_instance = user_session[user_id]
     user_input = request.user_input
     audio = request.audio
-    
-    message_session_update(user_id, user_input, "user", audio)
+    if request.request == "user":
+        message_session_update(user_id, user_input, "user", audio)
+    elif request.request == "chatbot":
+        message_session_update(user_id, user_input, "starter", audio)
     
     response = api_instance.generateResponse(user_input)
-    json_item_data = jsonable_encoder(response)
+    # json_item_data = jsonable_encoder(response)
     
-    message_session_update(user_id, json_item_data, "ai", "Null")
+    # message_session_update(user_id, json_item_data, "ai", None)
     
-    await emotion_tagging(user_id, user_input)
+    trigger = False
+    if request.request == "user":
+        trigger = await emotion_tagging(user_id, user_input)
     
-    print(f"response : {json_item_data}")
+    print(f"response : {response}")
     print("---------------------------------------")
     print(f"user session: {user_session}")
     print("---------------------------------------")
     
     pprint(f"message_session: {user_message}")
-    return JSONResponse(content=json_item_data, status_code=200)
+    
+    content = {
+        "content":response,
+        "trigger":trigger
+    }
+    
+    return JSONResponse(content=content, status_code=200)
 
-
+# spring 메세지 저장 요청 함수
 @router.post("/post_message")
 async def post_message_request(request:Request):
     '''
@@ -134,6 +182,8 @@ async def post_message_request(request:Request):
     
     try:
         for idx in range(len(user_message[user_id])):
+            if user_message[user_id][idx]["speaker"] == "starter":
+                continue
             message = {
                 "diaryId":1,
                 "sequence": idx+1,
@@ -145,16 +195,18 @@ async def post_message_request(request:Request):
                 "Authorization" : f"Bearer {token}",
                 "Content-Type": "application/json"
             }
+            print(message)
             try:
                 print("츄라이")
-                # client = httpx.AsyncClient()
-                # async with httpx.AsyncClient() as client:
-                #     print("됨?")
-                #     # jwt 토큰 같이 보내줘야함 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                #     await client.post(SPRING_MESSAGE_POST, json=message)
-                # print("킅")
-                response = await requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
-                print(response.json())
+                async with httpx.AsyncClient() as client:
+                    print("됨?")
+                    response = await client.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
+                    if response.status_code != 200:
+                        print(f"뭔가 오류남 : {response.json()}")
+                        raise HTTPException(status_code=500, detail=f"Error: {response.text}")
+                print(response)
+                # await requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
+                print("하나 드감")
             except Exception as e:
                 print(e)
                 raise HTTPException(status_code=500, detail=str(e))
@@ -162,6 +214,7 @@ async def post_message_request(request:Request):
         
     except KeyError as e:
         raise HTTPException(status_code=500, detail="Could not find logs")
+    
     del user_message[user_id]
     print("유저 섹션 삭제")
 # 세션에서 삭제
