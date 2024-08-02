@@ -90,14 +90,16 @@ public class SecurityConfig {
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
                         UsernamePasswordAuthenticationFilter.class);
-        http
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+
 
         // 경로별 인가 작업
         http
-                .authorizeHttpRequests((auth) -> auth
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/oauth2/authorization/**").authenticated() // 특정 경로에 대해 인증 요구
-                        .anyRequest().permitAll());
+                        .anyRequest().permitAll() // 모든 다른 요청은 허용
+                )
+                .addFilterAfter(jwtFilter, OAuth2LoginAuthenticationFilter.class); // JWTFilter 추가
+
 
         // OAuth2 설정
         http
