@@ -1,6 +1,5 @@
-// App.js
-import React, { createContext, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import React, { createContext } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 import Nav from './components/navbar/Navbar';
@@ -22,8 +21,6 @@ import EmotionGraph from './components/emotion-graph/Test';
 import './App.css';
 
 export const universeVariable = createContext();
-
-
 
 const PrivateRoute = ({ children }) => {
   const token = Cookies.get('Authorization');
