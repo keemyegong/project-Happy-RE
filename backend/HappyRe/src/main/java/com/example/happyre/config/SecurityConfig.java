@@ -87,9 +87,13 @@ public class SecurityConfig {
 
         //filter 추가
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil)
+                        , UsernamePasswordAuthenticationFilter.class);
         http
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
+                        .authorizeRequests()
+                        .antMatchers("/api/oauth2/authorization/**").authenticated() // 특정 경로에 대해 인증 요구
+                        .anyRequest().permitAll();
         //oauth2
         http
                 .oauth2Login((oauth2) -> oauth2
