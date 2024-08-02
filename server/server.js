@@ -2,7 +2,7 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
-// const kurento = require('kurento-client');
+const kurento = require('kurento-client');
 const path = require('path');
 
 const app = express();
@@ -22,53 +22,52 @@ const wss = new WebSocket.Server({ server });
 //   kurentoClient = client;
 // });
 
-const kurento = require('kurento-client');
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 
 kurento(ws_uri, (error, kurentoClient) => {
-    if (error) return console.error('Kurento connection error:', error);
+  if (error) return console.error('Kurento connection error:', error);
 
-    kurentoClient.create('MediaPipeline', (error, pipeline) => {
-      if (error) return console.error('MediaPipeline error:', error);
+  kurentoClient.create('MediaPipeline', (error, pipeline) => {
+    if (error) return console.error('MediaPipeline error:', error);
 
-      pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-        if (error) return console.error('WebRtcEndpoint error:', error);
+    pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
+      if (error) return console.error('WebRtcEndpoint error:', error);
 
-        console.log('WebRtcEndpoint created successfully');
-
-        // 추가적인 WebRTC 설정 및 테스트 코드를 여기에 작성합니다.
-      });
+      console.log('WebRtcEndpoint created successfully');
     });
   });
+});
 
 let idCounter = 0;
 const users = {};
 
 wss.on('connection', (ws) => {
   const userId = idCounter++;
-  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } }; // pipeline과 webRtcEndpoint 제거
-  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId })); // id 추가
+  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
+  console.log(`User connected: ${userId}`);
+  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
+    console.log(`Received message from user ${userId}:`, data);
     switch (data.type) {
       case 'move':
         handleMove(userId, data.position);
         break;
       case 'offer':
+        console.log(`Received offer from user ${userId}`);
         // handleOffer(userId, data); // Kurento 관련 부분 주석 처리
         break;
       case 'candidate':
+        console.log(`Received candidate from user ${userId}`);
         // handleCandidate(userId, data.candidate); // Kurento 관련 부분 주석 처리
         break;
     }
   });
 
   ws.on('close', () => {
-    // if (users[userId] && users[userId].pipeline) {
-    //   users[userId].pipeline.release(); // Kurento 관련 부분 주석 처리
-    // }
+    console.log(`User disconnected: ${userId}`);
     delete users[userId];
   });
 });
@@ -92,70 +91,6 @@ function getNearbyUsers(userId, distance) {
     return Math.sqrt(dx * dx + dy * dy) <= distance;
   });
 }
-
-// async function connectUsers(userId1, userId2) {
-//   const user1 = users[userId1];
-//   const user2 = users[userId2];
-
-//   if (!kurentoClient) {
-//     return user1.ws.send(JSON.stringify({ type: 'error', message: 'Kurento client is not initialized' }));
-//   }
-
-//   kurentoClient.create('MediaPipeline', (error, pipeline) => {
-//     if (error) {
-//       return user1.ws.send(JSON.stringify({ type: 'error', message: error }));
-//     }
-//     user1.pipeline = pipeline;
-//     user2.pipeline = pipeline;
-
-//     pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint1) => {
-//       if (error) {
-//         return user1.ws.send(JSON.stringify({ type: 'error', message: error }));
-//       }
-//       user1.webRtcEndpoint = webRtcEndpoint1;
-
-//       pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint2) => {
-//         if (error) {
-//           return user2.ws.send(JSON.stringify({ type: 'error', message: error }));
-//         }
-//         user2.webRtcEndpoint = webRtcEndpoint2;
-
-//         user1.webRtcEndpoint.connect(user2.webRtcEndpoint);
-//         user2.webRtcEndpoint.connect(user1.webRtcEndpoint);
-
-//         user1.webRtcEndpoint.gatherCandidates((error) => {
-//           if (error) {
-//             return user1.ws.send(JSON.stringify({ type: 'error', message: error }));
-//           }
-//         });
-//         user2.webRtcEndpoint.gatherCandidates((error) => {
-//           if (error) {
-//             return user2.ws.send(JSON.stringify({ type: 'error', message: error }));
-//           }
-//         });
-//       });
-//     });
-//   });
-// }
-
-// function handleOffer(userId, data) {
-//   const user = users[userId];
-//   if (!user.webRtcEndpoint) return;
-
-//   user.webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
-//     if (error) {
-//       return user.ws.send(JSON.stringify({ type: 'error', message: error }));
-//     }
-//     user.ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer }));
-//   });
-// }
-
-// function handleCandidate(userId, candidate) {
-//   const user = users[userId];
-//   if (user.webRtcEndpoint) {
-//     user.webRtcEndpoint.addIceCandidate(candidate);
-//   }
-// }
 
 function broadcast(message) {
   wss.clients.forEach(client => {

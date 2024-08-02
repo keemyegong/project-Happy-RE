@@ -55,13 +55,15 @@ function RtcClient() {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
+      console.log('Message from server:', dataFromServer);
+
       if (dataFromServer.type === 'assign_id') {
         const assignedPosition = dataFromServer.position;
         assignedPosition.id = dataFromServer.id; // 서버가 id를 전달하는 것으로 가정
         setPosition(assignedPosition);
         setUserImage(getImageForPosition(assignedPosition.x, assignedPosition.y));
       } else if (dataFromServer.users) {
-        console.log(position.id)
+        console.log('Current position ID:', position.id);
         const filteredUsers = dataFromServer.users.filter(user => user.id !== position.id);
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -165,8 +167,23 @@ function RtcClient() {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
+    console.log('Creating PeerConnection with user:', userId);
 
-    console.log('WebRTC 연결 완료');
+    peerConnection.oniceconnectionstatechange = () => {
+      if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+        console.log('WebRTC connection established with user:', userId);
+        // 마이크를 on 상태로 유지
+        if (localAudioRef.current) {
+          localAudioRef.current.muted = false;
+        }
+      } else if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'closed') {
+        console.log('WebRTC connection closed with user:', userId);
+        // 마이크를 off 상태로 유지
+        if (localAudioRef.current) {
+          localAudioRef.current.muted = true;
+        }
+      }
+    };
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -182,17 +199,6 @@ function RtcClient() {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
-      }
-    };
-
-    peerConnection.oniceconnectionstatechange = () => {
-      if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
-        console.log('마이크 on');
-      } else if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'closed') {
-        console.log('마이크 off');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
-        }
       }
     };
 
