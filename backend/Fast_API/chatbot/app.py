@@ -68,7 +68,7 @@ async def emotion_tagging(user_id: str, text: str):
     if user_id not in user_emotion_russel:
         user_emotion_russel[user_id] = {}
         
-    if russel_coord[0] < -0.5:
+    if russel_coord[0] < -0.8:
         trigger = True
         user_emotion_russel[user_id][text] = russel_coord
     
@@ -225,9 +225,18 @@ async def session_delete(user_id: str=Depends(decode_jwt)):
     return JSONResponse(content="session deleted",status_code=200)
 
 @router.post("/summarize_russel")
-def summarize_russel(request:TestMod, user_id: str=Depends(decode_jwt)):
+async def summarize_russel(request:Request):
     summary_instance = SummarizeChatbot(api_key)
-    text = request.text
-    response = summary_instance.generateResponse(text)
+    token = request.headers["authorization"].split(" ")[-1]
+    user_id = decode_jwt(token)
     
-    return response
+    for event in user_emotion_russel[user_id].keys():
+        summary = summary_instance.generateResponse(event)
+        temp = {
+            "event":event,
+            "summary":summary,
+            "russel":user_emotion_russel[user_id][event]
+        }
+        print(temp)
+    
+    return
