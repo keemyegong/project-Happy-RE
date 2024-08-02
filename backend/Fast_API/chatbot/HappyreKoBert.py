@@ -1,20 +1,13 @@
-# 실사용 테스트
 import sys, io, os
 from transformers import BertForSequenceClassification
 from .kobert_tokenizer import KoBERTTokenizer
 from accelerate import Accelerator
 import torch
 
-# SAVE_DIR = "./KoBertCheckpoint/"
-
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 SAVE_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "KoBertCheckpoint/"))
 
-print(f"SAVE DIR : {SAVE_DIR}")
-
-
-
+# Applies Singleton pattern to the class
 def singleton(cls):
     instances = {}
     def get_instance(*args, **kwargs):
@@ -23,17 +16,13 @@ def singleton(cls):
         return instances[cls]
     return get_instance
 
-@singleton
 class HappyreKoBert:
     def __init__(self, path):
         LOAD_DIR = os.path.abspath(os.path.join(SAVE_DIR, path))
-        print(f"SAVE_DIR : {SAVE_DIR}")
-        print(f"path : {path}")
-        print(f"LOAD_DIR : {LOAD_DIR}")
+        print(LOAD_DIR)
         
         self.tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
-        self.model = BertForSequenceClassification.from_pretrained('skt/kobert-base-v1', num_labels=1, ignore_mismatched_sizes=True)
-        self.load(LOAD_DIR)
+        self.model = BertForSequenceClassification.from_pretrained(LOAD_DIR, num_labels=1, ignore_mismatched_sizes=True)
         self.model.eval()
         self.max_len = 512  # Set a max length for the tokenizer
 
@@ -56,22 +45,4 @@ class HappyreKoBert:
         with torch.no_grad():
             outputs = self.model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         
-        return outputs.logits.item()  # Assuming single label regression, return the single scalar value
-    
-    def load(self, path):
-        checkpoint = torch.load(path, map_location='cpu')
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        
-if __name__ == "__main__":
-    # Set standard input to handle UTF-8
-    sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
-    
-    accelerator = Accelerator(cpu=True)
-    happyre_kobert = HappyreKoBert("HappyREKoBERT_y_slice_163923_epoch_12_flag_realnew.pth")
-
-    while True:
-        inputString = input("Enter input string (or 'exit' to quit): ")
-        if inputString.lower() == 'exit':
-            break
-        output = happyre_kobert(inputString)
-        print(f"Model output: {output}")
+        return outputs.logits.item()

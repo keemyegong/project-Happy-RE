@@ -74,6 +74,12 @@ public class MessageController {
         }
     }
 
+<<<<<<< HEAD
+    @PostMapping
+    public MessageEntity createMessage(@RequestBody MessageEntity message) {
+        System.out.println("온건가");
+        return messageService.insert(message);
+=======
     @GetMapping("/diary/{diaryId}")
     public ResponseEntity<?> getMessageByDiaryId(HttpServletRequest request, @PathVariable Integer diaryId) {
         try {
@@ -87,6 +93,7 @@ public class MessageController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Diary Id로 Message 검색중 에러: " + e.getMessage());
         }
+>>>>>>> b824dfa570b8a133aa8c30efbf6c680409694aa9
     }
 
     @PutMapping("/")

@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from typing import List
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from .Chatbot import Chatbot
+from .Chatbot import Chatbot, SummarizeChatbot
 from packages.dependencies import decode_jwt
-from models import ChatRequest
+from models import ChatRequest, TestMod
 import httpx
 from pprint import pprint
 from .HappyreKoBert import HappyreKoBert
@@ -24,8 +24,13 @@ user_emotion_russel = {}
 
 user_message = {}
 
+KOBERT_CHECKPOINT_X = os.environ.get('KOBERT_CHECKPOINT_X')
 KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
+
+print(KOBERT_CHECKPOINT_X)
 print(KOBERT_CHECKPOINT_Y)
+
+kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
 kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 
 # 현재 경로와 BASE_DIR 경로
@@ -35,14 +40,16 @@ BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
 print(f"Spring url : {SPRING_MESSAGE_POST_URL}")
 
+test_dict = {
+    "tet":"1",
+    "ttt":"2",
+    "fff":"3"
+}
+
 # -------------------------------사용자 정의 함수-------------------------------
 
 async def emotion_analysis(text : str):
-    '''
-    텍스트 감정 추출 함수
-    현재 Y만 작동
-    '''
-    return (-1,kobert_y(text))
+    return (kobert_x(text), kobert_y(text))
 
 async def emotion_tagging(user_id: str, text: str):
     '''
@@ -51,12 +58,7 @@ async def emotion_tagging(user_id: str, text: str):
     - user_emotion_russel 구조
     {
     "user_id": {
-        "avg_coord": (0,0),
-        "logs": {
-                "text1":(1, 0.5),
-                "text2":(0.5, 1)
-            }
-        }
+        "text": "(0,0)"
     }
     '''
     trigger = False
@@ -64,24 +66,11 @@ async def emotion_tagging(user_id: str, text: str):
     russel_coord = await emotion_analysis(text)
     
     if user_id not in user_emotion_russel:
-        user_emotion_russel[user_id] = {
-            "avg_coord":(0,0),
-            "logs":{}
-        }
+        user_emotion_russel[user_id] = {}
         
-    user_emotion_russel[user_id]["logs"][text] = russel_coord
-    logs_num = len(user_emotion_russel[user_id]["logs"].keys())
-    
-    cur_avg = user_emotion_russel[user_id]["avg_coord"]
-    # moved_dist = math.sqrt((russel_coord[0]-cur_avg[0])**2 + (russel_coord[1] - cur_avg[1])**2)
-    
-    if  russel_coord[0] < -0.5 and logs_num > 3:
+    if russel_coord[0] < -0.5:
         trigger = True
-    
-    user_emotion_russel[user_id]["avg_coord"] = (
-        (cur_avg[0] * (logs_num - 1)+ russel_coord[0])/logs_num,
-        (cur_avg[1] * (logs_num - 1)+ russel_coord[1])/logs_num
-    )
+        user_emotion_russel[user_id][text] = russel_coord
     
     return trigger
     
@@ -235,4 +224,10 @@ async def session_delete(user_id: str=Depends(decode_jwt)):
     # return uuid_dict
     return JSONResponse(content="session deleted",status_code=200)
 
-
+@router.post("/summarize_russel")
+def summarize_russel(request:TestMod, user_id: str=Depends(decode_jwt)):
+    summary_instance = SummarizeChatbot(api_key)
+    text = request.text
+    response = summary_instance.generateResponse(text)
+    
+    return response
