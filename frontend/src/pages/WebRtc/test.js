@@ -67,9 +67,9 @@
 //           ...user,
 //           image: getImageForPosition(user.x, user.y)
 //         })));
-    
+
 //         console.log('Current users list:', filteredUsers); // 콘솔에 현재 유저 리스트 출력
-    
+      
 
 //         filteredUsers.forEach(user => {
 //           if (user.id === undefined || position.id === null) return;
@@ -164,9 +164,9 @@
 //       iceServers: [
 //         { urls: 'stun:stun.l.google.com:19302' }
 //       ]
-//     })
-//     console.log('webrtc 연결완료')
-//     ;
+//     });
+
+//     console.log('WebRTC 연결 완료');
 
 //     peerConnection.onicecandidate = (event) => {
 //       if (event.candidate) {
@@ -182,6 +182,17 @@
 //     peerConnection.ontrack = (event) => {
 //       if (localAudioRef.current) {
 //         localAudioRef.current.srcObject = event.streams[0];
+//       }
+//     };
+
+//     peerConnection.oniceconnectionstatechange = () => {
+//       if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+//         console.log('마이크 on');
+//       } else if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'closed') {
+//         console.log('마이크 off');
+//         if (localAudioRef.current) {
+//           localAudioRef.current.srcObject = null;
+//         }
 //       }
 //     };
 
