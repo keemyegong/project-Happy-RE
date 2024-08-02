@@ -1,3 +1,4 @@
+// diaryreport.js
 import React, { useState } from 'react';
 import './DiaryReport.css';
 import KeywordCard from './KeywordCard';
@@ -7,7 +8,49 @@ import Test from '../emotion-graph/Test';
 const DiaryReport = ({ selectedDay }) => {
   const [emotionData, setEmotionData] = useState([]); 
   if (!selectedDay) return null; // selectedDay가 없으면 아무것도 렌더링하지 않음
-  const { year, month, date, dayLabel } = selectedDay;
+  const { year, month, date } = selectedDay;
+
+  const dummyPositiveKeywords = [
+    {
+      title: 'POSITIVE1',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#기쁨', '#신남', '#행복'],
+      date: `${year}-${month}-${date}`
+    },
+    {
+      title: 'POSITIVE2',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#기쁨', '#신남', '#행복'],
+      date: `${year}-${month}-${date}`
+    },
+    {
+      title: 'POSITIVE3',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#기쁨', '#신남', '#행복'],
+      date: `${year}-${month}-${date}`
+    }
+  ];
+
+  const dummyNegativeKeywords = [
+    {
+      title: 'NEGATIVE1',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#슬픔', '#화남', '#우울'],
+      date: `${year}-${month}-${date}`
+    },
+    {
+      title: 'NEGATIVE2',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#슬픔', '#화남', '#우울'],
+      date: `${year}-${month}-${date}`
+    },
+    {
+      title: 'NEGATIVE3',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      emotionTags: ['#슬픔', '#화남', '#우울'],
+      date: `${year}-${month}-${date}`
+    }
+  ];
 
   return (
     <div className='DiaryReport'>
@@ -22,16 +65,22 @@ const DiaryReport = ({ selectedDay }) => {
           <div className='diary-report-keyword-positive'>
             <p className='diary-report-keyword-positive-header'>POSITIVE</p>
             <div className='diary-report-keyword-positive-content'>
-              {[1, 2, 3].map((item) => (
-                <KeywordCard key={`positive-${item}`} selectedDay={selectedDay} />
+              {dummyPositiveKeywords.map((keyword, index) => (
+                <KeywordCard
+                  key={`positive-${index}`}
+                  keyword={keyword}
+                />
               ))}
             </div>
           </div>
           <div className='diary-report-keyword-negative'>
             <div className='diary-report-keyword-negative-header'>NEGATIVE</div>
             <div className='diary-report-keyword-negative-content'>
-              {[1, 2, 3].map((item) => (
-                <KeywordCard key={`negative-${item}`} selectedDay={selectedDay} />
+              {dummyNegativeKeywords.map((keyword, index) => (
+                <KeywordCard
+                  key={`negative-${index}`}
+                  keyword={keyword}
+                />
               ))}
             </div>
           </div>

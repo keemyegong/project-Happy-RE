@@ -1,3 +1,4 @@
+/* keywordcard.css */
 @font-face {
   font-family: 'Pretendard-Regular';
   src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
@@ -5,35 +6,43 @@
 }
 
 .KeywordCard {
-  padding: 0px 5px;
-  width: 200px;
-  height: 30%;
+  padding: 20px;
+  color: white;
   font-family: 'Pretendard-Regular';
+  border-radius: 10px;
+  margin-top: 10px;
 }
 
 .keyword-title {
-  font-size: clamp(12px, 1.3vw, 14px);
+  font-size: clamp(16px, 1.3vw, 20px);
   font-weight: 700;
-  color: white;
   padding-bottom: 5px;
 }
 
 .keyword-content {
-  font-size: clamp(11px, 1.2vw, 13px);
+  font-size: clamp(12px, 1.3vw, 14px);
   font-weight: 100;
-  color: white;
   opacity: 0.7;
   padding-bottom: 5px;
 }
 
 .keyword-line {
   border-bottom: 0.5px solid white;
-  padding-bottom: 5px;
+  margin: 10px 0;
+}
+
+.keyword-date {
+  font-size: clamp(12px, 1.3vw, 14px);
+  opacity: 0.7;
+  margin-bottom: 10px;
 }
 
 .emotion-tags {
-  font-size: clamp(11px, 1.2vw, 13px);
+  font-size: clamp(12px, 1.3vw, 14px);
   font-weight: 100;
-  color: white;
   opacity: 0.7;
+}
+
+.emotion-tag {
+  margin-right: 5px;
 }
