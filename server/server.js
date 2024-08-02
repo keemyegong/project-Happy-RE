@@ -53,12 +53,15 @@ wss.on('connection', (ws) => {
         console.log(`Received candidate from user ${userId}`);
         // handleCandidate(userId, data.candidate); // Kurento 관련 부분 주석 처리
         break;
+      case 'leave':
+        handleLeave(userId);
+        break;
     }
   });
 
   ws.on('close', () => {
     console.log(`User disconnected: ${userId}`);
-    delete users[userId];
+    handleLeave(userId);
   });
 });
 
@@ -80,6 +83,13 @@ function getNearbyUsers(userId, distance) {
     const dy = user.position.y - currentUser.position.y;
     return Math.sqrt(dx * dx + dy * dy) <= distance;
   });
+}
+
+function handleLeave(userId) {
+  if (users[userId]) {
+    delete users[userId];
+    broadcast({ type: 'remove_user', id: userId });
+  }
 }
 
 function broadcast(message) {
