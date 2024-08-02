@@ -3,21 +3,23 @@
   flex-direction: row;
   height: 100vh;
   min-width: 375px;
-  
+  margin-left: 50px;
+  margin-right: ;
 }
 
 .hidden {
   align-content: center;
-  padding : 5px;
+  padding: 5px;
 }
 
-.visible{
+.visible {
   align-content: center;
   padding: 5px;
 }
 
 .profile-container {
-  flex: 1;
+  /* flex 값을 1에서 0.5로 줄였습니다 */
+  flex: 0.5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +29,8 @@
 }
 
 .message-container {
-  flex: 3;
+  /* flex 값을 3에서 3.5로 늘렸습니다 */
+  flex: 4;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
@@ -40,7 +43,8 @@
 }
 
 .input-container {
-  flex: 2;
+  flex: 2.5;
+  width: 400px;
   background-color: #e1e1e100;
   padding: 10px;
   align-self: center;
