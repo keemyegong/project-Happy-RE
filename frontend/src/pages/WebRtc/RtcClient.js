@@ -7,7 +7,7 @@ import defaultImg from '../../assets/characters/default.png';
 import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000'); // HTTPS에 맞게 WebSocket URL 설정
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/ws');
 const peerConnections = {};
 
 function RtcClient() {
