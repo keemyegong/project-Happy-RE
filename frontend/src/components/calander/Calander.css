@@ -4,15 +4,18 @@
   font-weight: 400;
   font-style: normal;
 }
+
 .calendar {
   font-family: 'Pretendard-Regular';
   font-weight: 100;
-  width: 570px;
-  height: 412px;
+  width: 100%; /* 기존 90%에서 100%로 변경 */
+  max-width: 400px; /* 기존 500px에서 400px로 변경 */
+  height: auto;
   margin: 0 auto;
-  padding: 20px;
+  padding: 15px; /* 기존 20px에서 15px로 변경 */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
 }
 
 .header {
@@ -20,11 +23,11 @@
   opacity: 0.8;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* 기존 20px에서 15px로 변경 */
 }
 
 .header-line {
-  margin-top: 20px;
+  margin-top: 15px; /* 기존 20px에서 15px로 변경 */
   border-bottom: solid 0.5px white;  
 }
 
@@ -56,7 +59,7 @@
   opacity: 0.8;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 8px; /* 기존 10px에서 8px로 변경 */
 }
 
 .body {
@@ -72,9 +75,9 @@
 .cell {
   color: white;
   opacity: 0.8;
-  font-size: 12px;
+  font-size: 11px; /* 기존 12px에서 11px로 변경 */
   flex-grow: 1;
-  padding: 20px;
+  padding: 10px; /* 기존 20px에서 15px로 변경 */
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -87,7 +90,7 @@
 .cell.selected {
   color: white;
   opacity: 1;
-  font-weight:900;
+  font-weight: 900;
 }
 
 .cell .number {
@@ -97,14 +100,47 @@
 
 .cell .bg {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
+  top: 8px; /* 기존 10px에서 8px로 변경 */
+  left: 8px; /* 기존 10px에서 8px로 변경 */
+  right: 8px; /* 기존 10px에서 8px로 변경 */
+  bottom: 8px; /* 기존 10px에서 8px로 변경 */
   opacity: 0;
   transition: opacity 0.2s;
 }
 
 .cell.selected .bg {
   opacity: 1;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .calendar {
+    width: 100%;
+    padding: 8px; /* 기존 10px에서 8px로 변경 */
+  }
+
+  .cell {
+    font-size: 9px; /* 기존 10px에서 9px로 변경 */
+    padding: 8px; /* 기존 10px에서 8px로 변경 */
+  }
+
+  .header, .days {
+    font-size: 13px; /* 기존 14px에서 13px로 변경 */
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar {
+    width: 100%;
+    padding: 4px; /* 기존 5px에서 4px로 변경 */
+  }
+
+  .cell {
+    font-size: 7px; /* 기존 8px에서 7px로 변경 */
+    padding: 4px; /* 기존 5px에서 4px로 변경 */
+  }
+
+  .header, .days {
+    font-size: 11px; /* 기존 12px에서 11px로 변경 */
+  }
 }

@@ -13,8 +13,9 @@ public class MessageEntity {
     @Column(name = "message_id")
     private Integer messageId;
 
-    @Column(name="diary_id", nullable = false)
-    private Integer diaryId;
+    @ManyToOne
+    @JoinColumn(name = "diary_id", nullable = false)
+    private DiaryEntity diaryEntity;
 
     @Column(nullable = false)
     private Integer sequence;

@@ -19,7 +19,7 @@ function Login() {
 
   const googleLogin = ()=>{
 
-    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
     
   }
 
@@ -30,7 +30,7 @@ function Login() {
     }
 
     axios.post(
-      `${universal.defaultUrl}/login`,
+      `${universal.defaultUrl}/api/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;

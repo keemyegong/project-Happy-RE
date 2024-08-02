@@ -1,5 +1,6 @@
 import React from 'react';
-import './Button.css'
+import './Button.css';
+
 // import propTypes from 'prop-types';
 
 // Button 사용법 : <Button className='{원하는 클래스 이름 아래 참조}' content='{버튼내용}'/>
@@ -14,6 +15,6 @@ const Button = (props)=>{
     return(
         <button className={props.className} onClick={props.onClick}>{props.content}</button>
     );
-}
+};
 
 export default Button;

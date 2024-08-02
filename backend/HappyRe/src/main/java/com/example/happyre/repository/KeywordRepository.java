@@ -1,6 +1,19 @@
 package com.example.happyre.repository;
 
+import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.KeywordEntity;
+import com.example.happyre.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface KeywordRepository extends JpaRepository<KeywordEntity, Integer>{}
+import java.util.List;
+
+public interface KeywordRepository extends JpaRepository<KeywordEntity, Integer> {
+
+    @Query("SELECT k FROM KeywordEntity k WHERE k.diaryEntity = :diaryEntity")
+    List<KeywordEntity> findByDiaryEntity(@Param("diaryEntity") DiaryEntity diaryEntity);
+
+    @Query("SELECT k FROM KeywordEntity k INNER JOIN k.diaryEntity d WHERE d.userEntity = :userEntity AND k.keyword = :keyword")
+    List<KeywordEntity> findByKeywordAndUserEntity(@Param("keyword") String keyword, @Param("userEntity") UserEntity userEntity);
+}

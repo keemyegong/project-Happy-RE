@@ -1,7 +1,5 @@
 import React, { useState,useContext, useEffect, useRef } from 'react';
 import {universeVariable} from '../../App';
-import { Buffer } from 'buffer';
-// import RNFetchBlob from "rn-fetch-blob";
 
 import axios from 'axios';
 import './UserUpdate.css';
@@ -13,7 +11,7 @@ import { useNavigate  } from "react-router-dom";
 
 const UserUpdate = ()=>{
 
-  const [image,setImage] = useState(userProfileImage);
+  const [image,setImage] = useState('');
   const [imagefile,setImageFile] = useState();
   const fileInput = useRef(null)
 
@@ -58,9 +56,60 @@ const UserUpdate = ()=>{
 
       }).catch(()=>{
         console.log('이미지 파일이 존재하지 않습니다.')
+        setImage(userProfileImage);
       })
     })
   },[])
+
+  const changeUserInfo = ()=>{
+    // formData.append('name',nickname);
+    // formData.append('password',password);
+    if (imagefile){
+      formData.append('file',imagefile);
+    }
+    
+    let userInfo = {};
+
+    if(password!==password2){
+      alert('비밀번호가 다릅니다!')
+    } else{
+      if (password != null ){
+        userInfo = {
+          name:nickname,
+          password
+        };
+      } else {
+        userInfo = {
+          name:nickname
+        };
+      }
+
+      axios.put(
+        `${universal.defaultUrl}/api/user/me`,
+        userInfo,
+        {
+          headers: {
+          Authorization : `Bearer ${Cookies.get('Authorization')}`
+        }}
+      ).then((Response)=>{
+        // console.log(Response.data);
+        if (imagefile){
+          axios.post(
+            `${universal.defaultUrl}/api/user/uploadprofile`,
+            formData,
+            {
+              headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization : `Bearer ${Cookies.get('Authorization')}`
+            }}
+          )
+        }
+      }).then((Response)=>{
+        navigate('/profile');
+      })
+    }
+  }
+
   return(
     <div className='user-update-container'>
       <h1 className='text-center text-white'>Profile</h1>
@@ -80,52 +129,7 @@ const UserUpdate = ()=>{
         <UserInfoInput
         setNickname={setNickname} setPassword={setPassword} setPassword2={setPassword2} nickname={nickname}/>
       </div>
-      <Button className='btn dark-btn middle mb-3' content='Update' onClick={()=>{
-        // formData.append('name',nickname);
-        // formData.append('password',password);
-        if (imagefile){
-          formData.append('file',imagefile);
-        }
-
-        if(password!==password2){
-          alert('비밀번호가 다릅니다!')
-        } else{
-          axios.put(
-            `${universal.defaultUrl}/api/user/me`,
-            {
-              name:nickname,
-              password
-            },
-            {
-              headers: {
-              Authorization : `Bearer ${Cookies.get('Authorization')}`
-            }}
-          ).then((Response)=>{
-            // console.log(Response.data);
-            axios.post(
-              `${universal.defaultUrl}/api/user/uploadprofile`,
-              formData,
-              {
-                headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization : `Bearer ${Cookies.get('Authorization')}`
-              }}
-            )
-            navigate('/profile');
-          }).then((Response)=>{
-            console.log(Response);
-            for (var key of formData.entries()) {
-              console.log(key[0] + ', ' + key[1]);
-            }
-          })
-          .catch((err)=>{
-            console.log(err);
-            for (var key of formData.entries()) {
-              console.log(key[0] + ', ' + key[1]);
-          }
-          })
-        }
-      }} />
+      <Button className='btn dark-btn middle mb-3' content='Update' onClick={changeUserInfo} />
       <Button className='btn light-btn middle' content='Sign Out' onClick={()=>{
         axios.delete(
           `${universal.defaultUrl}/api/user/me`,
