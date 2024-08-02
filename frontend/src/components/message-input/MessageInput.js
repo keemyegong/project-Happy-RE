@@ -5,14 +5,14 @@ import Button from '../Button/Button';
 const MessageInput = () => {
   return (
     <div className="message-input">
-      <h2 className="title">
+      <h2 className="message-input-title">
         해피리 친구들에게
       </h2>
-      <h2 className="title">  
+      <h2 className="message-input-title">  
         <strong>오늘 하루</strong>를 공유해 볼까요?
       </h2>
       <hr className="divider" />
-      <div className="input-section">
+      <div className="message-input-section">
         <textarea className="text-input" placeholder=" 해피리에서는 따뜻한 대화를 나누는 게 중요해요 
         메시지를 보내기 전, 받는 사람의 기분을 한 번 더 
         생각해 주세요"></textarea>

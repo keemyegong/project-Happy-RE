@@ -89,7 +89,7 @@ const Message = () => {
 
   return (
     <main className="Message">
-      <div className="profile-container">
+      <div className="message-profile-container">
         <div className="default-info">
           <div className="user-avatar">
             <img className="profile-image" src={image} alt="User profile" />
@@ -125,7 +125,11 @@ const Message = () => {
           <MessageInput />
         </div>
       </div>
-      <Button className="toggle-btn" content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'} onClick={toggleContainer} />
+      <Button
+              className="toggle-btn btn dark-btn small"
+              content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
+              onClick={toggleContainer}
+            />
     </main>
   );
 };
