@@ -32,14 +32,24 @@ kurento(ws_uri, (error, kurentoClient) => {
 let idCounter = 0;
 const users = {};
 
+const getImageForPosition = (x, y) => {
+  if (x === 0 && y === 0) return 'default';
+  if (x >= 0 && y >= 0) return 'soldier';
+  if (x < 0 && y > 0) return 'art';
+  if (x <= 0 && y <= 0) return 'steel';
+  if (x > 0 && y < 0) return 'butler';
+};
+
 wss.on('connection', (ws, req) => {
   const userId = idCounter++;
-  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
+  const position = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
+  const userImage = getImageForPosition(position.x, position.y);
+  users[userId] = { id: userId, ws: ws, position: position, image: userImage };
   console.log(`User connected: ${userId}`);
-  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
+  ws.send(JSON.stringify({ type: 'assign_id', position: position, id: userId, image: userImage }));
 
   const otherUsers = Object.values(users).filter(user => user.id !== userId);
-  ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
+  ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position, image: user.image })) }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -68,7 +78,7 @@ wss.on('connection', (ws, req) => {
 
 function handleMove(userId, position) {
   users[userId].position = position;
-  broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position })) });
+  broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position, image: user.image })) });
 
   const nearbyUsers = getNearbyUsers(userId, 0.2);
   if (nearbyUsers.length > 0) {
@@ -105,15 +115,9 @@ app.get('*', (req, res) => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-  // const { pathname } = new URL(request.url, `https://${request.headers.host}`);
-  
-  // if (pathname === '/webrtc') {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
-  // } else {
-  //   socket.destroy();
-  // }
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
 });
 
 server.listen(5001, () => {
