@@ -37,6 +37,7 @@ wss.on('connection', (ws) => {
   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
   console.log(`User connected: ${userId}`);
   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
+  ws.send(JSON.stringify({ type: 'all_users', users: Object.values(users).map(user => ({ id: user.id, position: user.position })) }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -53,12 +54,15 @@ wss.on('connection', (ws) => {
         console.log(`Received candidate from user ${userId}`);
         // handleCandidate(userId, data.candidate); // Kurento 관련 부분 주석 처리
         break;
+      case 'disconnect':
+        handleDisconnect(userId);
+        break;
     }
   });
 
   ws.on('close', () => {
     console.log(`User disconnected: ${userId}`);
-    delete users[userId];
+    handleDisconnect(userId);
   });
 });
 
@@ -70,6 +74,11 @@ function handleMove(userId, position) {
   if (nearbyUsers.length > 0) {
     // connectUsers(userId, nearbyUsers[0]); // Kurento 관련 부분 주석 처리
   }
+}
+
+function handleDisconnect(userId) {
+  delete users[userId];
+  broadcast({ type: 'disconnect', id: userId });
 }
 
 function getNearbyUsers(userId, distance) {
