@@ -15,6 +15,7 @@ import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
 import Message from './pages/message/Message';
 import Diary from './pages/diary/Diary';
+import Archive from './pages/archive-page/Archive'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
@@ -70,7 +71,7 @@ const AppContent = () => {
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
           <Route path="/webrtc" element={<PrivateRoute><RtcClient /></PrivateRoute>} />
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
-          <Route path="/arc" element={<PrivateRoute><Diary /></PrivateRoute>} />
+          <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         </Routes>
       </div>
     </div>

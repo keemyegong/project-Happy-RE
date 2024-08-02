@@ -1,7 +1,7 @@
 import React from 'react';
 import './KeywordCard.css';
 
-const DiaryReport = ({ selectedDay }) => {
+const KeywordCard = ({ selectedDay }) => {
   const { year, month, date, dayLabel } = selectedDay;
 
   const KeywordTitle = 'LOREM';
@@ -22,4 +22,4 @@ const DiaryReport = ({ selectedDay }) => {
   );
 };
 
-export default DiaryReport;
+export default KeywordCard;

@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-style: normal;
+}
+
+.archive-container {
+  padding: 100px 100px;
+}
+
+.archive-mywords-header {
+  border-bottom: 0.5px solid white;
+  margin-bottom: 15px;
+}
+
+.archive-mywords-header-text {
+  color: white;
+  font-size: 20px;
+  font-family: "Poiret One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  padding-left: 10px;
+}
+
+.archive-mywords-content {
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 20vh;
+  overflow-y: auto;
+}
+
+.archive-keyword {
+  text-align: center;
+  width: 130px;
+  padding: 30px;
+  color: white;
+  font-family: 'Pretendard-Regular';
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.archive-mywords-content::-webkit-scrollbar {
+  width: 10px;  /* 스크롤바의 너비 */
+}
+
+.archive-mywords-content::-webkit-scrollbar-thumb {
+  height: 30%; /* 스크롤바의 길이 */
+  background: #898B98;; /* 스크롤바의 색상 */
+  border-radius: 10px;
+}
+
+.archive-mywords-content::-webkit-scrollbar-track {
+  background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  border-radius: 10px;
+}
+
+.archive-myword-info-container {
+  color: white;
+  padding: 20px 0px;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+.archive-myword-info-header {
+  border-bottom: 0.5px solid white;
+  margin-bottom: 15px;
+}
+
+.archive-myword-info-header-text {
+  padding-left: 10px;
+  font-family: 'Pretendard-Regular';
+  font-size: 20px;
+}
+
+.archive-myword-info-components {
+  display: flex;
+  flex-wrap: wrap;  
+  justify-content: space-between;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.archive-myword-info-components::-webkit-scrollbar {
+  width: 10px;  /* 스크롤바의 너비 */
+}
+
+.archive-myword-info-components::-webkit-scrollbar-thumb {
+  height: 30%; /* 스크롤바의 길이 */
+  background: #898B98;; /* 스크롤바의 색상 */
+  border-radius: 10px;
+}
+
+.archive-myword-info-components::-webkit-scrollbar-track {
+  background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  border-radius: 10px;
+}
+
+.archive-myword-info-report {
+  margin-top: 10px;
+  background-color: #333;
+  padding: 20px;
+  width: 250px;
+}
+
+.archive-myword-info-graph {
+  margin-top: 10px;
+  background-color: #333;
+  padding: 20px;
+  width: 300px;
+}
+
+.archive-message-content {
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.archive-message-content::-webkit-scrollbar {
+  width: 10px;  /* 스크롤바의 너비 */
+}
+
+.archive-message-content::-webkit-scrollbar-thumb {
+  height: 30%; /* 스크롤바의 길이 */
+  background: #898B98;; /* 스크롤바의 색상 */
+  border-radius: 10px;
+}
+
+.archive-message-content::-webkit-scrollbar-track {
+  background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  border-radius: 10px;
+}
+
+
+.archive-message-header {
+  border-bottom: 0.5px solid white;
+  margin-bottom: 15px;
+}
+
+.archive-message-header-text {
+  color: white;
+  font-size: 20px;
+  font-family: "Poiret One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  padding-left: 10px;
+}
