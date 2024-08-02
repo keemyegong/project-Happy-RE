@@ -24,8 +24,13 @@ user_emotion_russel = {}
 
 user_message = {}
 
+KOBERT_CHECKPOINT_X = os.environ.get('KOBERT_CHECKPOINT_X')
 KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
+
+print(KOBERT_CHECKPOINT_X)
 print(KOBERT_CHECKPOINT_Y)
+
+kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
 kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 
 # 현재 경로와 BASE_DIR 경로
@@ -38,11 +43,7 @@ print(f"Spring url : {SPRING_MESSAGE_POST_URL}")
 # -------------------------------사용자 정의 함수-------------------------------
 
 async def emotion_analysis(text : str):
-    '''
-    텍스트 감정 추출 함수
-    현재 Y만 작동
-    '''
-    return (-1,kobert_y(text))
+    return (kobert_x(text), kobert_y(text))
 
 async def emotion_tagging(user_id: str, text: str):
     '''
