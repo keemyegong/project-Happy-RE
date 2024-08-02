@@ -30,6 +30,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
 
+
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil, AuthenticationConfiguration authenticationConfiguration) {
 
         this.customOAuth2UserService = customOAuth2UserService;
@@ -98,7 +99,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/oauth2/authorization/**").authenticated() // 특정 경로에 대해 인증 요구
                         .anyRequest().permitAll() // 모든 다른 요청은 허용
                 )
-                .addFilterAfter(jwtFilter, OAuth2LoginAuthenticationFilter.class); // JWTFilter 추가
+                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class); // JWTFilter 추가
 
 
         // OAuth2 설정
