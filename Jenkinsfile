@@ -56,7 +56,7 @@ pipeline {
                 script {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: "${env.DOCKER_CREDENTIALS_ID}") {
                         sh 'docker push happyjellyfish/happyre-image:latest'
-                        //sh 'docker push happyjellyfish/fastapi-image:latest'
+                        sh 'docker push happyjellyfish/fastapi:latest'
                         sh 'docker push happyjellyfish/frontend-image:latest'
                         sh 'docker push happyjellyfish/webrtc-server:latest'
                     }
