@@ -3,7 +3,6 @@ package com.example.happyre.dto.user;
 import com.example.happyre.entity.UserEntity;
 import lombok.Data;
 
-import java.io.File;
 import java.io.FileInputStream;
 
 @Data

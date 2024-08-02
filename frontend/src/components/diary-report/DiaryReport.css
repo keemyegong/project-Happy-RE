@@ -1,0 +1,123 @@
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-style: normal;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:ital,wght@0,100;0,300;0,400;0,500;0,700;0,800;0,900;1,100;1,300;1,400;1,500;1,700;1,800;1,900&display=swap');
+
+.DiaryReport {
+  width: 600px;
+  height: 1000px;
+  background-color: black;
+  padding: 10px;
+}
+
+.diary-report-header {
+  font-family: "Alegreya Sans SC";
+  font-size: clamp(14px, 1.3vw, 18px);
+  color: white;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.diary-report-keyword-positive {
+  margin-bottom: 15px;
+}
+
+.diary-report-keyword-header {
+  font-family: 'Pretendard-Regular';
+  font-size: clamp(14px, 1.3vw, 18px);
+  font-weight: 800;
+  color: white;
+  opacity: 0.8;
+  border-bottom: 0.5px solid white;
+  padding-bottom: 5px;
+}
+
+.diary-report-keyword-positive {
+  padding: 10px;
+  background-color: rgba(178, 194, 199, 0.40);
+}
+
+.diary-report-keyword-positive-header {
+  color: #9DB6B9;
+  font-family: Pretendard;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.diary-report-keyword-positive-content {
+  display: flex;
+}
+
+.diary-report-keyword-negative {
+  padding: 10px;
+  background-color: rgba(199, 178, 178, 0.40);
+}
+
+.diary-report-keyword-negative-header {
+  color: #B99D9D;
+  font-family: Pretendard;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.diary-report-keyword-negative-content {
+  display: flex;
+}
+
+.diary-report-graph {
+  margin-top: 20px;
+}
+
+.diary-report-graph-header {
+  font-family: 'Pretendard-Regular';
+  font-size: clamp(14px, 1.3vw, 18px);
+  font-weight: 800;
+  color: white;
+  opacity: 0.8;
+  border-bottom: 0.5px solid white;
+  padding-bottom: 5px;
+}
+
+.diary-report-graph-body {
+  margin: auto;
+}
+
+/* 미디어 쿼리: 화면 너비가 1350px 이하일 때 */
+@media (max-width: 1350px) {
+  .diary-report-container {
+    margin: auto;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 1024px 이하일 때 */
+@media (max-width: 1024px) {
+  .DiaryReport {
+    margin: auto;
+    width: 500px;
+    height: 514px;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 768px 이하일 때 */
+@media (max-width: 768px) {
+  .DiaryReport {
+    margin: auto;
+    width: 400px;
+    height: 414px;
+  }
+}
+
+/* 미디어 쿼리: 화면 너비가 480px 이하일 때 */
+@media (max-width: 480px) {
+  .DiaryReport {
+    width: 300px;
+    margin: auto;
+    height: 314px;
+  }
+}

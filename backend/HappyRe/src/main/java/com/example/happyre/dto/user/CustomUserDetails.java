@@ -34,7 +34,7 @@ public class CustomUserDetails implements UserDetails {
         return collection;
     }
 
-    public int getId(){
+    public int getId() {
         return userEntity.getId();
     }
 
@@ -43,6 +43,7 @@ public class CustomUserDetails implements UserDetails {
 
         return userEntity.getPassword();
     }
+
     public String getEmail() {
 
         return userEntity.getEmail();
