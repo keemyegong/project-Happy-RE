@@ -48,6 +48,10 @@
   word-wrap: break-word;
 }
 
+.event-response{
+  max-width: 90% !important;
+}
+
 .ai-response::after {
   content: '';
   position: absolute;
@@ -88,3 +92,93 @@
   border-radius: 10px;
 }
 
+.event-response-button-container{
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.meditation-img{
+  width: 100%;
+}
+
+.meditation-container{
+  position: relative;;
+}
+
+.meditation-text-fadein{
+  position: absolute;
+  top:10%;
+  left: 50%;
+  text-align: center;
+  width: 100%;
+  transform: translate(-50%,-50%);
+  font-size: 20px;
+  animation: fadein 3s;
+  -moz-animation: fadein 3s; /* Firefox */
+  -webkit-animation: fadein 3s; /* Safari and Chrome */
+}
+
+.meditation-text-fadeout{
+  position: absolute;
+  top:10%;
+  left: 50%;
+  text-align: center;
+  width: 100%;
+  transform: translate(-50%,-50%);
+  font-size: 20px;
+  animation: fadeout 3s;
+  -moz-animation: fadeout 3s; /* Firefox */
+  -webkit-animation: fadeout 3s; /* Safari and Chrome */
+}
+
+
+@keyframes fadein {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+@-moz-keyframes fadein { /* Firefox */
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+@-webkit-keyframes fadein { /* Safari and Chrome */
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+@-moz-keyframes fadeout { /* Firefox */
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+@-webkit-keyframes fadeout { /* Safari and Chrome */
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}

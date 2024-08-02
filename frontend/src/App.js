@@ -41,7 +41,7 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-const AppContent = () => {
+const AppContent = (setHappyreNumber) => {
   const location = useLocation();
 
   // 현재 경로가 '/profile'인지 확인
@@ -67,7 +67,7 @@ const AppContent = () => {
           <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
           <Route path="/webrtc" element={<PrivateRoute><RtcClient /></PrivateRoute>} />
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
@@ -78,15 +78,18 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [happyreNumber, setHappyreNumber] = useState(1);
+
   return (
     <universeVariable.Provider
       value={{
         defaultUrl: 'http://192.168.31.228:8080',
-        fastUrl: 'http://192.168.31.229:8000',
+        happyreNumber,
+        // fastUrl: 'http://192.168.31.229:8000',
       }}
     >
       <Router>
-        <AppContent />
+        <AppContent setHappyreNumber={setHappyreNumber} />
       </Router>
     </universeVariable.Provider>
   );
