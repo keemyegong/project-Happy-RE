@@ -3,8 +3,9 @@ import './ChatBox.css';
 import Button from '../Button/Button';
 import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
+import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, setUserInput }) => {
+const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, setUserInput, eventProceeding, eventStoping, eventEnd ,isButtondisabled }) => {
   const ChatType = 1;
 
   const getChatData = (type) => {
@@ -66,9 +67,16 @@ const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, s
       </div>
 
       <div className='chat-box-content-container'>
-        {[...chatHistory].reverse().map((chat, index) => (
-          chat.type === 'user' ? <UserResponse key={index} content={chat.content} /> : <AIResponse key={index} content={chat.content} />
-        ))}
+        {[...chatHistory].reverse().map((chat, index) => {
+          if (chat.type === 'user'){
+            return <UserResponse key={index} content={chat.content} />
+          } else if (chat.type === 'event') {
+            console.log("aa");
+            return <ChatEvent key={index} content={chat.content} eventStoping={eventStoping} eventProceeding={eventProceeding} eventEnd={eventEnd}/>
+          } else{
+            return <AIResponse key={index} content={chat.content} />
+          }
+        })}
       </div>
 
       <div className='row chat-box-footer-container'>
@@ -97,7 +105,7 @@ const ChatBox = ({ chatHistory, onSendClick, isMicMuted, toggleMic, userInput, s
             </span>
           </div>
           <div className='chat-box-send-btn col-2 p-0'>
-            <Button className='btn light-btn middle m-2' content='SEND' onClick={onSendClick} />
+            <Button disabled={isButtondisabled} className='btn light-btn middle m-2' content='SEND' onClick={onSendClick} />
           </div>
         </div>
       </div>

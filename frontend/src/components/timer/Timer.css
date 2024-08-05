@@ -1,0 +1,58 @@
+
+  
+  .base-timer {
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 100px;
+    height: 100px;
+  }
+  
+  .base-timer__svg {
+    transform: scaleX(-1);
+  }
+  
+  .base-timer__circle {
+    fill: none;
+    stroke: none;
+  }
+  
+  .base-timer__path-elapsed {
+    stroke-width: 7px;
+    stroke: grey;
+  }
+  
+  .base-timer__path-remaining {
+    stroke-width: 7px;
+    stroke-linecap: round;
+    transform: rotate(90deg);
+    transform-origin: center;
+    transition: 1s linear all;
+    fill-rule: nonzero;
+    stroke: currentColor;
+  }
+  
+  .base-timer__path-remaining.green {
+    color: rgb(32, 50, 76);
+  }
+  
+  .base-timer__path-remaining.orange {
+    color: rgb(32, 50, 76);
+  }
+  
+  .base-timer__path-remaining.red {
+    color: rgb(32, 50, 76);
+  }
+  
+  .base-timer__label {
+    position: absolute;    
+    color: rgb(32, 50, 76);
+    width: 100%;
+    height: 100%;
+    top: 3%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
