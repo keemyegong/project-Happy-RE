@@ -1,5 +1,6 @@
 import React, { useState,useContext } from 'react';
 import {universeVariable} from '../../App';
+import Swal from 'sweetalert2'
 
 import './SignUp.css'
 import signUpTitle from '../../assets/signup_title.png'
@@ -44,7 +45,14 @@ const SignUp = () => {
 				<hr className='border-light border-1' />
 				<Button className='btn dark-btn big' content='Sign Up' onClick={()=>{
           if (password !== password2){
-            alert('비밀번호가 다릅니다!');
+            Swal.fire({
+              title: '비밀번호가 다릅니다!',
+              icon: "warning",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            });
           }else{
             const inputUserInfo = {
               email,
@@ -63,6 +71,7 @@ const SignUp = () => {
                 const jwtToken = Response.headers.authorization;
                 Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
               }).then((Response)=>{
+                universal.setIsAuthenticated(true);
                 navigate('/profile');
               })
             })

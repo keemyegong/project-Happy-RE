@@ -26,10 +26,11 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
+          persona:2,
         }
       }
     ).then((response) => {
-      const initialMessage = response.data;
+      const initialMessage = response.data.content;
       setChatHistory([{ type: 'ai', content: initialMessage }]);
     }).catch((error) => {
       console.error("Error fetching initial message: ", error);
@@ -70,10 +71,11 @@ const AIChat = () => {
             'Content-Type': 'audio/mpeg',
             Authorization: `Bearer ${Cookies.get('Authorization')}`,
             withCredentials: true,
+            persona:2,
+
           }
         }
       ).then((response) => {
-        console.log(response.data)
         const { text: recognizedText, audio } = response.data;
         setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: recognizedText }]);
         setAudioData(audio);
@@ -85,10 +87,12 @@ const AIChat = () => {
             headers: {
               Authorization: `Bearer ${Cookies.get('Authorization')}`,
               withCredentials: true,
+              persona:2,
+
             }
           }
         ).then((response) => {
-          const chatbotReply = response.data;
+          const chatbotReply = response.data.content;
           console.log(response.data)
           setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
           startRecording(); // 녹음 재시작
@@ -124,10 +128,12 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
+          persona:2,
+
         }
       }
     ).then((response) => {
-      const chatbotReply = response.data;
+      const chatbotReply = response.data.content;
       setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
     }).catch((error) => {
       console.error("Error fetching chatbot response: ", error);

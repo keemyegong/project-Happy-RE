@@ -17,6 +17,7 @@
   align-items: center;
   color: white;
   padding: 10px;
+  opacity: 0.8;
 }
 
 .profile-image {
@@ -35,7 +36,7 @@
 
 .user-name {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1em;
 }
 
 .favorite-button {
@@ -46,8 +47,8 @@
   cursor: pointer;
 }
 
-.favorite-button.favorite {
-  color: #6b73a7;
+.favorite-button.favorite .click-star.filled {
+  fill: #6B73A7;
 }
 
 .message-card-content {
@@ -57,6 +58,7 @@
 
 .message-card-text {
   margin: 0;
-  font-size: 1em;
+  font-size: 0.9em;
   color: #ffffff;
+  opacity: 0.8;
 }
