@@ -74,6 +74,41 @@ const SignUp = () => {
                 universal.setIsAuthenticated(true);
                 navigate('/profile');
               })
+            }).catch((error)=>{
+              // axios 에러를 잡는 부분(회원가입쪽)
+              if (error.response) {
+                if (error.response.status === 409) {
+                  Swal.fire({
+                    icon: 'warning',
+                    iconColor: "#4B4E6D",
+                    color: 'white',
+                    background: '#292929',
+                    confirmButtonColor: '#4B4E6D',
+                    title: '중복된 아이디입니다',
+                    text: '다른 아이디를 사용해 주세요.'
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    iconColor: "#4B4E6D",
+                    color: 'white',
+                    background: '#292929',
+                    confirmButtonColor: '#4B4E6D',
+                    title: '오류 발생',
+                    text: '알 수 없는 오류가 발생했습니다.'
+                  });
+                }
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  iconColor: "#4B4E6D",
+                  color: 'white',
+                  background: '#292929',
+                  confirmButtonColor: '#4B4E6D',
+                  title: '오류 발생',
+                  text: '서버와 통신할 수 없습니다.'
+                });
+              }
             })
           }
         }}/>
