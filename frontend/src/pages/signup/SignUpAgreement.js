@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './SignUpAgreement.css'
+import Swal from 'sweetalert2'
+
 import Button from '../../components/Button/Button';
 import { useNavigate  } from "react-router-dom";
 
@@ -87,7 +89,14 @@ const SignUp = () => {
       if (allAgree){
         navigate('/signup');
       }else{
-        alert('모든 약관에 동의해주세요!')
+        Swal.fire({
+          title: '모든 약관에 동의해주세요!',
+          icon: "warning",
+          iconColor: "#4B4E6D",
+          color: 'white',
+          background: '#292929',
+          confirmButtonColor: '#4B4E6D',
+        });
       }
     }} />
   </div>
