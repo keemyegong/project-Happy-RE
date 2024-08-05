@@ -76,6 +76,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
       navigator.mediaDevices.getUserMedia({ audio: true, video: false })
         .then(stream => {
+          console.log('Local stream:', stream);
           options.localStream = stream;
 
           webRtcPeer.current = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
@@ -114,7 +115,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           </li>
         ))}
       </ul>
-      <audio ref={remoteAudio} autoPlay /> {/* Remote audio element */}
+      <audio ref={remoteAudio} autoPlay controls /> {/* Remote audio element */}
     </div>
   );
 };
