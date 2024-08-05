@@ -31,28 +31,12 @@ public class MessageController {
     private final DiaryService diaryService;
 
     @PostMapping
-    public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody MessageEntityDTO messageEntityDTO) {
+    public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody List<MessageEntityDTO> messageEntityDTOs) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
-            Optional<DiaryEntity> opDiaryEntity = diaryService.findById(messageEntityDTO.getDiaryId());
-            DiaryEntity diaryEntity;
-            //다이어리가 있는지 체크
-            if (opDiaryEntity.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("다이어리 없음");
-            } else {
-                logger.debug("Diary 있음. 재사용.");
-                diaryEntity = opDiaryEntity.get();
-                if (!userService.findByRequest(request).getId().equals(diaryEntity.getUserEntity().getId()))
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
-            }
-            MessageEntity messageEntity = new MessageEntity();
-            messageEntity.setDiaryEntity(diaryEntity);
-            messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
-            messageEntity.setSequence(messageEntityDTO.getSequence());
-            messageEntity.setContent(messageEntityDTO.getContent());
-            messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
 
-            return ResponseEntity.ok(messageService.insert(messageEntity));
+
+            return ResponseEntity.ok("Successfully created message");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 생성중 에러: " + e.getMessage());
         }

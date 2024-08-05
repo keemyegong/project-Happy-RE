@@ -27,8 +27,17 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private Speaker speaker;
 
-    @Column(name = "audio_key", unique = true)
+    @Column(name = "audio_key")
     private String audioKey;
+
+    @Column(nullable = true)
+    private String summary;
+
+    @Column(nullable = true)
+    private Integer russellX;
+
+    @Column(nullable = true)
+    private Integer russellY;
 
     public enum Speaker {
         ai, user
