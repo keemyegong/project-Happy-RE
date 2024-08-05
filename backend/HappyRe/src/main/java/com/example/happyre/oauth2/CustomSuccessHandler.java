@@ -42,10 +42,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
         UserEntity user = userRepository.findByEmail(email);
         String token = jwtUtil.createJwt(email, role, 60 * 60 * 60 * 1000 * 500L, user.getId());
-
+        System.out.println("Successfully OAuth2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1: " + email);
         response.addCookie(createCookie("Authorization", token));
         response.addHeader("Authorization", "Bearer " + token);
-        response.sendRedirect("http://localhost:3000/");
+        response.sendRedirect("https://i11b204.p.ssafy.io/profile");
     }
 
     private Cookie createCookie(String key, String value) {

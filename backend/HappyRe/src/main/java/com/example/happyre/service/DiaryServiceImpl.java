@@ -54,4 +54,7 @@ public class DiaryServiceImpl implements DiaryService {
         diaryRepository.delete(matchingEntity);
     }
 
+
+
+
 }

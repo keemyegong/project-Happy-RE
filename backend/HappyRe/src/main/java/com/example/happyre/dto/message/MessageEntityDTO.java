@@ -11,4 +11,7 @@ public class MessageEntityDTO {
     private String content;
     private MessageEntity.Speaker speaker;
     private String audioKey;
+    private String summary;
+    private Integer russellX;
+    private Integer russellY;
 }

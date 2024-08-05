@@ -1,17 +1,18 @@
-const express = require('express');
-const https = require('https');
 const fs = require('fs');
+const https = require('https');
+const express = require('express');
 const WebSocket = require('ws');
 const kurento = require('kurento-client');
-const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
+
 const server = https.createServer({
   cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 let kurentoClient = null;
@@ -22,144 +23,105 @@ kurento(ws_uri, (error, client) => {
   console.log('Kurento connected');
 });
 
-let idCounter = 0;
-const users = {};
+let clients = [];
 
-wss.on('connection', (ws, req) => {
-  const userId = idCounter++;
-  users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 }, webRtcEndpoint: null };
-  console.log(`User connected: ${userId}`);
-  ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
+wss.on('connection', function connection(ws, req) {
+  if (req.url !== '/webrtc') {
+    ws.close();
+    return;
+  }
 
-  const otherUsers = Object.values(users).filter(user => user.id !== userId);
-  ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
+  const clientId = uuidv4();
+  ws.send(JSON.stringify({ type: 'clientId', id: clientId }));
 
-  ws.on('message', async (message) => {
+  ws.on('message', async function incoming(message) {
     const data = JSON.parse(message);
-    console.log(`Received message from user ${userId}:`, data);
-    switch (data.type) {
-      case 'move':
-        handleMove(userId, data.position);
-        break;
-      case 'offer':
-        await handleOffer(userId, data.offer);
-        break;
-      case 'candidate':
-        await handleCandidate(userId, data.candidate);
-        break;
-      case 'disconnect':
-        handleDisconnect(userId);
-        break;
+
+    if (data.type === 'connect') {
+      const client = {
+        id: clientId,
+        ws: ws,
+        position: data.position,
+        characterImage: data.characterImage,
+        pipeline: null,
+        webRtcEndpoint: null,
+        candidatesQueue: []
+      };
+
+      clients.push(client);
+
+      clients.forEach(client => {
+        const otherClientsData = clients
+          .filter(c => c.id !== client.id)
+          .map(c => ({
+            id: c.id,
+            position: c.position,
+            characterImage: c.characterImage
+          }));
+
+        client.ws.send(JSON.stringify({
+          type: 'update',
+          clients: otherClientsData
+        }));
+      });
+    }
+
+    if (data.type === 'offer') {
+      const client = clients.find(c => c.id === clientId);
+
+      if (!client.pipeline) {
+        client.pipeline = await kurentoClient.create('MediaPipeline');
+      }
+
+      if (!client.webRtcEndpoint) {
+        client.webRtcEndpoint = await client.pipeline.create('WebRtcEndpoint');
+
+        client.webRtcEndpoint.on('IceCandidateFound', event => {
+          const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
+          client.ws.send(JSON.stringify({
+            type: 'candidate',
+            candidate: candidate
+          }));
+        });
+
+        client.candidatesQueue.forEach(candidate => {
+          client.webRtcEndpoint.addIceCandidate(candidate);
+        });
+        client.candidatesQueue = [];
+      }
+
+      client.webRtcEndpoint.processOffer(data.sdpOffer, (error, sdpAnswer) => {
+        if (error) return console.error('SDP process offer error:', error);
+
+        client.ws.send(JSON.stringify({
+          type: 'answer',
+          sdpAnswer: sdpAnswer
+        }));
+      });
+
+      client.webRtcEndpoint.gatherCandidates(error => {
+        if (error) return console.error('Error gathering candidates:', error);
+      });
+    }
+
+    if (data.type === 'candidate') {
+      const client = clients.find(c => c.id === clientId);
+      const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
+
+      if (client.webRtcEndpoint) {
+        client.webRtcEndpoint.addIceCandidate(candidate);
+      } else {
+        client.candidatesQueue.push(candidate);
+      }
     }
   });
 
   ws.on('close', () => {
-    console.log(`User disconnected: ${userId}`);
-    handleDisconnect(userId);
-  });
-});
-
-function handleMove(userId, position) {
-  users[userId].position = position;
-  broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position })) });
-
-  const nearbyUsers = getNearbyUsers(userId, 0.2);
-  if (nearbyUsers.length > 0) {
-    console.log(`User ${userId} is near users:`, nearbyUsers.map(u => u.id));
-  }
-}
-
-async function handleOffer(userId, offer) {
-  const user = users[userId];
-  if (!user) return;
-
-  if (!user.webRtcEndpoint) {
-    user.webRtcEndpoint = await createWebRtcEndpoint(userId);
-  }
-
-  user.webRtcEndpoint.processOffer(offer, (error, answer) => {
-    if (error) {
-      return console.error('Error processing offer:', error);
+    const client = clients.find(c => c.id === clientId);
+    if (client.pipeline) {
+      client.pipeline.release();
     }
-    user.ws.send(JSON.stringify({ type: 'answer', answer }));
-  });
-}
-
-async function handleCandidate(userId, candidate) {
-  const user = users[userId];
-  if (!user || !user.webRtcEndpoint) return;
-
-  user.webRtcEndpoint.addIceCandidate(candidate, (error) => {
-    if (error) {
-      return console.error('Error adding ICE candidate:', error);
-    }
-  });
-}
-
-function handleDisconnect(userId) {
-  const user = users[userId];
-  if (user && user.webRtcEndpoint) {
-    user.webRtcEndpoint.release();
-  }
-  delete users[userId];
-  broadcast({ type: 'disconnect', id: userId });
-}
-
-function getNearbyUsers(userId, distance) {
-  const currentUser = users[userId];
-  return Object.values(users).filter(user => {
-    if (user.id === userId) return false;
-    const dx = user.position.x - currentUser.position.x;
-    const dy = user.position.y - currentUser.position.y;
-    return Math.sqrt(dx * dx + dy * dy) <= distance;
-  });
-}
-
-function broadcast(message) {
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(message));
-    }
-  });
-}
-
-function createWebRtcEndpoint(userId) {
-  return new Promise((resolve, reject) => {
-    kurentoClient.create('MediaPipeline', (error, pipeline) => {
-      if (error) return reject(error);
-
-      pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-        if (error) return reject(error);
-
-        webRtcEndpoint.on('OnIceCandidate', (event) => {
-          const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
-          const user = users[userId];
-          if (user) {
-            user.ws.send(JSON.stringify({
-              type: 'candidate',
-              candidate
-            }));
-          }
-        });
-
-        webRtcEndpoint.gatherCandidates((error) => {
-          if (error) return reject(error);
-        });
-
-        resolve(webRtcEndpoint);
-      });
-    });
-  });
-}
-
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
+    clients = clients.filter(c => c.id !== clientId);
   });
 });
 

@@ -21,6 +21,8 @@ import EmotionGraph from './components/emotion-graph/Test';
 import './App.css';
 
 export const universeVariable = createContext();
+import defaultImage from './assets/characters/default.png'
+
 
 const PrivateRoute = ({ children }) => {
   const token = Cookies.get('Authorization');
@@ -43,6 +45,8 @@ const AppContent = () => {
 
   // 현재 경로가 '/profile'인지 확인
   const isUserProfile = location.pathname === '/profile';
+  const initialPosition = { x: 0, y: 0 };
+  const characterImage = defaultImage;
 
   return (
     <div
@@ -66,7 +70,15 @@ const AppContent = () => {
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
-          <Route path="/webrtc" element={<PrivateRoute><RtcClient /></PrivateRoute>} />
+          <Route path="/webrtc"
+            element={
+              <PrivateRoute>
+                <RtcClient
+                  initialPosition={initialPosition}
+                  characterImage={characterImage}
+                />
+              </PrivateRoute>
+            }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
         </Routes>
       </div>
