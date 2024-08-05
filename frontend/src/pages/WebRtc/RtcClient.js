@@ -89,11 +89,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         });
     }
 
-    return () => {
-      if (webRtcPeer.current) {
-        webRtcPeer.current.dispose();
-      }
-    };
+    // 컴포넌트 언마운트 시 WebRTC 피어 연결을 끊는 부분 제거
+    // return () => {
+    //   if (webRtcPeer.current) {
+    //     webRtcPeer.current.dispose();
+    //   }
+    // };
   }, [clientId]);
 
   return (
