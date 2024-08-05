@@ -91,7 +91,7 @@ const App = () => {
     <universeVariable.Provider
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://192.168.31.229:8000',
+        fastUrl: 'https://i11b204.p.ssafy.io',
       }}
     >
       <Router>
