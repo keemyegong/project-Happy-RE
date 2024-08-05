@@ -22,6 +22,9 @@ function Login() {
     window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/google`
     
   }
+  const naverLogin = ()=>{
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
+  }
 
   const login = ()=>{
     const inputUserInfo = {
@@ -60,7 +63,13 @@ function Login() {
           <button className='btn google-login-btn'
           onClick={googleLogin}>Login With Google</button>
         </div>
-
+        <div className='login-title-container'> 
+          <div className='login-title'>
+            <img width='200px' src={loginTitle}/>
+          </div>
+          <button className='btn google-login-btn'
+          onClick={naverLogin}>Login With Naver</button>
+        </div>
         <hr className='border-light border-1' />
       
         <div className='login-content-container'>
