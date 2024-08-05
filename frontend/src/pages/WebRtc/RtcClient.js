@@ -6,6 +6,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState(null);
   const ws = useRef(null);
+  const webRtcPeer = useRef(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -32,6 +33,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           if (data.type === 'update') {
             setClients(data.clients);
           }
+
+          if (data.type === 'answer') {
+            webRtcPeer.current.processAnswer(data.sdpAnswer);
+          }
+
+          if (data.type === 'candidate') {
+            webRtcPeer.current.addIceCandidate(data.candidate);
+          }
         };
 
         ws.current.onclose = () => {
@@ -45,15 +54,40 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   }, [location.pathname, initialPosition, characterImage]);
 
-  const sendPositionUpdate = (position) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({
-        type: 'positionUpdate',
-        id: clientId,
-        position
-      }));
+  useEffect(() => {
+    if (clientId) {
+      const options = {
+        localVideo: undefined,
+        remoteVideo: undefined,
+        mediaConstraints: { audio: true, video: false },
+        onicecandidate: (candidate) => {
+          ws.current.send(JSON.stringify({
+            type: 'candidate',
+            candidate: candidate
+          }));
+        }
+      };
+
+      webRtcPeer.current = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
+        if (error) return console.error(error);
+
+        webRtcPeer.current.generateOffer((error, sdpOffer) => {
+          if (error) return console.error(error);
+
+          ws.current.send(JSON.stringify({
+            type: 'offer',
+            sdpOffer: sdpOffer
+          }));
+        });
+      });
     }
-  };
+
+    return () => {
+      if (webRtcPeer.current) {
+        webRtcPeer.current.dispose();
+      }
+    };
+  }, [clientId]);
 
   return (
     <div>
