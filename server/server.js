@@ -1,7 +1,20 @@
+const fs = require('fs');
+const https = require('https');
+const express = require('express');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 
-const wss = new WebSocket.Server({ port: 5001, path: '/webrtc' });
+// Express 애플리케이션 생성
+const app = express();
+
+// HTTPS 서버 생성
+const server = https.createServer({
+  cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
+}, app);
+
+// WebSocket 서버 생성
+const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let clients = [];
 
@@ -66,4 +79,7 @@ wss.on('connection', function connection(ws, req) {
   });
 });
 
-console.log('WebSocket server is running on ws://localhost:5001/webrtc');
+// HTTPS 서버 리스닝
+server.listen(5001, () => {
+  console.log('Server is running on port 5001');
+});

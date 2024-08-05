@@ -7,7 +7,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const ws = useRef(null);
 
   useEffect(() => {
-    ws.current = new W3CWebSocket('https://i11b204.p.ssafy.io:5000/webrtc');
+    ws.current = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc'); // wss로 변경
 
     ws.current.onopen = () => {
       // 연결이 열리면 서버로부터 클라이언트 ID를 받을 때까지 대기
