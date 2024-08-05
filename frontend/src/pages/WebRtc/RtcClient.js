@@ -201,8 +201,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
 
-    const peerConnection = createPeerConnection(sender);
-    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    if (!peerConnections[sender]) {
+      const peerConnection = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+    }
+
+    const peerConnection = peerConnections[sender].peerConnection;
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
@@ -212,7 +217,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       sender: clientId,
       recipient: sender
     }));
-    peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
   };
 
   const handleAnswer = async (answer, sender) => {
@@ -227,7 +231,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
   };
 
   const handleCandidate = async (candidate, sender) => {
