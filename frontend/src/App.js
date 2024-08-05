@@ -72,12 +72,12 @@ const AppContent = (setHappyreNumber) => {
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
           <Route path="/webrtc"
             element={
-              <PrivateRoute>
+              // <PrivateRoute>
                 <RtcClient
                   initialPosition={initialPosition}
                   characterImage={characterImage}
                 />
-              </PrivateRoute>
+              // </PrivateRoute>
             }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
           <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
