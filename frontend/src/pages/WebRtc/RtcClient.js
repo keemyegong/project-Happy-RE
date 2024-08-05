@@ -138,7 +138,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               peerConnection.setLocalDescription(offer);
               client.send(JSON.stringify({
                 type: 'offer',
-                offer: offer,
+                offer: offer.sdp,  // 문자열로 변환
                 recipient: user.id,
                 sender: clientId
               }));
@@ -203,7 +203,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.send(JSON.stringify({
       type: 'answer',
-      answer: answer,
+      answer: answer.sdp,  // 문자열로 변환
       sender: clientId,
       recipient: sender
     }));
