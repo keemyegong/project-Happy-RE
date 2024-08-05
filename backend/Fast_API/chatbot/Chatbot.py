@@ -107,6 +107,7 @@ class Chatbot:
     def __call__(self, user_input):
         return self.generateResponse(user_input)
     
+# ----------------------------------------------요약 챗봇 ---------------------------------------------------------
 class DiarySummarizeChatbot:
     def __init__(
         self,
@@ -116,17 +117,21 @@ class DiarySummarizeChatbot:
         promptTemplate=[
             (
                 "system",
-                '''
-                Show the user 1 to 3 keywords that represent positive and 1 to 3 keywords that
-                represent negative emotions from the conversation so far, along with the user's messages.
-                However, the keywords are limited to what the user has said.
-                The input is given in the form of a list and with in the list, there are dictionaries containing
-                sentences and information about the sentences. if the value of "speaker" is "ai", it means it's the chatbot's
-                message, and if it's "user", it means it's a human's message. The user's emotions are referenced by th values
-                of "russelX" and "russelY". These values range from -1 to 1, wher "russelX" closer to 1 indicates a positive
-                emotion, and closer to -1 indicates a negative emotion. "russelY" closer to 1 indicates an excited state, and
-                closer to -1 indicates a calm state.
-                '''
+                
+                "Show the user 1 to 3 keywords that represent positive and 1 to 3 keywords that \
+                represent negative emotions from the conversation so far, along with the user's messages.\
+                However, the keywords are limited to what the user has said.\
+                Also, please select one representative emotion from the entire user conversation among Content, Joy,\
+                Pleasure, Excitment, Tension, Anxiety, Stress, Agitation, Sadness, Despair, Fatigue, Lethargy,\
+                Calm, satisfaction, Relaxation, Peaceful.\
+                The input is given in the form of a list and with in the list, there are dictionaries containing\
+                sentences and information about the sentences. if the value of 'speaker' is 'ai', it means it's the chatbot's\
+                message, and if it's 'user', it means it's a human's message. The user's emotions are referenced by th values\
+                of 'russelX' and 'russelY'. These values range from -1 to 1, wher 'russelX' closer to 1 indicates a positive\
+                emotion, and closer to -1 indicates a negative emotion. 'russelY' closer to 1 indicates an excited state, and\
+                closer to -1 indicates a calm state.\
+                Please format the result as shown below and you must respond in Korean.\
+                - {messages : [{'keyword': '키링','summary' : '키링이 갖고 싶어','emotion' : 'positive'}]}"
             ),
             MessagesPlaceholder(variable_name="messages"),
         ],
