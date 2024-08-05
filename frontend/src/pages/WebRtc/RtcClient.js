@@ -196,6 +196,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleOffer = async (offer, sender) => {
+    if (!sender) {
+      console.error('No sender provided for offer');
+      return;
+    }
+
     const peerConnection = createPeerConnection(sender);
     await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
     const answer = await peerConnection.createAnswer();
@@ -211,6 +216,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleAnswer = async (answer, sender) => {
+    if (!sender) {
+      console.error('No sender provided for answer');
+      return;
+    }
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
@@ -221,6 +231,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleCandidate = async (candidate, sender) => {
+    if (!sender) {
+      console.error('No sender provided for candidate');
+      return;
+    }
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
