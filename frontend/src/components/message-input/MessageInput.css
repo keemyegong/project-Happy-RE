@@ -54,7 +54,7 @@
   background-color: rgba(0, 0, 0, 0.299);
   border-radius: 4px;
   resize: none;
-  font-size: 1em;
+  font-size: 0.8em;
   color: #ffffff; /* 텍스트 색상을 하얀색으로 설정 */
   font-family: 'Pretendard', sans-serif; /* 폰트 스타일 적용 */
 }
