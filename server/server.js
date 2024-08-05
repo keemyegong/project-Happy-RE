@@ -76,7 +76,7 @@ wss.on('connection', function connection(ws, req) {
       if (!client.webRtcEndpoint) {
         client.webRtcEndpoint = await client.pipeline.create('WebRtcEndpoint');
 
-        client.webRtcEndpoint.on('OnIceCandidate', event => {
+        client.webRtcEndpoint.on('IceCandidateFound', event => {
           const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
           client.ws.send(JSON.stringify({
             type: 'candidate',
