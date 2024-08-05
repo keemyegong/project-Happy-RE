@@ -37,11 +37,25 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           }
 
           if (data.type === 'answer') {
-            webRtcPeer.current.processAnswer(data.sdpAnswer);
+            console.log('SDP Answer received:', data.sdpAnswer);
+            webRtcPeer.current.processAnswer(data.sdpAnswer, (error) => {
+              if (error) {
+                console.error('Error processing SDP answer:', error);
+              } else {
+                console.log('SDP Answer processed successfully');
+              }
+            });
           }
 
           if (data.type === 'candidate') {
-            webRtcPeer.current.addIceCandidate(data.candidate);
+            console.log('ICE Candidate received:', data.candidate);
+            webRtcPeer.current.addIceCandidate(data.candidate, (error) => {
+              if (error) {
+                console.error('Error adding ICE candidate:', error);
+              } else {
+                console.log('ICE Candidate added successfully');
+              }
+            });
           }
         };
 
@@ -61,6 +75,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       const options = {
         mediaConstraints: { audio: true, video: false },
         onicecandidate: (candidate) => {
+          console.log('ICE Candidate generated:', candidate);
           ws.current.send(JSON.stringify({
             type: 'candidate',
             candidate: candidate
@@ -70,6 +85,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           console.log('Remote stream added:', event.stream);
           if (remoteAudio.current) {
             remoteAudio.current.srcObject = event.stream;
+
+            // 원격 스트림의 트랙을 출력합니다.
+            const audioTracks = event.stream.getAudioTracks();
+            console.log('Remote stream audio tracks:', audioTracks);
           }
         }
       };
@@ -77,14 +96,28 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true, video: false })
         .then(stream => {
           console.log('Local stream:', stream);
+
+          // 로컬 스트림의 트랙을 출력합니다.
+          const audioTracks = stream.getAudioTracks();
+          console.log('Local stream audio tracks:', audioTracks);
+
           options.localStream = stream;
 
           webRtcPeer.current = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
-            if (error) return console.error(error);
+            if (error) {
+              console.error('Error creating WebRtcPeer:', error);
+              return;
+            }
+
+            console.log('WebRtcPeer created successfully');
 
             webRtcPeer.current.generateOffer((error, sdpOffer) => {
-              if (error) return console.error(error);
+              if (error) {
+                console.error('Error generating SDP offer:', error);
+                return;
+              }
 
+              console.log('SDP Offer generated:', sdpOffer);
               ws.current.send(JSON.stringify({
                 type: 'offer',
                 sdpOffer: sdpOffer
