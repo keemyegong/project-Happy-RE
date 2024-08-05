@@ -42,6 +42,9 @@ wss.on('connection', (ws, req) => {
       case 'offer':
         await handleOffer(userId, data.offer);
         break;
+      case 'answer':
+        await handleAnswer(userId, data.answer);
+        break;
       case 'candidate':
         await handleCandidate(userId, data.candidate);
         break;
@@ -104,6 +107,17 @@ async function handleOffer(userId, offer) {
       return console.error('Error processing offer:', error);
     }
     user.ws.send(JSON.stringify({ type: 'answer', answer }));
+  });
+}
+
+async function handleAnswer(userId, answer) {
+  const user = users[userId];
+  if (!user || !user.webRtcEndpoint) return;
+
+  user.webRtcEndpoint.processAnswer(answer, (error) => {
+    if (error) {
+      return console.error('Error processing answer:', error);
+    }
   });
 }
 
