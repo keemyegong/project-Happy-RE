@@ -38,7 +38,6 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
-print(f"Spring url : {SPRING_MESSAGE_POST_URL}")
 
 
 # -------------------------------사용자 정의 함수-------------------------------
