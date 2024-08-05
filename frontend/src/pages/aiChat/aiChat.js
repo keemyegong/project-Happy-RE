@@ -30,7 +30,7 @@ const AIChat = () => {
         }
       }
     ).then((response) => {
-      const initialMessage = response.data;
+      const initialMessage = response.data.content;
       setChatHistory([{ type: 'ai', content: initialMessage }]);
     }).catch((error) => {
       console.error("Error fetching initial message: ", error);
@@ -76,7 +76,6 @@ const AIChat = () => {
           }
         }
       ).then((response) => {
-        console.log(response.data)
         const { text: recognizedText, audio } = response.data;
         setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: recognizedText }]);
         setAudioData(audio);
@@ -93,7 +92,7 @@ const AIChat = () => {
             }
           }
         ).then((response) => {
-          const chatbotReply = response.data;
+          const chatbotReply = response.data.content;
           console.log(response.data)
           setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
           startRecording(); // 녹음 재시작
@@ -134,7 +133,7 @@ const AIChat = () => {
         }
       }
     ).then((response) => {
-      const chatbotReply = response.data;
+      const chatbotReply = response.data.content;
       setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: chatbotReply }]);
     }).catch((error) => {
       console.error("Error fetching chatbot response: ", error);

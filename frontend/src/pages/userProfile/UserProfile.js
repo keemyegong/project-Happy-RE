@@ -37,6 +37,8 @@ const UserProfile =  ()=>{
   
   useEffect(()=>{
     setImage(userProfileImage);
+    universal.setIsAuthenticated(true);
+
 
     axios.get(`${universal.defaultUrl}/api/user/me`,
       {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
