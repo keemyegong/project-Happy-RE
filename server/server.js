@@ -40,13 +40,13 @@ wss.on('connection', (ws, req) => {
         handleMove(userId, data.position);
         break;
       case 'offer':
-        await handleOffer(userId, data.offer);
+        await handleOffer(userId, data.offer, data.sender);
         break;
       case 'answer':
-        await handleAnswer(userId, data.answer);
+        await handleAnswer(userId, data.answer, data.sender);
         break;
       case 'candidate':
-        await handleCandidate(userId, data.candidate);
+        await handleCandidate(userId, data.candidate, data.sender);
         break;
       case 'disconnect':
         handleDisconnect(userId);
@@ -94,7 +94,7 @@ function handleMove(userId, position) {
   });
 }
 
-async function handleOffer(userId, offer) {
+async function handleOffer(userId, offer, sender) {
   const user = users[userId];
   if (!user) return;
 
@@ -106,11 +106,11 @@ async function handleOffer(userId, offer) {
     if (error) {
       return console.error('Error processing offer:', error);
     }
-    user.ws.send(JSON.stringify({ type: 'answer', answer }));
+    user.ws.send(JSON.stringify({ type: 'answer', answer, sender: userId, recipient: sender }));
   });
 }
 
-async function handleAnswer(userId, answer) {
+async function handleAnswer(userId, answer, sender) {
   const user = users[userId];
   if (!user || !user.webRtcEndpoint) return;
 
@@ -121,7 +121,7 @@ async function handleAnswer(userId, answer) {
   });
 }
 
-async function handleCandidate(userId, candidate) {
+async function handleCandidate(userId, candidate, sender) {
   const user = users[userId];
   if (!user || !user.webRtcEndpoint) return;
 
@@ -172,7 +172,8 @@ function createWebRtcEndpoint(userId) {
           if (user) {
             user.ws.send(JSON.stringify({
               type: 'candidate',
-              candidate
+              candidate,
+              sender: userId
             }));
           }
         });
