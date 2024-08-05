@@ -19,19 +19,30 @@ let pendingConnections = [];
 
 const kurentoUri = 'ws://localhost:8888/kurento';
 
-kurento(kurentoUri, (error, client) => {
-  if (error) {
-    return console.error('Could not find media server at address ' + kurentoUri);
-  }
-  kurentoClient = client;
-  console.log('Kurento Client Connected');
+const initializeKurentoClient = (retries = 0) => {
+  kurento(kurentoUri, (error, client) => {
+    if (error) {
+      console.error('Could not find media server at address ' + kurentoUri);
+      console.error('Reconnect to server', retries, 100 * Math.pow(2, retries), error);
 
-  // 처리하지 못한 연결 처리
-  pendingConnections.forEach(({ ws, req }) => {
-    handleConnection(ws, req);
+      // 재시도 로직
+      setTimeout(() => {
+        initializeKurentoClient(retries + 1);
+      }, Math.min(10000, 100 * Math.pow(2, retries)));
+    } else {
+      kurentoClient = client;
+      console.log('Kurento Client Connected');
+
+      // 처리하지 못한 연결 처리
+      pendingConnections.forEach(({ ws, req }) => {
+        handleConnection(ws, req);
+      });
+      pendingConnections = [];
+    }
   });
-  pendingConnections = [];
-});
+};
+
+initializeKurentoClient();
 
 const calculateDistance = (pos1, pos2) => {
   return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
