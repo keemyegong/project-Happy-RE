@@ -12,6 +12,7 @@ from models import ChatRequest, TestMod
 import httpx
 from pprint import pprint
 from .HappyreKoBert import HappyreKoBert
+from .Personas import PERSONAS
 
 # ----------------------------전역 변수-------------------------------
 router = APIRouter()
@@ -30,14 +31,17 @@ KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
 print(KOBERT_CHECKPOINT_X)
 print(KOBERT_CHECKPOINT_Y)
 
-kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
-kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
+# kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
+# kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 
 # 현재 경로와 BASE_DIR 경로
 current_dir = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
+
+
+personas = PERSONAS
 
 
 # -------------------------------사용자 정의 함수-------------------------------
@@ -132,15 +136,23 @@ async def post_test(request:Request):
 # POST 요청으로 chabot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
 @router.post('/')
-async def chatbot(request: ChatRequest, user_id: str = Depends(decode_jwt)):
+async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depends(decode_jwt)):
     '''
     유저의 챗봇 세션이 없는 경우 챗봇 세션 생성
     들어온 텍스트를 OpenAI에 보내고 유저 메세지 세션 업데이트
     응답온 텍스트를 메세지 세션에 업데이트하고 반환
     '''
     # print('post 요청')
+    
+    # front에서 header에 담긴 페르소나 정보 받기
+    persona_number = int(requestforP.headers["persona"])
+    print(persona_number)
+    # persona_number = 2
+    
     if user_id not in user_session:
-        user_session[user_id] = Chatbot(api_key)
+        # Chatbot 생성시에 persona를 선택
+        user_session[user_id] = Chatbot(api_key=api_key,persona=personas[persona_number])
+    
     print(user_id)
         
     api_instance = user_session[user_id]
