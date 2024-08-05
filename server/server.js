@@ -15,16 +15,34 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
 let kurentoClient = null;
+let pendingConnections = [];
 
-const kurentoUri = 'ws://172.17.0.2:8888/kurento';
+const kurentoUri = 'ws://kurento-media-server:8888/kurento';  // Kurento Media Server의 IP 주소 사용
 
-kurento(kurentoUri, (error, client) => {
-  if (error) {
-    return console.error('Could not find media server at address ' + kurentoUri);
-  }
-  kurentoClient = client;
-  console.log('Kurento Client Connected');
-});
+const initializeKurentoClient = (retries = 0) => {
+  kurento(kurentoUri, (error, client) => {
+    if (error) {
+      console.error('Could not find media server at address ' + kurentoUri);
+      console.error('Reconnect to server', retries, 100 * Math.pow(2, retries), error);
+
+      // 재시도 로직
+      setTimeout(() => {
+        initializeKurentoClient(retries + 1);
+      }, Math.min(10000, 100 * Math.pow(2, retries)));
+    } else {
+      kurentoClient = client;
+      console.log('Kurento Client Connected');
+
+      // 처리하지 못한 연결 처리
+      pendingConnections.forEach(({ ws, req }) => {
+        handleConnection(ws, req);
+      });
+      pendingConnections = [];
+    }
+  });
+};
+
+initializeKurentoClient();
 
 const calculateDistance = (pos1, pos2) => {
   return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
@@ -88,7 +106,7 @@ const connectUsers = (userId, otherUserId) => {
   }
 };
 
-wss.on('connection', (ws) => {
+const handleConnection = (ws) => {
   const userId = uuidv4();
   ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
 
@@ -129,35 +147,35 @@ wss.on('connection', (ws) => {
         break;
 
       case 'offer':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
             if (error) return console.error(error);
 
             users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
       case 'answer':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
             if (error) return console.error('Error processing answer:', error);
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
       case 'candidate':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
           users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
             if (error) return console.error('Error adding candidate:', error);
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
@@ -193,6 +211,15 @@ wss.on('connection', (ws) => {
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
     });
   });
+};
+
+wss.on('connection', (ws, req) => {
+  if (!kurentoClient) {
+    pendingConnections.push({ ws, req });
+    console.error('Kurento client is not initialized');
+    return;
+  }
+  handleConnection(ws);
 });
 
 server.listen(5001, () => {
