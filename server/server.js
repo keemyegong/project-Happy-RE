@@ -147,35 +147,35 @@ const handleConnection = (ws) => {
         break;
 
       case 'offer':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
             if (error) return console.error(error);
 
             users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
       case 'answer':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
             if (error) return console.error('Error processing answer:', error);
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
       case 'candidate':
-        if (users[data.recipient]) {
+        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
           users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
             if (error) return console.error('Error adding candidate:', error);
           });
         } else {
-          console.error(`User ${data.recipient} does not exist`);
+          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint not initialized`);
         }
         break;
 
