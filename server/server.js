@@ -17,25 +17,21 @@ let users = {};
 let kurentoClient = null;
 let pendingConnections = [];
 
-const kurentoUri = 'ws://172.17.0.2:8888/kurento';  // Kurento Media Server의 IP 주소 사용
+const kurentoUri = 'ws://172.17.0.2:8888/kurento';
 
-const initializeKurentoClient = (retries = 0) => {
+const initializeKurentoClient = () => {
   kurento(kurentoUri, (error, client) => {
     if (error) {
       console.error('Could not find media server at address ' + kurentoUri);
-      console.error('Reconnect to server', retries, 100 * Math.pow(2, retries), error);
-
-      // 재시도 로직
-      setTimeout(() => {
-        initializeKurentoClient(retries + 1);
-      }, Math.min(10000, 100 * Math.pow(2, retries)));
+      // 일정 시간 후 재시도
+      setTimeout(initializeKurentoClient, 5000);
     } else {
       kurentoClient = client;
       console.log('Kurento Client Connected');
 
       // 처리하지 못한 연결 처리
-      pendingConnections.forEach(({ ws, req }) => {
-        handleConnection(ws, req);
+      pendingConnections.forEach(({ ws }) => {
+        handleConnection(ws);
       });
       pendingConnections = [];
     }
