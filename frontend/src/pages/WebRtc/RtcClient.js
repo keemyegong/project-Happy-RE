@@ -105,11 +105,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           image: user.characterImage
         })));
+        checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
         const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
         setUsers(prevUsers => [...prevUsers, newUser]);
+        checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
+        checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -134,6 +137,46 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('getUserMedia is not supported in this browser.');
     }
   }, [position, userImage]);
+
+  useEffect(() => {
+    if (clientId) {
+      checkDistances(users);
+    }
+  }, [clientId, users]);
+
+  const checkDistances = (currentUsers) => {
+    const newNearbyUsers = [];
+    currentUsers.forEach(user => {
+      if (user.id === undefined || clientId === null) return;
+      const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
+      if (distance <= 0.2) {
+        newNearbyUsers.push(user);
+        if (!peerConnections[user.id]) {
+          const peerConnection = createPeerConnection(user.id);
+          peerConnection.createOffer()
+            .then(offer => {
+              peerConnection.setLocalDescription(offer)
+                .then(() => {
+                  client.send(JSON.stringify({
+                    type: 'offer',
+                    offer: offer.sdp,
+                    recipient: user.id,
+                    sender: clientId
+                  }));
+                })
+                .catch(error => console.error('Error setting local description:', error));
+            })
+            .catch(error => console.error('Error creating offer:', error));
+          peerConnections[user.id] = { peerConnection, user };
+        }
+      } else if (peerConnections[user.id]) {
+        peerConnections[user.id].peerConnection.close();
+        delete peerConnections[user.id];
+        console.log(`WebRTC connection closed with user ${user.id}`);
+      }
+    });
+    setNearbyUsers(newNearbyUsers);
+  };
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
