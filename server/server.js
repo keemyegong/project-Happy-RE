@@ -15,15 +15,39 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
 let kurentoClient = null;
-
 const kurentoUri = 'ws://172.17.0.2:8888/kurento';
 
-kurento(kurentoUri, (error, client) => {
-  if (error) {
-    return console.error('Could not find media server at address ' + kurentoUri);
-  }
-  kurentoClient = client;
-  console.log('Kurento Client Connected');
+const initializeKurentoClient = () => {
+  return new Promise((resolve, reject) => {
+    const retryInterval = 1000; // 1초마다 재시도
+    let retries = 0;
+    const maxRetries = 10; // 최대 재시도 횟수
+
+    const attemptConnection = () => {
+      kurento(kurentoUri, (error, client) => {
+        if (error) {
+          console.error(`Could not find media server at address ${kurentoUri}. Retrying...`);
+          retries += 1;
+          if (retries < maxRetries) {
+            setTimeout(attemptConnection, retryInterval);
+          } else {
+            reject(new Error('Max retries reached. Kurento client initialization failed.'));
+          }
+        } else {
+          kurentoClient = client;
+          console.log('Kurento Client Connected');
+          resolve(client);
+        }
+      });
+    };
+
+    attemptConnection();
+  });
+};
+
+initializeKurentoClient().catch(err => {
+  console.error(err.message);
+  process.exit(1); // 초기화 실패 시 서버 종료
 });
 
 const calculateDistance = (pos1, pos2) => {
@@ -90,13 +114,14 @@ const connectUsers = (userId, otherUserId) => {
     });
   }
 };
+
 wss.on('connection', (ws) => {
   const userId = uuidv4();
   ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
-    
+
     switch (data.type) {
       case 'connect':
         users[userId] = {
@@ -196,7 +221,6 @@ wss.on('connection', (ws) => {
     });
   });
 });
-
 
 server.listen(5001, () => {
   console.log('Server is running on port 5001');
