@@ -31,6 +31,11 @@ const calculateDistance = (pos1, pos2) => {
 };
 
 const checkAndConnectUsers = () => {
+  if (!kurentoClient) {
+    console.error('Kurento client is not initialized');
+    return;
+  }
+
   const userIds = Object.keys(users);
   userIds.forEach(userId => {
     userIds.forEach(otherUserId => {
@@ -68,8 +73,15 @@ const connectUsers = (userId, otherUserId) => {
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
           });
 
-          user.ws.send(JSON.stringify({ type: 'offer', sdp: senderEndpoint.generateOffer(), sender: userId }));
-          otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: receiverEndpoint.generateOffer(), sender: otherUserId }));
+          senderEndpoint.generateOffer((error, offer) => {
+            if (error) return console.error(error);
+            user.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: userId }));
+          });
+
+          receiverEndpoint.generateOffer((error, offer) => {
+            if (error) return console.error(error);
+            otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: otherUserId }));
+          });
         });
       });
     });
