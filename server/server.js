@@ -12,8 +12,6 @@ const server = https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-const wss = new WebSocket.Server({ server, path: '/webrtc' });
-
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 let kurentoClient = null;
 
@@ -22,6 +20,8 @@ kurento(ws_uri, (error, client) => {
   kurentoClient = client;
   console.log('Kurento connected');
 });
+
+const wss = new WebSocket.Server({ noServer: true });
 
 const users = {};
 
@@ -185,9 +185,15 @@ app.get('*', (req, res) => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  const pathname = new URL(request.url, `https://${request.headers.host}`).pathname;
+
+  if (pathname === '/webrtc') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
 });
 
 server.listen(5001, () => {
