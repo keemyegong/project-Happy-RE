@@ -1,201 +1,364 @@
-const express = require('express');
-const https = require('https');
-const fs = require('fs');
-const WebSocket = require('ws');
-const kurento = require('kurento-client');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+import React, { useEffect, useState, useRef } from 'react';
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+import kurentoUtils from 'kurento-utils';
+import art from '../../assets/characters/art.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+import defaultImg from '../../assets/characters/default.png';
+import butler from '../../assets/characters/butler.png';
+import './RtcClient.css';
 
-const app = express();
-const server = https.createServer({
-  cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
-}, app);
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
+const peerConnections = {};
 
-const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
-let kurentoClient = null;
+const RtcClient = ({ initialPosition, characterImage }) => {
+  const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
+  const [users, setUsers] = useState([]);
+  const [clientId, setClientId] = useState(null);
+  const [stream, setStream] = useState(null);
+  const [displayStartIndex, setDisplayStartIndex] = useState(0);
+  const [userImage, setUserImage] = useState(characterImage || defaultImg);
+  const [talkingUsers, setTalkingUsers] = useState([]);
+  const [nearbyUsers, setNearbyUsers] = useState([]);
+  const localAudioRef = useRef(null);
+  const containerRef = useRef(null);
+  const coordinatesGraphRef = useRef(null);
 
-kurento(ws_uri, (error, client) => {
-  if (error) return console.error('Kurento connection error:', error);
-  kurentoClient = client;
-  console.log('Kurento connected');
-});
-
-const wss = new WebSocket.Server({ noServer: true });
-
-const users = {};
-
-wss.on('connection', (ws, req) => {
-  const userId = uuidv4();
-  ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
-
-  ws.on('message', async (message) => {
-    const data = JSON.parse(message);
-    console.log(`Received message from user ${userId}:`, data);
-    switch (data.type) {
-      case 'connect':
-        handleConnect(userId, ws, data.position, data.characterImage);
-        break;
-      case 'move':
-        handleMove(userId, data.position);
-        break;
-      case 'offer':
-        await handleOffer(userId, data.offer);
-        break;
-      case 'candidate':
-        await handleCandidate(userId, data.candidate);
-        break;
-      case 'disconnect':
-        handleDisconnect(userId);
-        break;
+  useEffect(() => {
+    if (window.location.pathname !== '/webrtc') {
+      client.close();
+      return;
     }
-  });
 
-  ws.on('close', () => {
-    console.log(`User disconnected: ${userId}`);
-    handleDisconnect(userId);
-  });
-});
+    const coordinatesGraph = coordinatesGraphRef.current;
 
-function handleConnect(userId, ws, position, characterImage) {
-  users[userId] = { id: userId, ws, position, characterImage, webRtcEndpoint: null };
-
-  const otherUsers = Object.values(users).filter(user => user.id !== userId);
-  ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position, characterImage: user.characterImage })) }));
-
-  broadcastToOthers(userId, {
-    type: 'new_user',
-    id: userId,
-    position,
-    characterImage
-  });
-}
-
-function handleMove(userId, position) {
-  users[userId].position = position;
-  broadcastToOthers(userId, { type: 'move', id: userId, position });
-
-  // Check distances and close WebRTC connections if necessary
-  Object.keys(users).forEach(otherUserId => {
-    if (otherUserId !== userId) {
-      const distance = calculateDistance(users[userId].position, users[otherUserId].position);
-      if (distance > 0.2 && users[userId].webRtcEndpoint && users[otherUserId].webRtcEndpoint) {
-        users[userId].webRtcEndpoint.release();
-        users[otherUserId].webRtcEndpoint.release();
-        users[userId].webRtcEndpoint = null;
-        users[otherUserId].webRtcEndpoint = null;
-        users[userId].ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
-        users[otherUserId].ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
+    const setHeights = () => {
+      if (coordinatesGraph) {
+        const width = coordinatesGraph.offsetWidth;
+        coordinatesGraph.style.height = `${width}px`;
       }
+    };
+
+    setHeights();
+
+    window.addEventListener('resize', setHeights);
+
+    return () => {
+      window.removeEventListener('resize', setHeights);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.pathname !== '/webrtc') return;
+
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+    };
+
+    client.onclose = () => {
+      console.log('WebSocket Client Disconnected');
+    };
+
+    client.onerror = (error) => {
+      console.error('WebSocket Error: ', error);
+    };
+
+    client.onmessage = (message) => {
+      const dataFromServer = JSON.parse(message.data);
+      if (dataFromServer.type === 'assign_id') {
+        setClientId(dataFromServer.id);
+        client.send(JSON.stringify({
+          type: 'connect',
+          position,
+          characterImage: userImage
+        }));
+      } else if (dataFromServer.type === 'all_users') {
+        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
+        setUsers(filteredUsers.map(user => ({
+          ...user,
+          image: user.characterImage
+        })));
+        checkDistances(filteredUsers);
+      } else if (dataFromServer.type === 'new_user') {
+        const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
+        setUsers(prevUsers => [...prevUsers, newUser]);
+        checkDistances([...users, newUser]);
+      } else if (dataFromServer.type === 'move') {
+        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
+        checkDistances(users);
+      } else if (dataFromServer.type === 'offer') {
+        handleOffer(dataFromServer.offer, dataFromServer.sender);
+      } else if (dataFromServer.type === 'answer') {
+        handleAnswer(dataFromServer.answer, dataFromServer.sender);
+      } else if (dataFromServer.type === 'candidate') {
+        handleCandidate(dataFromServer.candidate, dataFromServer.sender);
+      } else if (dataFromServer.type === 'rtc_disconnect') {
+        handleRtcDisconnect(dataFromServer.id);
+      } else if (dataFromServer.type === 'talking') {
+        setTalkingUsers(dataFromServer.talkingUsers);
+      }
+    };
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(currentStream => {
+          setStream(currentStream);
+        }).catch(error => {
+          console.error('Error accessing media devices.', error);
+        });
+    } else {
+      console.error('getUserMedia is not supported in this browser.');
     }
-  });
-}
 
-async function handleOffer(userId, offer) {
-  const user = users[userId];
-  if (!user) return;
+    return () => {
+      // 주석 처리된 부분 시작
+      // client.send(JSON.stringify({ type: 'disconnect' }));
+      // client.close();
+      // 주석 처리된 부분 끝
+    };
+  }, [position, userImage]); // 의존성 배열에 position과 userImage 추가
 
-  if (!user.webRtcEndpoint) {
-    user.webRtcEndpoint = await createWebRtcEndpoint(userId);
-  }
-
-  user.webRtcEndpoint.processOffer(offer, (error, answer) => {
-    if (error) {
-      return console.error('Error processing offer:', error);
+  useEffect(() => {
+    if (clientId) {
+      checkDistances(users);
     }
-    user.ws.send(JSON.stringify({ type: 'answer', answer }));
-  });
-}
+  }, [clientId, users]);
 
-async function handleCandidate(userId, candidate) {
-  const user = users[userId];
-  if (!user || !user.webRtcEndpoint) return;
+  const checkDistances = (currentUsers) => {
+    const newNearbyUsers = [];
+    currentUsers.forEach(user => {
+      if (user.id === undefined || clientId === null) return;
+      const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
+      if (distance <= 0.2) {
+        newNearbyUsers.push(user);
+        if (!peerConnections[user.id]) {
+          const peerConnection = createPeerConnection(user.id);
+          peerConnection.createOffer()
+            .then(offer => {
+              peerConnection.setLocalDescription(offer);
+              client.send(JSON.stringify({
+                type: 'offer',
+                offer: offer.sdp,  // 문자열로 변환
+                recipient: user.id,
+                sender: clientId
+              }));
+            });
+          peerConnections[user.id] = { peerConnection, user };
+        }
+      } else if (peerConnections[user.id]) {
+        peerConnections[user.id].peerConnection.close();
+        delete peerConnections[user.id];
+        console.log(`WebRTC connection closed with user ${user.id}`);
+      }
+    });
+    setNearbyUsers(newNearbyUsers);
+  };
 
-  user.webRtcEndpoint.addIceCandidate(candidate, (error) => {
-    if (error) {
-      return console.error('Error adding ICE candidate:', error);
+  const createPeerConnection = (userId) => {
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    });
+    console.log('webrtc 연결완료');
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        client.send(JSON.stringify({
+          type: 'candidate',
+          candidate: event.candidate,
+          sender: clientId,
+          recipient: userId
+        }));
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+        console.log('WebRTC 연결이 끊어졌습니다.');
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
+        }
+      }
+    };
+
+    if (stream) {
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  });
-}
 
-function handleDisconnect(userId) {
-  const user = users[userId];
-  if (user && user.webRtcEndpoint) {
-    user.webRtcEndpoint.release();
-  }
-  delete users[userId];
-  broadcast({ type: 'disconnect', id: userId });
-}
+    return peerConnection;
+  };
 
-function broadcastToOthers(excludeUserId, message) {
-  wss.clients.forEach(client => {
-    const user = Object.values(users).find(user => user.ws === client);
-    if (client.readyState === WebSocket.OPEN && user && user.id !== excludeUserId) {
-      client.send(JSON.stringify(message));
+  const handleOffer = async (offer, sender) => {
+    const peerConnection = createPeerConnection(sender);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    client.send(JSON.stringify({
+      type: 'answer',
+      answer: answer.sdp,  // 문자열로 변환
+      sender: clientId,
+      recipient: sender
+    }));
+    peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+  };
+
+  const handleAnswer = async (answer, sender) => {
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
     }
-  });
-}
+    const peerConnection = connection.peerConnection;
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+  };
 
-function broadcast(message) {
-  wss.clients.forEach(client => {
+  const handleCandidate = async (candidate, sender) => {
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  };
+
+  const handleRtcDisconnect = (userId) => {
+    if (peerConnections[userId]) {
+      peerConnections[userId].peerConnection.close();
+      delete peerConnections[userId];
+      setNearbyUsers(prev => prev.filter(user => user.id !== userId));
+      console.log(`WebRTC connection closed with user ${userId}`);
+    }
+  };
+
+  const movePosition = (dx, dy) => {
+    const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
+    setPosition(newPosition);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(message));
+      client.send(JSON.stringify({ type: 'move', position: newPosition }));
     }
-  });
+  };
+
+  const handleScroll = (direction) => {
+    if (direction === 'up') {
+      setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
+    } else {
+      setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
+    }
+  };
+
+  return (
+    <div className="chat-room-container" ref={containerRef}>
+      <div className="coordinates-graph" ref={coordinatesGraphRef}>
+        <div className="axes">
+          <div className="x-axis" />
+          <div className="y-axis" />
+          {[...Array(21)].map((_, i) => (
+            <div
+              key={`x-tick-${i}`}
+              className="x-tick"
+              style={{ left: `${(i / 20) * 100}%` }}
+            />
+          ))}
+          {[...Array(21)].map((_, i) => (
+            <div
+              key={`y-tick-${i}`}
+              className="y-tick"
+              style={{ top: `${(i / 20) * 100}%` }}
+            />
+          ))}
+          {users.map(user => (
+            <div 
+              key={user.id}
+              className="radar-pulse-small"
+              style={{
+                left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
+                top: `calc(${((1 - user.position.y) / 2) * 100}%)`
+              }}
+            />
+          ))}
+          <div className="your-character-container" style={{
+              left: `calc(${((position.x + 1) / 2) * 100}%)`,
+              top: `calc(${((1 - position.y) / 2) * 100}%)`
+            }}>
+            <div className="radar-pulse" />
+            <img
+              src={userImage}
+              alt="your character"
+              className="character-image your-character"
+            />
+            <audio ref={localAudioRef} autoPlay />
+            <div className="controls controls-up">
+              <button onClick={() => movePosition(0, 0.025)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-right">
+              <button onClick={() => movePosition(0.025, 0)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-right" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-down">
+              <button onClick={() => movePosition(0, -0.025)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+                </svg>
+              </button>
+            </div>
+            <div className="controls controls-left">
+              <button onClick={() => movePosition(-0.025, 0)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="right-panel">
+        <div className="scroll-buttons">
+          <button onClick={() => handleScroll('up')}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448-.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
+            </svg>
+          </button>
+        </div>
+        <div className="character-list">
+          {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
+            <div 
+              key={user.id}
+              className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
+            >
+              <img 
+                src={user.image} 
+                alt="character"
+                className="character-image-small"
+              />
+            </div>
+          ))}
+        </div>
+        <div className="scroll-buttons">
+          <button onClick={() => handleScroll('down')}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function createWebRtcEndpoint(userId) {
-  return new Promise((resolve, reject) => {
-    kurentoClient.create('MediaPipeline', (error, pipeline) => {
-      if (error) return reject(error);
-
-      pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-        if (error) return reject(error);
-
-        webRtcEndpoint.on('IceCandidateFound', (event) => {
-          const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
-          const user = users[userId];
-          if (user) {
-            user.ws.send(JSON.stringify({
-              type: 'candidate',
-              candidate
-            }));
-          }
-        });
-
-        webRtcEndpoint.gatherCandidates((error) => {
-          if (error) return reject(error);
-        });
-
-        resolve(webRtcEndpoint);
-      });
-    });
-  });
-}
-
-function calculateDistance(position1, position2) {
-  const dx = position1.x - position2.x;
-  const dy = position1.y - position2.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-server.on('upgrade', (request, socket, head) => {
-  const pathname = new URL(request.url, `https://${request.headers.host}`).pathname;
-
-  if (pathname === '/webrtc') {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
-  } else {
-    socket.destroy();
-  }
-});
-
-server.listen(5001, () => {
-  console.log('Server is running on port 5001');
-});
+export default RtcClient;
