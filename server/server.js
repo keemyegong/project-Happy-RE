@@ -17,7 +17,7 @@ let users = {};
 let kurentoClient = null;
 let pendingConnections = [];
 
-const kurentoUri = 'ws://kurento-media-server:8888/kurento';  // Kurento Media Server의 IP 주소 사용
+const kurentoUri = 'ws://172.17.0.2:8888/kurento';  // Kurento Media Server의 IP 주소 사용
 
 const initializeKurentoClient = (retries = 0) => {
   kurento(kurentoUri, (error, client) => {
