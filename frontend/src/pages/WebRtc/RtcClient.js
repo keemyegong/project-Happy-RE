@@ -89,6 +89,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             // 원격 스트림의 트랙을 출력합니다.
             const audioTracks = event.stream.getAudioTracks();
             console.log('Remote stream audio tracks:', audioTracks);
+
+            // 오디오 트랙의 상태를 확인합니다.
+            audioTracks.forEach(track => {
+              console.log(`Track kind: ${track.kind}, enabled: ${track.enabled}, muted: ${track.muted}`);
+              track.onmute = () => console.log('Track muted');
+              track.onunmute = () => console.log('Track unmuted');
+            });
           }
         }
       };
@@ -100,6 +107,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           // 로컬 스트림의 트랙을 출력합니다.
           const audioTracks = stream.getAudioTracks();
           console.log('Local stream audio tracks:', audioTracks);
+
+          // 로컬 오디오 트랙 상태 확인
+          audioTracks.forEach(track => {
+            console.log(`Local Track kind: ${track.kind}, enabled: ${track.enabled}, muted: ${track.muted}`);
+          });
 
           options.localStream = stream;
 
