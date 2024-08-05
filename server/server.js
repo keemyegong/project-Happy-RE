@@ -44,7 +44,8 @@ wss.on('connection', function connection(ws, req) {
         position: data.position,
         characterImage: data.characterImage,
         pipeline: null,
-        webRtcEndpoint: null
+        webRtcEndpoint: null,
+        candidatesQueue: []
       };
 
       clients.push(client);
@@ -74,6 +75,19 @@ wss.on('connection', function connection(ws, req) {
 
       if (!client.webRtcEndpoint) {
         client.webRtcEndpoint = await client.pipeline.create('WebRtcEndpoint');
+
+        client.webRtcEndpoint.on('OnIceCandidate', event => {
+          const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
+          client.ws.send(JSON.stringify({
+            type: 'candidate',
+            candidate: candidate
+          }));
+        });
+
+        client.candidatesQueue.forEach(candidate => {
+          client.webRtcEndpoint.addIceCandidate(candidate);
+        });
+        client.candidatesQueue = [];
       }
 
       client.webRtcEndpoint.processOffer(data.sdpOffer, (error, sdpAnswer) => {
@@ -92,7 +106,13 @@ wss.on('connection', function connection(ws, req) {
 
     if (data.type === 'candidate') {
       const client = clients.find(c => c.id === clientId);
-      client.webRtcEndpoint.addIceCandidate(data.candidate);
+      const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
+
+      if (client.webRtcEndpoint) {
+        client.webRtcEndpoint.addIceCandidate(candidate);
+      } else {
+        client.candidatesQueue.push(candidate);
+      }
     }
   });
 
