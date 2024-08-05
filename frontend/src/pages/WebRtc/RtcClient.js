@@ -43,10 +43,37 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     window.addEventListener('resize', setHeights);
 
+    window.addEventListener('beforeunload', () => {
+      client.send(JSON.stringify({ type: 'disconnect' }));
+      client.close();
+    });
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.removeEventListener('resize', setHeights);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  const handleKeyDown = (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        movePosition(0, 0.025);
+        break;
+      case 'ArrowDown':
+        movePosition(0, -0.025);
+        break;
+      case 'ArrowLeft':
+        movePosition(-0.025, 0);
+        break;
+      case 'ArrowRight':
+        movePosition(0.025, 0);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') return;
@@ -109,14 +136,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } else {
       console.error('getUserMedia is not supported in this browser.');
     }
-
-    return () => {
-      // 주석 처리된 부분 시작
-      // client.send(JSON.stringify({ type: 'disconnect' }));
-      // client.close();
-      // 주석 처리된 부분 끝
-    };
-  }, [position, userImage]); // 의존성 배열에 position과 userImage 추가
+  }, [position, userImage]);
 
   useEffect(() => {
     if (clientId) {
@@ -138,7 +158,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               peerConnection.setLocalDescription(offer);
               client.send(JSON.stringify({
                 type: 'offer',
-                offer: offer.sdp,  // 문자열로 변환
+                offer: offer.sdp,
                 recipient: user.id,
                 sender: clientId
               }));
@@ -180,6 +200,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'connected') {
+        console.log(`WebRTC connection established with user ${userId}`);
+      }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
@@ -213,7 +236,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.send(JSON.stringify({
       type: 'answer',
-      answer: answer.sdp,  // 문자열로 변환
+      answer: answer.sdp,
       sender: clientId,
       recipient: sender
     }));
