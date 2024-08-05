@@ -18,11 +18,11 @@ router = APIRouter()
 load_dotenv()
 api_key = os.environ.get('OPENAI_API_KEY')  # OPEN AI 키
 
-user_session = {}
+user_session = {}    # 유저 챗봇 세션
 
-user_emotion_russel = {}
+user_emotion_russel = {}    # 유저 러셀 좌표 - {유저 : {문장 : 좌표}}
 
-user_message = {}
+user_message = {}    # 유저 메시지 저장  -  {유저 : [{문장 :"문장", "speaker":"user", "audioKey":"ddd.wav"}]}
 
 KOBERT_CHECKPOINT_X = os.environ.get('KOBERT_CHECKPOINT_X')
 KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
@@ -40,11 +40,6 @@ BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
 print(f"Spring url : {SPRING_MESSAGE_POST_URL}")
 
-test_dict = {
-    "tet":"1",
-    "ttt":"2",
-    "fff":"3"
-}
 
 # -------------------------------사용자 정의 함수-------------------------------
 
@@ -89,18 +84,42 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     if user_id not in user_message:
         user_message[user_id] = []
     user_message[user_id].append({
-        "text":text,
+        "content":text,
         "speaker":speaker,
-        "audio":audio
+        "audioKey":audio
     })
     
 # ----------------------------------라우팅 함수--------------------------------------------
     
 # Get 요청 테스트 용 함수
-@router.get('/test')
+@router.get('/message_test')
 async def test(user_id:str=Depends(decode_jwt)):
     
-    return user_emotion_russel
+    user_message[user_id] = [
+        {
+            "content":"test1",
+            "speaker":"user",
+            "audioKey":"test1.wav"
+        },
+        {
+            "content":"test2",
+            "speaker":"user",
+            "audioKey":"test2.wav"
+        },
+        {
+            "content":"test3",
+            "speaker":"user",
+            "audioKey":"test3.wav"
+        }
+    ]
+    
+    user_emotion_russel[user_id] = {
+        "test1":(0,1),
+        "test2":(1,0),
+        "test3":(0.5, 0.5)
+    }
+    
+    return user_message
 
 # post 요청 테스트 용 함수
 @router.post('/test')
@@ -168,44 +187,59 @@ async def post_message_request(request:Request):
     header = request.headers["authorization"]
     token = header.split(" ")[-1]
     user_id = decode_jwt(token)
+    summary_instance = SummarizeChatbot(api_key)
     
     try:
         for idx in range(len(user_message[user_id])):
-            if user_message[user_id][idx]["speaker"] == "starter":
+            data = user_message[user_id][idx]
+            russel_coord = user_emotion_russel[user_id]
+            if data["speaker"] == "starter":
                 continue
-            message = {
-                "diaryId":1,
-                "sequence": idx+1,
-                "content":user_message[user_id][idx]["text"],
-                "speaker":user_message[user_id][idx]["speaker"],
-                "audioKey":user_message[user_id][idx]["audio"]            
-            }
-            headers = {
-                "Authorization" : f"Bearer {token}",
-                "Content-Type": "application/json"
-            }
-            print(message)
-            try:
-                print("츄라이")
-                async with httpx.AsyncClient() as client:
-                    print("됨?")
-                    response = await client.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
-                    if response.status_code != 200:
-                        print(f"뭔가 오류남 : {response.json()}")
-                        raise HTTPException(status_code=500, detail=f"Error: {response.text}")
-                print(response)
-                # await requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
-                print("하나 드감")
-            except Exception as e:
-                print(e)
-                raise HTTPException(status_code=500, detail=str(e))
-        print("메시지 포스트 종료")
-        
-    except KeyError as e:
-        raise HTTPException(status_code=500, detail="Could not find logs")
+            data["sequence"] = idx+1
+            data["russelX"] = russel_coord[data["content"]][0]
+            data["russelY"] = russel_coord[data["content"]][1]
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
     
-    del user_message[user_id]
+    # try:
+    #     for idx in range(len(user_message[user_id])):
+    #         if user_message[user_id][idx]["speaker"] == "starter":
+    #             continue
+    #         message = {
+    #             "diaryId":1,
+    #             "sequence": idx+1,
+    #             "content":user_message[user_id][idx]["text"],
+    #             "speaker":user_message[user_id][idx]["speaker"],
+    #             "audioKey":user_message[user_id][idx]["audio"]            
+    #         }
+    #         headers = {
+    #             "Authorization" : f"Bearer {token}",
+    #             "Content-Type": "application/json"
+    #         }
+    #         print(message)
+    #         try:
+    #             print("츄라이")
+    #             async with httpx.AsyncClient() as client:
+    #                 print("됨?")
+    #                 response = await client.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
+    #                 if response.status_code != 200:
+    #                     print(f"뭔가 오류남 : {response.json()}")
+    #                     raise HTTPException(status_code=500, detail=f"Error: {response.text}")
+    #             print(response)
+    #             # await requests.post(SPRING_MESSAGE_POST_URL, json=message, headers=headers)
+    #             print("하나 드감")
+    #         except Exception as e:
+    #             print(e)
+    #             raise HTTPException(status_code=500, detail=str(e))
+    #     print("메시지 포스트 종료")
+        
+    # except KeyError as e:
+    #     raise HTTPException(status_code=500, detail="Could not find logs")
+    
+    # del user_message[user_id]
     print("유저 섹션 삭제")
+    return user_message
 # 세션에서 삭제
 @router.delete('/session')
 async def session_delete(user_id: str=Depends(decode_jwt)):
@@ -233,10 +267,11 @@ async def summarize_russel(request:Request):
     for event in user_emotion_russel[user_id].keys():
         summary = summary_instance.generateResponse(event)
         temp = {
-            "event":event,
+            "text":event,
             "summary":summary,
             "russel":user_emotion_russel[user_id][event]
         }
         print(temp)
+        
     
     return
