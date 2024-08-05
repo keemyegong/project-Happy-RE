@@ -8,6 +8,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clientId, setClientId] = useState(null);
   const ws = useRef(null);
   const webRtcPeer = useRef(null);
+  const remoteAudio = useRef(null); // Remote audio element
   const location = useLocation();
 
   useEffect(() => {
@@ -64,6 +65,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             type: 'candidate',
             candidate: candidate
           }));
+        },
+        onaddstream: (event) => {
+          console.log('Remote stream added:', event.stream);
+          if (remoteAudio.current) {
+            remoteAudio.current.srcObject = event.stream;
+          }
         }
       };
 
@@ -107,6 +114,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           </li>
         ))}
       </ul>
+      <audio ref={remoteAudio} autoPlay /> {/* Remote audio element */}
     </div>
   );
 };
