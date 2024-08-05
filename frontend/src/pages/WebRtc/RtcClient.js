@@ -211,12 +211,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleAnswer = async (answer, sender) => {
-    const peerConnection = peerConnections[sender].peerConnection;
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
     await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
   const handleCandidate = async (candidate, sender) => {
-    const peerConnection = peerConnections[sender].peerConnection;
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
