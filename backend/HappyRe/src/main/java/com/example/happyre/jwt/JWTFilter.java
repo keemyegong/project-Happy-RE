@@ -17,7 +17,8 @@ import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
-    private final List<String> skipUrls = List.of("/oauth2", "/login/oauth2/code","login");
+    private final List<String> skipUrls = List.of("/oauth2", "/login/oauth2/code", "login");
+
     public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -28,7 +29,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String authorization = null;
         Cookie[] cookies = request.getCookies();
 
-
+        System.out.println("JWTFilter!!!!!!!!!!11");
 
         String path = request.getRequestURI();
         if (path.equals("/api/user/login") || path.equals("/api/user/join") || path.equals("/login")) {
@@ -41,9 +42,9 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
         System.out.println(path);
-        authorization =request.getHeader("Authorization") ;
+        authorization = request.getHeader("Authorization");
         System.out.println("Header: tokennnnnn :" + authorization);
-        boolean flag= true;
+        boolean flag = true;
 
         if (cookies != null && authorization == null) {
 
@@ -60,30 +61,41 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //Authorization 헤더 검증
         if (authorization == null) {
-            System.out.println("token null");
+            System.out.println("토큰없음");
             filterChain.doFilter(request, response);
+            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing.");
+            //return;
+            flag = false;
 
             //조건이 해당되면 메소드 종료 (필수)
-            return;
+
         }
 
         //토큰
 //        String token = authorization;
         String token;
-        if(flag){
+        if (flag) {
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
+            System.out.println("TOKEN FLAG AUTHORIZATION : "+ authorization);
+            if(authorization == null){
+                filterChain.doFilter(request,response);
+            }
             token = authorization.substring(7);
-        }else{
+        } else {
             token = authorization;
         }
         System.out.println("Now Token : " + token);
         //토큰 소멸 시간 검증
+        if(token == null){
+            filterChain.doFilter(request,response);
+            return;
+        }
         if (jwtUtil.isExpired(token)) {
 
-            System.out.println("token expired");
+            System.out.println("토큰만료");
             filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired.");
         }
 
         //토큰에서 username과 role 획득

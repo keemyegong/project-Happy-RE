@@ -1,6 +1,5 @@
-// App.js
-import React, { createContext, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import React, { createContext, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 import Nav from './components/navbar/Navbar';
@@ -19,11 +18,11 @@ import Archive from './pages/archive-page/Archive'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
+import defaultImage from './assets/characters/default.png'
 
 import './App.css';
 
 export const universeVariable = createContext();
-
 
 
 const PrivateRoute = ({ children }) => {
@@ -47,6 +46,8 @@ const AppContent = () => {
 
   // 현재 경로가 '/profile'인지 확인
   const isUserProfile = location.pathname === '/profile';
+  const initialPosition = { x: 0, y: 0 };
+  const characterImage = defaultImage;
 
   return (
     <div
@@ -60,7 +61,7 @@ const AppContent = () => {
       <div className="content">
         <Routes>
           <Route path="/" element={<PublicRoute><Main /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signin" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
           <Route path="/signup/agreement" element={<PublicRoute><SignUpAgreement /></PublicRoute>} />
           <Route path="/emotion" element={<EmotionGraph />} />
@@ -69,7 +70,15 @@ const AppContent = () => {
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
-          <Route path="/webrtc" element={<PrivateRoute><RtcClient /></PrivateRoute>} />
+          <Route path="/webrtc"
+            element={
+              <PrivateRoute>
+                <RtcClient
+                  initialPosition={initialPosition}
+                  characterImage={characterImage}
+                />
+              </PrivateRoute>
+            }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
           <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         </Routes>
@@ -79,11 +88,17 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   return (
     <universeVariable.Provider
       value={{
-        defaultUrl: 'http://192.168.31.228:8080',
-        fastUrl: 'http://192.168.31.229:8000',
+        defaultUrl: 'https://i11b204.p.ssafy.io',
+        fastUrl: 'https://i11b204.p.ssafy.io',
+        // fastUrl: 'http://127.0.0.1:8000',
+        isAuthenticated,
+        setIsAuthenticated,
+        
       }}
     >
       <Router>

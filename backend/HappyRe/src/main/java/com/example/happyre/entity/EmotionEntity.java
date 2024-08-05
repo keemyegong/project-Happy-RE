@@ -12,8 +12,8 @@ import lombok.Data;
 public class EmotionEntity {
 
     @Id
-    @Column(name="emotion_id")
-    private int emotionId;
+    @Column(name = "emotion_id")
+    private Integer emotionId;
 
     private String emotion;
 }

@@ -19,8 +19,11 @@ function Login() {
 
   const googleLogin = ()=>{
 
-    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/google`
     
+  }
+  const naverLogin = ()=>{
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
   }
 
   const login = ()=>{
@@ -30,7 +33,7 @@ function Login() {
     }
 
     axios.post(
-      `${universal.defaultUrl}/login`,
+      `${universal.defaultUrl}/api/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
@@ -42,6 +45,7 @@ function Login() {
       }
       
     }).then((Response)=>{
+      universal.setIsAuthenticated(true);
       navigate('/profile');
     }).catch(()=>{
       console.log('Login failed');
@@ -59,8 +63,9 @@ function Login() {
           </div>
           <button className='btn google-login-btn'
           onClick={googleLogin}>Login With Google</button>
+                    <button className='btn google-login-btn'
+          onClick={naverLogin}>Login With Naver</button>
         </div>
-
         <hr className='border-light border-1' />
       
         <div className='login-content-container'>

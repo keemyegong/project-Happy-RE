@@ -36,6 +36,10 @@ const UserProfile =  ()=>{
   let navigate = useNavigate ();
   
   useEffect(()=>{
+    setImage(userProfileImage);
+    universal.setIsAuthenticated(true);
+
+
     axios.get(`${universal.defaultUrl}/api/user/me`,
       {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
     ).then((Response)=>{
@@ -58,6 +62,8 @@ const UserProfile =  ()=>{
         setImage(userProfileImage);
 
       })
+    }).catch(()=>{
+      console.log('서버와통신불가')
     })
   },[])
 

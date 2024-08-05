@@ -2,67 +2,39 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.user.JoinUserDTO;
 import com.example.happyre.dto.user.ModifyUserDTO;
-import com.example.happyre.dto.user.UserWithProfile;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.http.HttpHeaders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
+@Data
 @Service
 public class UserService {
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JWTUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.jwtUtil = jwtUtil;
-    }
-
-
-
-    public UserEntity findInfoByEmail(HttpServletRequest request){
-
-        String email = null;
-//        Cookie[] cookies = request.getCookies();
-//
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//
-//                if ("Authorization".equals(cookie.getName())) {
-//                    String token = cookie.getValue();
-//
-//                    email = jwtUtil.getEmail(token);
-//                    break;
-//                }
-//            }
-//        }
+    //TODO: 유저를 찾을 수 없는 경우의 예외 처리
+    public UserEntity findByRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
-        email = jwtUtil.getEmail(token);
-        UserEntity user = userRepository.findByEmail(email);
+        UserEntity user = userRepository.findByEmail(jwtUtil.getEmail(token));
         return user;
     }
 
@@ -71,12 +43,12 @@ public class UserService {
         FileInputStream fileInputStream = null;
 
         try {
-            userEntity = findInfoByEmail(req);
+            userEntity = findByRequest(req);
             String path = userEntity.getProfileUrl();
-            if(path == null || path.isEmpty()){
+            if (path == null || path.isEmpty()) {
                 path = "/var/profileimg/0.jpg";
             }
-            System.out.println("myProfile Service path:"+ path);
+            System.out.println("myProfile Service path:" + path);
             FileSystemResource resource = new FileSystemResource(path);
             if (!resource.exists()) {
                 throw new IOException("File not found: " + path);
@@ -84,16 +56,15 @@ public class UserService {
 
             return resource;
         } catch (Exception e) {
-            throw new IOException("File not found: " );
+            throw new IOException("File not found: ");
         }
-
 
 
     }
 
-    public void fistRussell(HttpServletRequest request, Map<String,Double> body) {
-        UserEntity user = findInfoByEmail(request);
-        if(user == null) {
+    public void fistRussell(HttpServletRequest request, Map<String, Double> body) {
+        UserEntity user = findByRequest(request);
+        if (user == null) {
             throw new RuntimeException("User not found");
         }
         user.setRussellX(body.get("x"));
@@ -103,9 +74,8 @@ public class UserService {
     }
 
 
-
-    public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request){
-        UserEntity userEntity = findInfoByEmail(request);
+    public void modifyUserInfo(ModifyUserDTO modifyUserDTO, HttpServletRequest request) {
+        UserEntity userEntity = findByRequest(request);
         if (userEntity != null) {
             if (modifyUserDTO.getName() != null) {
                 userEntity.setName(modifyUserDTO.getName());
@@ -127,8 +97,8 @@ public class UserService {
 
     }
 
-    public void deleteUserInfo(HttpServletRequest request){
-        UserEntity userEntity= findInfoByEmail(request);
+    public void deleteUserInfo(HttpServletRequest request) {
+        UserEntity userEntity = findByRequest(request);
         if (userEntity != null) {
             userRepository.delete(userEntity); // 유저 정보를 삭제
         } else {
@@ -160,11 +130,10 @@ public class UserService {
     }
 
 
-
     public void uploadProfile(HttpServletRequest req, MultipartFile file) {
-        UserEntity userEntity = findInfoByEmail(req);
+        UserEntity userEntity = findByRequest(req);
         if (userEntity == null) throw new RuntimeException("User not found");
-        int userId  = userEntity.getId();
+        int userId = userEntity.getId();
 
         // 파일명 설정: userId + 원래 파일 확장자
         String originalFileName = file.getOriginalFilename();
@@ -199,7 +168,6 @@ public class UserService {
             System.out.println("File uploaded failed: " + e.getMessage());
             throw new RuntimeException("Failed to upload file", e);
         }
-
 
 
     }

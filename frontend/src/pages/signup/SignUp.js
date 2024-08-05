@@ -20,7 +20,7 @@ const SignUp = () => {
   const [password2, setPassword2] = useState('');
   const googleSignIn = ()=>{
 
-    window.location.href = `${universal.defaultUrl}/oauth2/authorization/google`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
     
   }
 
@@ -57,12 +57,13 @@ const SignUp = () => {
               inputUserInfo,
             ).then((Response)=>{
               axios.post(
-                `${universal.defaultUrl}/login`,
+                `${universal.defaultUrl}/api/login`,
                 {email, password}
               ).then((Response)=>{
                 const jwtToken = Response.headers.authorization;
                 Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
               }).then((Response)=>{
+                universal.setIsAuthenticated(true);
                 navigate('/profile');
               })
             })

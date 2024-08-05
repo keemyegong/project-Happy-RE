@@ -13,8 +13,9 @@ public class MessageEntity {
     @Column(name = "message_id")
     private Integer messageId;
 
-    @Column(name="diary_id", nullable = false)
-    private Integer diaryId;
+    @ManyToOne
+    @JoinColumn(name = "diary_id", nullable = false)
+    private DiaryEntity diaryEntity;
 
     @Column(nullable = false)
     private Integer sequence;
@@ -26,8 +27,17 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private Speaker speaker;
 
-    @Column(name = "audio_key", unique = true)
+    @Column(name = "audio_key")
     private String audioKey;
+
+    @Column(nullable = true)
+    private String summary;
+
+    @Column(nullable = true)
+    private Integer russellX;
+
+    @Column(nullable = true)
+    private Integer russellY;
 
     public enum Speaker {
         ai, user

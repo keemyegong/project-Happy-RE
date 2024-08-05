@@ -4,7 +4,6 @@ import com.example.happyre.dto.oauth.CustomOAuth2User;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.jwt.JWTUtil;
 import com.example.happyre.repository.UserRepository;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +29,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
         //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
@@ -41,18 +40,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
-        UserEntity user =  userRepository.findByEmail(email);
-        String token = jwtUtil.createJwt(email, role, 60*60*60*1000*500L, user.getId());
-
+        UserEntity user = userRepository.findByEmail(email);
+        String token = jwtUtil.createJwt(email, role, 60 * 60 * 60 * 1000 * 500L, user.getId());
+        System.out.println("Successfully OAuth2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1: " + email);
         response.addCookie(createCookie("Authorization", token));
-        response.addHeader( "Authorization", "Bearer " + token);
-        response.sendRedirect("http://localhost:3000/");
+        response.addHeader("Authorization", "Bearer " + token);
+        response.sendRedirect("https://i11b204.p.ssafy.io/profile");
     }
 
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60*60*60*1000);
+        cookie.setMaxAge(60 * 60 * 60 * 1000);
         //https 설정
         //cookie.setSecure(true);
         cookie.setPath("/");

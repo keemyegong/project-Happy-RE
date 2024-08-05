@@ -8,7 +8,7 @@ import java.util.List;
 public class KeyWordResponse {
     private String keyword;
     private String summary;
-    private double russellx;
-    private double russelly;
-    private List<Integer> keyword_emotions;
+    private double russellX;
+    private double russellY;
+    private List<Integer> keywordEmotions;
 }
