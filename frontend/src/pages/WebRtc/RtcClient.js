@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import { useLocation } from 'react-router-dom';
+import kurentoUtils from 'kurento-utils';
 
 const RtcClient = ({ initialPosition, characterImage }) => {
   const [clients, setClients] = useState([]);
@@ -57,8 +58,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   useEffect(() => {
     if (clientId) {
       const options = {
-        localVideo: undefined,
-        remoteVideo: undefined,
         mediaConstraints: { audio: true, video: false },
         onicecandidate: (candidate) => {
           ws.current.send(JSON.stringify({
@@ -68,7 +67,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       };
 
-      webRtcPeer.current = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
+      webRtcPeer.current = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
         if (error) return console.error(error);
 
         webRtcPeer.current.generateOffer((error, sdpOffer) => {
