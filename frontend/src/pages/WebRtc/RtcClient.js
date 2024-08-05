@@ -67,18 +67,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       };
 
-      webRtcPeer.current = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
-        if (error) return console.error(error);
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+        .then(stream => {
+          options.localStream = stream;
 
-        webRtcPeer.current.generateOffer((error, sdpOffer) => {
-          if (error) return console.error(error);
+          webRtcPeer.current = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, (error) => {
+            if (error) return console.error(error);
 
-          ws.current.send(JSON.stringify({
-            type: 'offer',
-            sdpOffer: sdpOffer
-          }));
+            webRtcPeer.current.generateOffer((error, sdpOffer) => {
+              if (error) return console.error(error);
+
+              ws.current.send(JSON.stringify({
+                type: 'offer',
+                sdpOffer: sdpOffer
+              }));
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Error accessing media devices:', error);
         });
-      });
     }
 
     return () => {
