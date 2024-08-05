@@ -61,7 +61,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       <ul>
         {clients.map(client => (
           <li key={client.id}>
-            ID: {client.id}, 위치: {client.position}, 캐릭터 이미지: {client.characterImage}
+            ID: {client.id}, 위치: ({client.position.x}, {client.position.y}), 캐릭터 이미지: {client.characterImage}
           </li>
         ))}
       </ul>
