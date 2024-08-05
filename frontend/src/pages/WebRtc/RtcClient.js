@@ -92,6 +92,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleAnswer(dataFromServer.answer, dataFromServer.sender);
       } else if (dataFromServer.type === 'candidate') {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
+      } else if (dataFromServer.type === 'rtc_disconnect') {
+        handleRtcDisconnect(dataFromServer.id);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
       }
@@ -216,6 +218,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleCandidate = async (candidate, sender) => {
     const peerConnection = peerConnections[sender].peerConnection;
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  };
+
+  const handleRtcDisconnect = (userId) => {
+    if (peerConnections[userId]) {
+      peerConnections[userId].peerConnection.close();
+      delete peerConnections[userId];
+      setNearbyUsers(prev => prev.filter(user => user.id !== userId));
+      console.log(`WebRTC connection closed with user ${userId}`);
+    }
   };
 
   const movePosition = (dx, dy) => {

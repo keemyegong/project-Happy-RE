@@ -12,7 +12,7 @@ const server = https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
 let kurentoClient = null;
@@ -74,6 +74,21 @@ function handleConnect(userId, ws, position, characterImage) {
 function handleMove(userId, position) {
   users[userId].position = position;
   broadcastToOthers(userId, { type: 'move', id: userId, position });
+
+  // Check distances and close WebRTC connections if necessary
+  Object.keys(users).forEach(otherUserId => {
+    if (otherUserId !== userId) {
+      const distance = calculateDistance(users[userId].position, users[otherUserId].position);
+      if (distance > 0.2 && users[userId].webRtcEndpoint && users[otherUserId].webRtcEndpoint) {
+        users[userId].webRtcEndpoint.release();
+        users[otherUserId].webRtcEndpoint.release();
+        users[userId].webRtcEndpoint = null;
+        users[otherUserId].webRtcEndpoint = null;
+        users[userId].ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
+        users[otherUserId].ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
+      }
+    }
+  });
 }
 
 async function handleOffer(userId, offer) {
@@ -156,6 +171,12 @@ function createWebRtcEndpoint(userId) {
       });
     });
   });
+}
+
+function calculateDistance(position1, position2) {
+  const dx = position1.x - position2.x;
+  const dy = position1.y - position2.y;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 app.use(express.static(path.join(__dirname, 'build')));
