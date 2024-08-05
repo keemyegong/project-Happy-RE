@@ -63,6 +63,7 @@ const SignUp = () => {
                 const jwtToken = Response.headers.authorization;
                 Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
               }).then((Response)=>{
+                universal.setIsAuthenticated(true);
                 navigate('/profile');
               })
             })

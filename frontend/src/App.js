@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
@@ -17,11 +17,11 @@ import Diary from './pages/diary/Diary';
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
+import defaultImage from './assets/characters/default.png'
 
 import './App.css';
 
 export const universeVariable = createContext();
-import defaultImage from './assets/characters/default.png'
 
 
 const PrivateRoute = ({ children }) => {
@@ -87,11 +87,16 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   return (
     <universeVariable.Provider
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
         fastUrl: 'http://192.168.31.229:8000',
+        isAuthenticated,
+        setIsAuthenticated,
+        
       }}
     >
       <Router>

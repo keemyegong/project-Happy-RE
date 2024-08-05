@@ -45,6 +45,7 @@ function Login() {
       }
       
     }).then((Response)=>{
+      universal.setIsAuthenticated(true);
       navigate('/profile');
     }).catch(()=>{
       console.log('Login failed');

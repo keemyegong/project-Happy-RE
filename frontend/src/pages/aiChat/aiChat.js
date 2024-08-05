@@ -26,6 +26,7 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
+          persona:2,
         }
       }
     ).then((response) => {
@@ -70,6 +71,8 @@ const AIChat = () => {
             'Content-Type': 'audio/mpeg',
             Authorization: `Bearer ${Cookies.get('Authorization')}`,
             withCredentials: true,
+            persona:2,
+
           }
         }
       ).then((response) => {
@@ -85,6 +88,8 @@ const AIChat = () => {
             headers: {
               Authorization: `Bearer ${Cookies.get('Authorization')}`,
               withCredentials: true,
+              persona:2,
+
             }
           }
         ).then((response) => {
@@ -124,6 +129,8 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
+          persona:2,
+
         }
       }
     ).then((response) => {
