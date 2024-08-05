@@ -2,8 +2,8 @@
 import React from 'react';
 import './KeywordCard.css';
 
-const KeywordCard = ({ keyword }) => {
-  const { title, date, content, emotionTags } = keyword;
+const KeywordCard = ({ props }) => {
+  const { title, date, content, emotionTags } = props;
 
   return (
     <div className='KeywordCard'>

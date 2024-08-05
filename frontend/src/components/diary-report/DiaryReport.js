@@ -68,7 +68,7 @@ const DiaryReport = ({ selectedDay }) => {
               {dummyPositiveKeywords.map((keyword, index) => (
                 <KeywordCard
                   key={`positive-${index}`}
-                  keyword={keyword}
+                  props={keyword}
                 />
               ))}
             </div>
@@ -79,7 +79,7 @@ const DiaryReport = ({ selectedDay }) => {
               {dummyNegativeKeywords.map((keyword, index) => (
                 <KeywordCard
                   key={`negative-${index}`}
-                  keyword={keyword}
+                  props={keyword}
                 />
               ))}
             </div>

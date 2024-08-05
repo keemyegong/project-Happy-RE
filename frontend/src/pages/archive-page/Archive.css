@@ -47,7 +47,7 @@
 
 .archive-mywords-content::-webkit-scrollbar-thumb {
   height: 30%; /* 스크롤바의 길이 */
-  background: #898B98;; /* 스크롤바의 색상 */
+  background: #898B98; /* 스크롤바의 색상 */
   border-radius: 10px;
 }
 
@@ -63,45 +63,17 @@
   border-radius: 10px;
 }
 
-.archive-myword-info-header {
-  border-bottom: 0.5px solid white;
-  margin-bottom: 15px;
+.arrow-container {
+  margin-top: 10%;
 }
 
-.archive-myword-info-header-text {
-  padding-left: 10px;
-  font-family: 'Pretendard-Regular';
+.archive-myword-keywordcard-header {
+  color: white;
   font-size: 20px;
-}
-
-.archive-myword-info-components {
-  display: flex;
-  flex-wrap: wrap;  
-  justify-content: space-between;
-  max-height: 40vh;
-  overflow-y: auto;
-}
-
-.archive-myword-info-components::-webkit-scrollbar {
-  width: 10px;  /* 스크롤바의 너비 */
-}
-
-.archive-myword-info-components::-webkit-scrollbar-thumb {
-  height: 30%; /* 스크롤바의 길이 */
-  background: #898B98;; /* 스크롤바의 색상 */
-  border-radius: 10px;
-}
-
-.archive-myword-info-components::-webkit-scrollbar-track {
-  background: #595B63;  /*스크롤바 뒷 배경 색상*/
-  border-radius: 10px;
-}
-
-.archive-myword-info-report {
-  margin-top: 10px;
-  background-color: #333;
-  padding: 20px;
-  width: 250px;
+  font-family: "Poiret One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  padding-left: 10px;
 }
 
 .archive-myword-info-graph {
@@ -109,6 +81,15 @@
   background-color: #333;
   padding: 20px;
   width: 300px;
+}
+
+.archive-myword-graph-header {
+  color: white;
+  font-size: 20px;
+  font-family: "Poiret One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  padding-left: 10px;
 }
 
 .archive-message-content {
@@ -122,7 +103,7 @@
 
 .archive-message-content::-webkit-scrollbar-thumb {
   height: 30%; /* 스크롤바의 길이 */
-  background: #898B98;; /* 스크롤바의 색상 */
+  background: #898B98; /* 스크롤바의 색상 */
   border-radius: 10px;
 }
 
@@ -130,7 +111,6 @@
   background: #595B63;  /*스크롤바 뒷 배경 색상*/
   border-radius: 10px;
 }
-
 
 .archive-message-header {
   border-bottom: 0.5px solid white;
@@ -144,4 +124,21 @@
   font-weight: 400;
   font-style: normal;
   padding-left: 10px;
+}
+
+/* 미디어 쿼리 추가 */
+@media (max-width: 1024px) {
+  .archive-myword-graph {
+    display: none;
+  }
+  .archive-myword-keywordcard {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .arrow-button {
+    display: none;
+  }
 }
