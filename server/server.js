@@ -137,7 +137,7 @@ function createWebRtcEndpoint(userId) {
       pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
         if (error) return reject(error);
 
-        webRtcEndpoint.on('OnIceCandidate', (event) => {
+        webRtcEndpoint.on('IceCandidateFound', (event) => {
           const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
           const user = users[userId];
           if (user) {
