@@ -6,8 +6,9 @@ import Test from '../../components/emotion-graph/Test';
 const Archive = () => {
   const [messages, setMessages] = useState([]);
   const [keywords, setKeywords] = useState([]);
+  const [dummyKeywords, setDummyKeywords] = useState([]);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
-  const [emotionData, setEmotionData] = useState([]); 
+  const [emotionData, setEmotionData] = useState([]);
   const [currentKeywordIndex, setCurrentKeywordIndex] = useState(0);
   const [filteredKeywords, setFilteredKeywords] = useState([]);
 
@@ -21,30 +22,40 @@ const Archive = () => {
       { id: 6, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER6', content: 'This is the fourth message content.' },
     ];
 
-    const dummyKeywords = [
+    const dummyKeywordsData = [
       { id: 1, title: '워터파크', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 2, title: '두꺼비', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 3, title: '담배', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 4, title: '워터파크', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 5, title: '두꺼비', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 6, title: '담배', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 7, title: '워터파크', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 8, title: '두꺼비', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 9, title: '담배', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 2, title: '두꺼비', date: '2024-08-03', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 3, title: '담배', date: '2024-08-04', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 4, title: '워터파크', date: '2024-08-05', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 5, title: '니코틴', date: '2024-08-06', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 6, title: '카페인', date: '2024-08-07', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 7, title: '워터파크', date: '2024-08-08', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 8, title: '아쿠아리움', date: '2024-08-09', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
+      { id: 9, title: '담배', date: '2024-08-10', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
     ];
 
     setMessages(dummyMessages);
-    setKeywords(dummyKeywords);
-    
-    if (dummyKeywords.length > 0) {
-      setSelectedKeyword(dummyKeywords[0]);
-      setFilteredKeywords(dummyKeywords.filter(kw => kw.title === dummyKeywords[0].title));
+    setDummyKeywords(dummyKeywordsData);
+
+    const uniqueKeywords = dummyKeywordsData.reduce((acc, keyword) => {
+      if (!acc.some(kw => kw.title === keyword.title)) {
+        acc.push(keyword);
+      }
+      return acc;
+    }, []);
+
+    setKeywords(uniqueKeywords);
+
+    if (dummyKeywordsData.length > 0) {
+      setSelectedKeyword(dummyKeywordsData[0]);
+      setFilteredKeywords(dummyKeywordsData.filter(kw => kw.title === dummyKeywordsData[0].title));
     }
   }, []);
 
   const handleKeywordClick = (keyword) => {
     setSelectedKeyword(keyword);
-    setFilteredKeywords(keywords.filter(kw => kw.title === keyword.title));
+    const filtered = dummyKeywords.filter(kw => kw.title === keyword.title);
+    setFilteredKeywords(filtered);
     setCurrentKeywordIndex(0);
   };
 
@@ -80,8 +91,8 @@ const Archive = () => {
                 key={keyword.id}
                 onClick={() => handleKeywordClick(keyword)}
                 style={{
-                  fontWeight: selectedKeyword?.id === keyword.id ? '800' : 'normal',
-                  opacity: selectedKeyword?.id === keyword.id ? '1' : '0.7'
+                  fontWeight: selectedKeyword?.title === keyword.title ? '800' : 'normal',
+                  opacity: selectedKeyword?.title === keyword.title ? '1' : '0.7'
                 }}
               >
                 {keyword.title}
@@ -94,19 +105,24 @@ const Archive = () => {
                 <div className='archive-myword-keywordcard-header'>
                   Report
                 </div>
-                <div className='arrow-container'>
-                  <button className='arrow-button' onClick={handlePrevClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-left" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
-                    </svg>
-                    </button>
+                {filteredKeywords.length > 1 && (
+                  <div className='keywordcard-arrow-container'>
+                    <div className='keywordcard-arrow-button' onClick={handlePrevClick}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+                      </svg>
+                    </div>
+                    <KeywordCard props={selectedKeyword} />
+                    <div className='keywordcard-arrow-button' onClick={handleNextClick}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-compact-right" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+                {filteredKeywords.length <= 1 && (
                   <KeywordCard props={selectedKeyword} />
-                  <button className='arrow-button' onClick={handleNextClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-right" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
-                    </svg>
-                  </button>
-                </div>
+                )}
               </div>
               <div className='col-5 archive-myword-graph'>
                 <div className='archive-myword-graph-header'>
