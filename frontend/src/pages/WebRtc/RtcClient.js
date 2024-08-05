@@ -155,6 +155,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           const peerConnection = createPeerConnection(user.id);
           peerConnection.createOffer()
             .then(offer => {
+              offer.sdp = offer.sdp.replace(/a=extmap.*/g, ''); // 미디어 형식 일치
               peerConnection.setLocalDescription(offer);
               client.send(JSON.stringify({
                 type: 'offer',
@@ -297,7 +298,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  return (
+  return  (
     <div className="chat-room-container" ref={containerRef}>
       <div className="coordinates-graph" ref={coordinatesGraphRef}>
         <div className="axes">
