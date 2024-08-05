@@ -8,12 +8,13 @@
   font-family: 'Pretendard', sans-serif;
   margin: 10px;
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.title {
+.message-input-title {
   font-size: 1.5em;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -25,7 +26,7 @@
   text-align: center;
 }
 
-.title strong {
+.message-input-title strong {
   font-family: Pretendard;
   color: #ffffff;
   font-weight: 400;
@@ -38,7 +39,7 @@
   margin: 20px 0;
 }
 
-.input-section {
+.message-input-section {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -53,7 +54,7 @@
   background-color: rgba(0, 0, 0, 0.299);
   border-radius: 4px;
   resize: none;
-  font-size: 1em;
+  font-size: 0.8em;
   color: #ffffff; /* 텍스트 색상을 하얀색으로 설정 */
   font-family: 'Pretendard', sans-serif; /* 폰트 스타일 적용 */
 }
