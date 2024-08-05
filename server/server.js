@@ -15,6 +15,7 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
 let kurentoClient = null;
+let pendingConnections = [];
 
 const kurentoUri = 'ws://localhost:8888/kurento';
 
@@ -24,6 +25,12 @@ kurento(kurentoUri, (error, client) => {
   }
   kurentoClient = client;
   console.log('Kurento Client Connected');
+
+  // 처리하지 못한 연결 처리
+  pendingConnections.forEach(({ ws, req }) => {
+    handleConnection(ws, req);
+  });
+  pendingConnections = [];
 });
 
 const calculateDistance = (pos1, pos2) => {
@@ -88,7 +95,7 @@ const connectUsers = (userId, otherUserId) => {
   }
 };
 
-wss.on('connection', (ws) => {
+const handleConnection = (ws) => {
   const userId = uuidv4();
   ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
 
@@ -193,6 +200,15 @@ wss.on('connection', (ws) => {
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
     });
   });
+};
+
+wss.on('connection', (ws, req) => {
+  if (!kurentoClient) {
+    pendingConnections.push({ ws, req });
+    console.error('Kurento client is not initialized');
+    return;
+  }
+  handleConnection(ws);
 });
 
 server.listen(5001, () => {
