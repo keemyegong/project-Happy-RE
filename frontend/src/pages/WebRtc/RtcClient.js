@@ -1,45 +1,49 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
+import { useLocation } from 'react-router-dom';
 
 const RtcClient = ({ initialPosition, characterImage }) => {
   const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState(null);
   const ws = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
-    ws.current = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc'); // wss로 변경
+    if (location.pathname === '/webrtc') {
+      if (!ws.current || ws.current.readyState === WebSocket.CLOSED) {
+        ws.current = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
 
-    ws.current.onopen = () => {
-      // 연결이 열리면 서버로부터 클라이언트 ID를 받을 때까지 대기
-    };
+        ws.current.onopen = () => {
+          console.log('WebSocket connection opened');
+        };
 
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+        ws.current.onmessage = (event) => {
+          const data = JSON.parse(event.data);
 
-      if (data.type === 'clientId') {
-        setClientId(data.id);
-        ws.current.send(JSON.stringify({
-          type: 'connect',
-          position: initialPosition,
-          characterImage
-        }));
+          if (data.type === 'clientId') {
+            setClientId(data.id);
+            ws.current.send(JSON.stringify({
+              type: 'connect',
+              position: initialPosition,
+              characterImage
+            }));
+          }
+
+          if (data.type === 'update') {
+            setClients(data.clients);
+          }
+        };
+
+        ws.current.onclose = () => {
+          console.log('WebSocket connection closed');
+        };
       }
-
-      if (data.type === 'update') {
-        setClients(data.clients);
-      }
-    };
-
-    ws.current.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    return () => {
-      if (ws.current) {
+    } else {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.close();
       }
-    };
-  }, [initialPosition, characterImage]);
+    }
+  }, [location.pathname, initialPosition, characterImage]);
 
   const sendPositionUpdate = (position) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
