@@ -33,10 +33,10 @@ public class MessageEntity {
     @Column(nullable = true)
     private String summary;
 
-    @Column(nullable = true)
+    @Column(name = "russell_x", nullable = true)
     private Integer russellX;
 
-    @Column(nullable = true)
+    @Column(name = "russell_y", nullable = true)
     private Integer russellY;
 
     public enum Speaker {

@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @Service
@@ -36,6 +37,10 @@ public class UserService {
         String token = request.getHeader("Authorization").substring(7);
         UserEntity user = userRepository.findByEmail(jwtUtil.getEmail(token));
         return user;
+    }
+
+    public Optional<UserEntity> findById(Integer id) {
+        return userRepository.findById(id);
     }
 
     public Resource myProfile(HttpServletRequest req) throws Exception {
