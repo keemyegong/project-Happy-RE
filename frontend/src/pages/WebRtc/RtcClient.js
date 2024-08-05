@@ -138,7 +138,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               peerConnection.setLocalDescription(offer);
               client.send(JSON.stringify({
                 type: 'offer',
-                offer: offer,
+                offer: offer.sdp,  // 문자열로 변환
                 recipient: user.id,
                 sender: clientId
               }));
@@ -203,7 +203,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.send(JSON.stringify({
       type: 'answer',
-      answer: answer,
+      answer: answer.sdp,  // 문자열로 변환
       sender: clientId,
       recipient: sender
     }));
@@ -211,12 +211,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleAnswer = async (answer, sender) => {
-    const peerConnection = peerConnections[sender].peerConnection;
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
     await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
   };
 
   const handleCandidate = async (candidate, sender) => {
-    const peerConnection = peerConnections[sender].peerConnection;
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
