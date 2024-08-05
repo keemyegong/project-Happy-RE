@@ -155,15 +155,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           const peerConnection = createPeerConnection(user.id);
           peerConnection.createOffer()
             .then(offer => {
-              offer.sdp = offer.sdp.replace(/a=extmap.*/g, ''); // 미디어 형식 일치
-              peerConnection.setLocalDescription(offer);
-              client.send(JSON.stringify({
-                type: 'offer',
-                offer: offer.sdp,
-                recipient: user.id,
-                sender: clientId
-              }));
-            });
+              peerConnection.setLocalDescription(offer)
+                .then(() => {
+                  client.send(JSON.stringify({
+                    type: 'offer',
+                    offer: offer.sdp,
+                    recipient: user.id,
+                    sender: clientId
+                  }));
+                })
+                .catch(error => console.error('Error setting local description:', error));
+            })
+            .catch(error => console.error('Error creating offer:', error));
           peerConnections[user.id] = { peerConnection, user };
         }
       } else if (peerConnections[user.id]) {
@@ -298,7 +301,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  return  (
+  return (
     <div className="chat-room-container" ref={containerRef}>
       <div className="coordinates-graph" ref={coordinatesGraphRef}>
         <div className="axes">
