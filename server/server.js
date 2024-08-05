@@ -2,19 +2,26 @@ const fs = require('fs');
 const https = require('https');
 const express = require('express');
 const WebSocket = require('ws');
+const kurento = require('kurento-client');
 const { v4: uuidv4 } = require('uuid');
 
-// Express 애플리케이션 생성
 const app = express();
 
-// HTTPS 서버 생성
 const server = https.createServer({
   cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
-// WebSocket 서버 생성
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
+
+const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
+let kurentoClient = null;
+
+kurento(ws_uri, (error, client) => {
+  if (error) return console.error('Kurento connection error:', error);
+  kurentoClient = client;
+  console.log('Kurento connected');
+});
 
 let clients = [];
 
@@ -24,10 +31,10 @@ wss.on('connection', function connection(ws, req) {
     return;
   }
 
-  const clientId = uuidv4(); // UUID를 사용하여 고유한 클라이언트 ID 생성
+  const clientId = uuidv4();
   ws.send(JSON.stringify({ type: 'clientId', id: clientId }));
 
-  ws.on('message', function incoming(message) {
+  ws.on('message', async function incoming(message) {
     const data = JSON.parse(message);
 
     if (data.type === 'connect') {
@@ -35,12 +42,13 @@ wss.on('connection', function connection(ws, req) {
         id: clientId,
         ws: ws,
         position: data.position,
-        characterImage: data.characterImage
+        characterImage: data.characterImage,
+        pipeline: null,
+        webRtcEndpoint: null
       };
 
       clients.push(client);
 
-      // 모든 클라이언트에게 현재 연결된 다른 유저 정보 전송
       clients.forEach(client => {
         const otherClientsData = clients
           .filter(c => c.id !== client.id)
@@ -56,30 +64,47 @@ wss.on('connection', function connection(ws, req) {
         }));
       });
     }
+
+    if (data.type === 'offer') {
+      const client = clients.find(c => c.id === clientId);
+
+      if (!client.pipeline) {
+        client.pipeline = await kurentoClient.create('MediaPipeline');
+      }
+
+      if (!client.webRtcEndpoint) {
+        client.webRtcEndpoint = await client.pipeline.create('WebRtcEndpoint');
+      }
+
+      client.webRtcEndpoint.processOffer(data.sdpOffer, (error, sdpAnswer) => {
+        if (error) return console.error('SDP process offer error:', error);
+
+        client.ws.send(JSON.stringify({
+          type: 'answer',
+          sdpAnswer: sdpAnswer
+        }));
+      });
+
+      client.webRtcEndpoint.gatherCandidates(error => {
+        if (error) return console.error('Error gathering candidates:', error);
+      });
+    }
+
+    if (data.type === 'candidate') {
+      const client = clients.find(c => c.id === clientId);
+      client.webRtcEndpoint.addIceCandidate(data.candidate);
+    }
   });
 
-  ws.on('close', function close() {
-    clients = clients.filter(client => client.ws !== ws);
-
-    // 연결이 끊어진 후 업데이트된 클라이언트 정보 전송
-    clients.forEach(client => {
-      const otherClientsData = clients
-        .filter(c => c.id !== client.id)
-        .map(c => ({
-          id: c.id,
-          position: c.position,
-          characterImage: c.characterImage
-        }));
-
-      client.ws.send(JSON.stringify({
-        type: 'update',
-        clients: otherClientsData
-      }));
-    });
+  ws.on('close', () => {
+    const client = clients.find(c => c.id === clientId);
+    if (client.pipeline) {
+      client.pipeline.release();
+    }
+    clients = clients.filter(c => c.id !== clientId);
   });
 });
 
-// HTTPS 서버 리스닝
 server.listen(5001, () => {
   console.log('Server is running on port 5001');
 });
