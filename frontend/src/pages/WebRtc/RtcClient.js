@@ -108,10 +108,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('getUserMedia is not supported in this browser.');
     }
 
-    // return () => {
-    //   client.send(JSON.stringify({ type: 'disconnect' }));
-    //   client.close();
-    // };
+    return () => {
+      // 주석 처리된 부분 시작
+      // client.send(JSON.stringify({ type: 'disconnect' }));
+      // client.close();
+      // 주석 처리된 부분 끝
+    };
   }, [position, userImage]); // 의존성 배열에 position과 userImage 추가
 
   useEffect(() => {
