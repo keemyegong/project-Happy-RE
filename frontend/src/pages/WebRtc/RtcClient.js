@@ -1,5 +1,3 @@
-// RtcClient.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
@@ -20,7 +18,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [pendingCandidates, setPendingCandidates] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -110,8 +107,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleRtcDisconnect(dataFromServer.id);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
-      } else if (dataFromServer.type === 'user_disconnected') {
-        handleUserDisconnected(dataFromServer.id);
       }
     };
 
@@ -142,8 +137,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
           const peerConnection = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection, user };
-          attemptConnection(peerConnection, user.id);
+          peerConnections[user.id] = { peerConnection };
+          if (clientId < user.id) {
+            attemptOffer(peerConnection, user.id);
+          }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -152,29 +149,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
     });
     setNearbyUsers(newNearbyUsers);
-  };
-
-  const attemptConnection = (peerConnection, userId) => {
-    const currentUser = users.find(user => user.id === clientId);
-    const otherUser = users.find(user => user.id === userId);
-
-    if (!currentUser || !otherUser) return;
-
-    if (currentUser.connectionTime < otherUser.connectionTime) {
-      peerConnection.createOffer()
-        .then(offer => {
-          return peerConnection.setLocalDescription(offer).then(() => offer);
-        })
-        .then(offer => {
-          client.send(JSON.stringify({
-            type: 'offer',
-            offer: offer.sdp,
-            recipient: userId,
-            sender: clientId
-          }));
-        })
-        .catch(error => console.error('Error creating or sending offer:', error));
-    }
   };
 
   const createPeerConnection = (userId) => {
@@ -211,6 +185,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
+        // ICE 후보 초기화
+        if (peerConnections[userId]) {
+          delete peerConnections[userId].pendingCandidates;
+        }
       }
     };
 
@@ -221,30 +199,52 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return peerConnection;
   };
 
+  const attemptOffer = (peerConnection, recipientId) => {
+    peerConnection.createOffer()
+      .then(offer => {
+        peerConnection.setLocalDescription(offer)
+          .then(() => {
+            client.send(JSON.stringify({
+              type: 'offer',
+              offer: offer.sdp,
+              recipient: recipientId,
+              sender: clientId
+            }));
+          })
+          .catch(error => console.error('Error setting local description:', error));
+      })
+      .catch(error => console.error('Error creating offer:', error));
+  };
+
   const handleOffer = async (offer, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
       return;
     }
-  
+
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+      peerConnections[sender] = { peerConnection };
     }
-  
+
     const peerConnection = peerConnections[sender].peerConnection;
-    
+
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-  
+
       client.send(JSON.stringify({
         type: 'answer',
         answer: answer.sdp,
         sender: clientId,
         recipient: sender
       }));
+
+      if (peerConnection.signalingState === 'have-remote-offer') {
+        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+      }
+
     } catch (error) {
       console.error('Error handling offer:', error);
     }
@@ -270,13 +270,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
 
-    // Pending candidates 처리
-    if (pendingCandidates.length > 0) {
-      pendingCandidates.forEach(candidate => {
-        peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error('Error adding ICE candidate:', e));
-      });
-      setPendingCandidates([]);
+    // Add pending ICE candidates if any
+    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+    for (const candidate of pendingCandidates) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
     }
+    peerConnections[sender].pendingCandidates = [];
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -284,14 +283,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-  
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-  
+
     if (peerConnection.remoteDescription) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -299,8 +298,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
+      // Save pending ICE candidates
+      if (!peerConnections[sender].pendingCandidates) {
+        peerConnections[sender].pendingCandidates = [];
+      }
+      peerConnections[sender].pendingCandidates.push(candidate);
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
-      setPendingCandidates(prev => [...prev, candidate]);
     }
   };
 
@@ -311,11 +314,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
     }
-  };
-
-  const handleUserDisconnected = (userId) => {
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-    handleRtcDisconnect(userId);
   };
 
   const movePosition = (dx, dy) => {

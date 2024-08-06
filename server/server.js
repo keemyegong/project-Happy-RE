@@ -13,12 +13,11 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
-let connectedUsers = {}; // 연결된 유저 목록
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
-  const connectionTime = Date.now();
-  ws.send(JSON.stringify({ type: 'assign_id', id: userId, connectionTime }));
+  const userInfo = { id: userId, connectedAt: Date.now() };
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -30,7 +29,7 @@ wss.on('connection', (ws) => {
           position: data.position,
           characterImage: data.characterImage,
           hasMoved: data.hasMoved,
-          connectionTime
+          connectedAt: userInfo.connectedAt
         };
 
         const allUsers = Object.keys(users).map(id => ({
@@ -38,7 +37,7 @@ wss.on('connection', (ws) => {
           position: users[id].position,
           characterImage: users[id].characterImage,
           hasMoved: users[id].hasMoved,
-          connectionTime: users[id].connectionTime
+          connectedAt: users[id].connectedAt
         }));
 
         Object.keys(users).forEach(id => {
@@ -65,35 +64,12 @@ wss.on('connection', (ws) => {
         break;
 
       case 'offer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
-            if (error) return console.error('Error processing offer: ', error);
-
-            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
-          });
-        } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
-        }
-        break;
-
       case 'answer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
-            if (error) return console.error('Error processing answer:', error);
-          });
-        } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
-        }
-        break;
-
       case 'candidate':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
-          users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
-            if (error) return console.error('Error adding candidate:', error);
-          });
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify(data));
         } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
+          console.error(`User ${data.recipient} does not exist`);
         }
         break;
 
@@ -101,16 +77,14 @@ wss.on('connection', (ws) => {
         delete users[userId];
 
         Object.keys(users).forEach(id => {
-          users[id].ws.send(JSON.stringify({ type: 'user_disconnected', id: userId }));
-        });
+          const otherClientsData = Object.keys(users).map(cId => ({
+            id: cId,
+            position: users[cId].position,
+            characterImage: users[cId].characterImage,
+            hasMoved: users[cId].hasMoved,
+            connectedAt: users[cId].connectedAt
+          })).filter(user => user.id !== id);
 
-        const otherClientsData = Object.keys(users).map(cId => ({
-          id: cId,
-          position: users[cId].position,
-          characterImage: users[cId].characterImage
-        })).filter(user => user.id !== userId);
-
-        Object.keys(users).forEach(id => {
           users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
         });
         break;
@@ -124,16 +98,14 @@ wss.on('connection', (ws) => {
     delete users[userId];
 
     Object.keys(users).forEach(id => {
-      users[id].ws.send(JSON.stringify({ type: 'user_disconnected', id: userId }));
-    });
+      const otherClientsData = Object.keys(users).map(cId => ({
+        id: cId,
+        position: users[cId].position,
+        characterImage: users[cId].characterImage,
+        hasMoved: users[cId].hasMoved,
+        connectedAt: users[cId].connectedAt
+      })).filter(user => user.id !== id);
 
-    const otherClientsData = Object.keys(users).map(cId => ({
-      id: cId,
-      position: users[cId].position,
-      characterImage: users[cId].characterImage
-    })).filter(user => user.id !== userId);
-
-    Object.keys(users).forEach(id => {
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
     });
   });
