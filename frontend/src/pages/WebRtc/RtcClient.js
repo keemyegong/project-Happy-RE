@@ -1,11 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import kurentoUtils from 'kurento-utils';
-import art from '../../assets/characters/art.png';
-import soldier from '../../assets/characters/soldier.png';
-import steel from '../../assets/characters/steel.png';
 import defaultImg from '../../assets/characters/default.png';
-import butler from '../../assets/characters/butler.png';
 import './RtcClient.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -130,6 +125,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
+          if (localAudioRef.current) {
+            localAudioRef.current.srcObject = currentStream;
+          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
