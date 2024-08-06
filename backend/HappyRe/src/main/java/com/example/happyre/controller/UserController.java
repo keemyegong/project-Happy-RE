@@ -126,7 +126,7 @@ public class UserController {
             //409 : aleady exist user
             System.out.println("IllegalStateException : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             //400 : email validation
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
