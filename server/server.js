@@ -15,40 +15,29 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
 let kurentoClient = null;
-const kurentoUri = 'ws://172.17.0.2:8888/kurento';
+const kurentoUri = 'ws://localhost:8888/kurento';
 
-const initializeKurentoClient = () => {
-  return new Promise((resolve, reject) => {
-    const retryInterval = 1000; // 1초마다 재시도
-    let retries = 0;
-    const maxRetries = 10; // 최대 재시도 횟수
-
-    const attemptConnection = () => {
-      kurento(kurentoUri, (error, client) => {
-        if (error) {
-          console.error(`Could not find media server at address ${kurentoUri}. Retrying...`);
-          retries += 1;
-          if (retries < maxRetries) {
-            setTimeout(attemptConnection, retryInterval);
+const initializeKurentoClient = async () => {
+  while (!kurentoClient) {
+    try {
+      kurentoClient = await new Promise((resolve, reject) => {
+        kurento(kurentoUri, (error, client) => {
+          if (error) {
+            reject(error);
           } else {
-            reject(new Error('Max retries reached. Kurento client initialization failed.'));
+            resolve(client);
           }
-        } else {
-          kurentoClient = client;
-          console.log('Kurento Client Connected');
-          resolve(client);
-        }
+        });
       });
-    };
-
-    attemptConnection();
-  });
+      console.log('Kurento Client Connected');
+    } catch (error) {
+      console.error('Could not find media server at address ' + kurentoUri + '. Retrying in 5 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
 };
 
-initializeKurentoClient().catch(err => {
-  console.error(err.message);
-  process.exit(1); // 초기화 실패 시 서버 종료
-});
+initializeKurentoClient();
 
 const calculateDistance = (pos1, pos2) => {
   return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
@@ -65,6 +54,8 @@ const checkAndConnectUsers = () => {
     userIds.forEach(otherUserId => {
       if (userId !== otherUserId && calculateDistance(users[userId].position, users[otherUserId].position) <= 0.2) {
         connectUsers(userId, otherUserId);
+      } else if (userId !== otherUserId && calculateDistance(users[userId].position, users[otherUserId].position) > 0.2) {
+        disconnectUsers(userId, otherUserId);
       }
     });
   });
@@ -112,6 +103,24 @@ const connectUsers = (userId, otherUserId) => {
         });
       });
     });
+  }
+};
+
+const disconnectUsers = (userId, otherUserId) => {
+  const user = users[userId];
+  const otherUser = users[otherUserId];
+
+  if (user && otherUser && user.webRtcEndpoint && otherUser.webRtcEndpoint) {
+    user.webRtcEndpoint.release();
+    otherUser.webRtcEndpoint.release();
+
+    delete user.webRtcEndpoint;
+    delete otherUser.webRtcEndpoint;
+
+    user.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
+    otherUser.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
+    
+    console.log(`WebRTC connection closed between users ${userId} and ${otherUserId}`);
   }
 };
 
