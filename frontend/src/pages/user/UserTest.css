@@ -45,7 +45,7 @@
 
 .choice-button {
   margin: 5px;
-  color: #999999;
+  color: #7c7c7c;
   border: none;
   background-color: transparent;
   transition: color 0.3s ease;
@@ -55,7 +55,7 @@
 }
 
 .choice-button.selected {
-  color: #c0cce4;
+  color: #d5d6fe;
 }
 
 .submit-button {
