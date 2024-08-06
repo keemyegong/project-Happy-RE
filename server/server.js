@@ -81,22 +81,14 @@ const connectUsers = (userId, otherUserId) => {
           user.webRtcEndpoint = senderEndpoint;
           otherUser.webRtcEndpoint = receiverEndpoint;
 
-          senderEndpoint.on('OnIceCandidate', (event) => {
+          senderEndpoint.on('IceCandidateFound', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             otherUser.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: userId }));
           });
 
-          receiverEndpoint.on('OnIceCandidate', (event) => {
+          receiverEndpoint.on('IceCandidateFound', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
-          });
-
-          senderEndpoint.gatherCandidates((error) => {
-            if (error) return console.error('Error gathering candidates from sender: ', error);
-          });
-
-          receiverEndpoint.gatherCandidates((error) => {
-            if (error) return console.error('Error gathering candidates from receiver: ', error);
           });
 
           senderEndpoint.generateOffer((error, offer) => {
@@ -127,7 +119,7 @@ const disconnectUsers = (userId, otherUserId) => {
 
     user.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
     otherUser.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
-    
+
     console.log(`WebRTC connection closed between users ${userId} and ${otherUserId}`);
   }
 };

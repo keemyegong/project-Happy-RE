@@ -125,6 +125,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
+          if (localAudioRef.current) {
+            localAudioRef.current.srcObject = currentStream;
+          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -194,23 +197,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
-        if (event.streams[0] !== stream) {
-          localAudioRef.current.srcObject = event.streams[0];
-        }
+        localAudioRef.current.srcObject = event.streams[0];
       }
     };
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
-        startMicrophone();
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
-        stopMicrophone();
       }
     };
 
@@ -221,28 +220,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return peerConnection;
   };
 
-  const handleOffer = async (offer, sender) => {
+  const handleOffer = async (sdp, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
       return;
     }
-  
+
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
       peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
     }
-  
+
     const peerConnection = peerConnections[sender].peerConnection;
-  
-    if (peerConnection.signalingState !== 'stable') {
-      console.error('Peer connection is not in stable state for offer');
-      return;
-    }
-  
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
-  
+
     client.send(JSON.stringify({
       type: 'answer',
       sdp: answer.sdp,
@@ -250,26 +243,20 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       recipient: sender
     }));
   };
-  
-  const handleAnswer = async (answer, sender) => {
+
+  const handleAnswer = async (sdp, sender) => {
     if (!sender) {
       console.error('No sender provided for answer');
       return;
     }
-  
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-  
-    if (peerConnection.signalingState !== 'have-local-offer') {
-      console.error('Peer connection is not in have-local-offer state for answer');
-      return;
-    }
-  
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp }));
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -309,18 +296,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
     } else {
       setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
-    }
-  };
-
-  const startMicrophone = () => {
-    if (stream) {
-      stream.getAudioTracks().forEach(track => track.enabled = true);
-    }
-  };
-
-  const stopMicrophone = () => {
-    if (stream) {
-      stream.getAudioTracks().forEach(track => track.enabled = false);
     }
   };
 
