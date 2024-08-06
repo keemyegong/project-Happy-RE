@@ -3,7 +3,6 @@ const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-const kurento = require('kurento-client');
 
 const app = express();
 const server = https.createServer({
@@ -14,30 +13,6 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
-let kurentoClient = null;
-const kurentoUri = 'ws://i11b204.p.ssafy.io:8888/kurento';
-
-const initializeKurentoClient = async () => {
-  while (!kurentoClient) {
-    try {
-      kurentoClient = await new Promise((resolve, reject) => {
-        kurento(kurentoUri, (error, client) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(client);
-          }
-        });
-      });
-      console.log('Kurento Client Connected');
-    } catch (error) {
-      console.error('Could not find media server at address ' + kurentoUri + '. Retrying in 5 seconds...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
-};
-
-initializeKurentoClient();
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
@@ -78,53 +53,17 @@ wss.on('connection', (ws) => {
       case 'send_offer':
         const recipientUser = users[data.recipient];
         if (recipientUser) {
-          if (!recipientUser.webRtcEndpoint) {
-            kurentoClient.create('MediaPipeline', (error, pipeline) => {
-              if (error) return console.error('Error creating MediaPipeline:', error);
-
-              pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-                if (error) return console.error('Error creating WebRtcEndpoint:', error);
-
-                recipientUser.webRtcEndpoint = webRtcEndpoint;
-                recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
-              });
-            });
-          } else {
-            recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
-          }
+          recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
         }
         break;
 
       case 'offer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
-            if (error) return console.error('Error processing offer: ', error);
-
-            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
-          });
-        } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
-        }
-        break;
-
       case 'answer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
-            if (error) return console.error('Error processing answer:', error);
-          });
-        } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
-        }
-        break;
-
       case 'candidate':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
-          users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
-            if (error) return console.error('Error adding candidate:', error);
-          });
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify(data));
         } else {
-          console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
+          console.error(`User ${data.recipient} does not exist`);
         }
         break;
 

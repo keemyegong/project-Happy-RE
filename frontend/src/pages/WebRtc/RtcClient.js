@@ -17,7 +17,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -300,7 +299,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         position={position} 
         users={users} 
         movePosition={movePosition} 
-        localAudioRef={localAudioRef} 
         userImage={userImage} 
       />
       <CharacterList 
