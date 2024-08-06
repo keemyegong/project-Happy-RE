@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -52,9 +53,9 @@ public class MessageController {
             }
             DiaryEntity diaryEntity=todayDiarys.get(0);
             System.out.println("Diary Entity : "+ diaryEntity.toString());
-            messageService.insertMessageDTOList(diaryEntity,messageEntityDTOs);
+            ArrayList<MessageEntity> messageEntities =messageService.insertMessageDTOList(diaryEntity,messageEntityDTOs);
 
-            return ResponseEntity.ok("Successfully created message");
+            return ResponseEntity.ok("Successfully created message" + messageEntities );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 생성중 에러: " + e.getMessage());
         }

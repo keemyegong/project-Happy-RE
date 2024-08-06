@@ -4,6 +4,7 @@ package com.example.happyre.controller;
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.KeywordService;
@@ -29,8 +30,8 @@ public class KeywordController {
 
 
     @PostMapping("/")
-    public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody List<MessageEntityDTO> messageEntityDTOs) {
-        System.out.println("createMessage :"+messageEntityDTOs.toString() );
+    public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody List<KeywordEntityDTO> KeywordEntityDTO) {
+        System.out.println("createkeywords :"+KeywordEntityDTO.toString() );
         try {
             UserEntity userEntity = userService.findByRequest(request);
             if(userEntity == null) {
@@ -47,9 +48,10 @@ public class KeywordController {
             }
             DiaryEntity diaryEntity=todayDiarys.get(0);
             System.out.println("Diary Entity : "+ diaryEntity.toString());
-            keywordService.insertDTOList(diaryEntity,messageEntityDTOs);
+            keywordService.insertDTOList(diaryEntity,KeywordEntityDTO);
 
-            return ResponseEntity.ok("Successfully created message");
+
+            return ResponseEntity.ok("Successfully created keywords");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Keywords 생성중 에러: " + e.getMessage());
         }

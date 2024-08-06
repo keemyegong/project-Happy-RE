@@ -1,8 +1,10 @@
 package com.example.happyre.service;
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
+import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.KeywordEntity;
+import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.KeywordRepository;
 import io.jsonwebtoken.lang.Assert;
@@ -57,8 +59,25 @@ public class KeywordServiceImpl implements KeywordService {
 
 
     @Override
-    public List<KeywordEntity> insertDTOList(List<KeywordEntityDTO> keywordEntityDTOList) {
+    public List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity,List<KeywordEntityDTO> keywordEntityDTOList) {
+        int cnt = 0;
+        try {
+            for(KeywordEntityDTO keywordEntityDTO : keywordEntityDTOList) {
+                KeywordEntity keywordEntity = new KeywordEntity();
+                keywordEntity.setDiaryEntity(diaryEntity);
+                keywordEntity.setSequence(keywordEntityDTO.getSequence());
+                keywordEntity.setKeyword(keywordEntityDTO.getKeyword());
+                keywordEntity.setSummary(keywordEntityDTO.getSummary());
+                keywordEntity.setRussellX(keywordEntityDTO.getRussellX());
+                keywordEntity.setRussellY(keywordEntityDTO.getRussellY());
 
+            }
+        }catch (Exception e) {
+            System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     @Override

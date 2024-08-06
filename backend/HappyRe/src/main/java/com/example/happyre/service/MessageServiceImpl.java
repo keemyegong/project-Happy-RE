@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,8 +120,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList) {
+    public ArrayList<MessageEntity> insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList) {
         int cnt = 0;
+        ArrayList<MessageEntity> messageEntities = new ArrayList<>();
         try {
             for(MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
                 MessageEntity messageEntity =  new MessageEntity();
@@ -133,7 +136,9 @@ public class MessageServiceImpl implements MessageService {
                 messageEntity.setRussellX(messageEntityDTO.getRussellX());
                 messageEntity.setRussellY(messageEntityDTO.getRussellY());
                 messageRepository.save(messageEntity);
+                messageEntities.add(messageEntity);
             }
+            return messageEntities;
         }catch (Exception e) {
             System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
             System.out.println(e.getMessage());
