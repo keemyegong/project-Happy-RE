@@ -296,7 +296,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       peerConnections[sender].pendingCandidates.push(new RTCIceCandidate(candidate));
     }
   };
-  
+
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
