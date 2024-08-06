@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -80,7 +78,20 @@ wss.on('connection', (ws) => {
       case 'send_offer':
         const recipientUser = users[data.recipient];
         if (recipientUser) {
-          recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
+          if (!recipientUser.webRtcEndpoint) {
+            kurentoClient.create('MediaPipeline', (error, pipeline) => {
+              if (error) return console.error('Error creating MediaPipeline:', error);
+
+              pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
+                if (error) return console.error('Error creating WebRtcEndpoint:', error);
+
+                recipientUser.webRtcEndpoint = webRtcEndpoint;
+                recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
+              });
+            });
+          } else {
+            recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
+          }
         }
         break;
 

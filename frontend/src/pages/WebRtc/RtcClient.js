@@ -17,30 +17,29 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
+  const localAudioRef = useRef(null);
+  const remoteAudioRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'disconnect' }));
-      }
-    };
+    if (window.location.pathname !== '/webrtc') {
+      client.close();
+      return;
+    }
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        handleBeforeUnload();
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', () => {
+      client.send(JSON.stringify({ type: 'disconnect' }));
+      client.close();
+    });
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('keydown', handleKeyDown);
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'disconnect' }));
+        client.close();
+      }
     };
   }, []);
 
@@ -101,6 +100,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'move') {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
         checkDistances(users);
+      } else if (dataFromServer.type === 'receive_offer') {
+        handleOfferRequest(dataFromServer.sender);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -118,6 +119,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
+          // Don't attach the stream to the local audio element
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -140,22 +142,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          const peerConnection = createPeerConnection(user.id);
-          peerConnection.createOffer()
-            .then(offer => {
-              peerConnection.setLocalDescription(offer)
-                .then(() => {
-                  client.send(JSON.stringify({
-                    type: 'offer',
-                    offer: offer.sdp,
-                    recipient: user.id,
-                    sender: clientId
-                  }));
-                })
-                .catch(error => console.error('Error setting local description:', error));
-            })
-            .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user };
+          client.send(JSON.stringify({
+            type: 'send_offer',
+            recipient: user.id
+          }));
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -172,7 +162,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-    console.log('webrtc 연결완료');
+    console.log('WebRTC 연결 완료');
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -186,10 +176,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      const remoteAudio = document.createElement('audio');
-      remoteAudio.srcObject = event.streams[0];
-      remoteAudio.autoplay = true;
-      document.body.appendChild(remoteAudio);
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = event.streams[0];
+      }
     };
 
     peerConnection.onconnectionstatechange = () => {
@@ -198,6 +187,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = null;
+        }
       }
     };
 
@@ -206,6 +198,21 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     return peerConnection;
+  };
+
+  const handleOfferRequest = async (sender) => {
+    const peerConnection = createPeerConnection(sender);
+    peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    client.send(JSON.stringify({
+      type: 'offer',
+      offer: offer.sdp,
+      recipient: sender,
+      sender: clientId
+    }));
   };
 
   const handleOffer = async (offer, sender) => {
@@ -293,7 +300,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         position={position} 
         users={users} 
         movePosition={movePosition} 
-        localAudioRef={null} 
+        localAudioRef={localAudioRef} 
         userImage={userImage} 
       />
       <CharacterList 
@@ -302,6 +309,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleScroll={handleScroll} 
         talkingUsers={talkingUsers} 
       />
+      <audio ref={remoteAudioRef} autoPlay />
     </div>
   );
 }
