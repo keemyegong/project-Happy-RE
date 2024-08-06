@@ -166,14 +166,14 @@ wss.on('connection', (ws) => {
 
       case 'offer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          if (data.offer) {
-            users[data.recipient].webRtcEndpoint.processOffer(data.offer.toString(), (error, sdpAnswer) => {
+          if (data.sdp) {
+            users[data.recipient].webRtcEndpoint.processOffer(data.sdp.toString(), (error, sdpAnswer) => {
               if (error) return console.error('Error processing offer: ', error);
 
-              users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer.toString(), sender: userId }));
+              users[data.recipient].ws.send(JSON.stringify({ type: 'answer', sdp: sdpAnswer.toString(), sender: userId }));
             });
           } else {
-            console.error('Received offer is not valid:', data.offer);
+            console.error('Received offer is not valid:', data.sdp);
           }
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
@@ -182,12 +182,12 @@ wss.on('connection', (ws) => {
 
       case 'answer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          if (data.answer) {
-            users[data.recipient].webRtcEndpoint.processAnswer(data.answer.toString(), (error) => {
+          if (data.sdp) {
+            users[data.recipient].webRtcEndpoint.processAnswer(data.sdp.toString(), (error) => {
               if (error) return console.error('Error processing answer:', error);
             });
           } else {
-            console.error('Received answer is not valid:', data.answer);
+            console.error('Received answer is not valid:', data.sdp);
           }
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);

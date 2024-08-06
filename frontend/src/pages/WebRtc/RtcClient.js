@@ -239,7 +239,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.send(JSON.stringify({
       type: 'answer',
-      answer: answer.sdp,
+      sdp: answer.sdp,
       sender: clientId,
       recipient: sender
     }));
