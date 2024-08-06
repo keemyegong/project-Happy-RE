@@ -6,8 +6,10 @@ import com.example.happyre.jwt.LoginFilter;
 import com.example.happyre.oauth2.CustomSuccessHandler;
 import com.example.happyre.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,6 +31,8 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
+    @Value("${DOMAIN_PROPERTIES}")
+    private String domainProperties;
 
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil, AuthenticationConfiguration authenticationConfiguration) {
         this.customOAuth2UserService = customOAuth2UserService;
@@ -47,6 +51,16 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+//    @Bean
+//    @Order(1)
+//    public SecurityFilterChain swaggerChain(HttpSecurity http) throws Exception {
+//        http
+//                .securityMatcher("/v3/**", "/api/swagger-ui/**")
+//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+//        return http.build();
+//    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // CORS 설정
@@ -54,7 +68,7 @@ public class SecurityConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(Collections.singletonList("https://i11b204.p.ssafy.io"));
+                configuration.setAllowedOrigins(Collections.singletonList(domainProperties));
                 configuration.setAllowedMethods(Collections.singletonList("*"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(Collections.singletonList("*"));

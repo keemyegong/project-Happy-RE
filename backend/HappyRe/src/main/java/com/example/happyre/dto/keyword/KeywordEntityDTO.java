@@ -18,4 +18,6 @@ public class KeywordEntityDTO {
     private Double russellX;
 
     private Double russellY;
+
+    private Boolean archived;
 }

@@ -8,4 +8,5 @@ public class ModifyUserDTO {
     private String password;
     private String name;
     private String profileUrl;
+    private Integer myfrog;
 }

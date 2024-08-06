@@ -14,4 +14,5 @@ public class MessageEntityDTO {
     private String summary;
     private Integer russellX;
     private Integer russellY;
+    private Boolean archived;
 }

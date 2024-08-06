@@ -102,7 +102,12 @@ pipeline {
         //     }
         // }
 
-        
+        stage('Deploy using Docker Down') { 
+            steps{
+                echo 'Docker Compose... Down'
+                sh 'docker-compose -f /home/ubuntu/docker-compose.yml down'
+            }
+        }          
         stage('Deploy using Docker Compose') { 
             steps{
                 echo 'Deploying using Docker Compose...'

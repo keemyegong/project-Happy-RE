@@ -51,13 +51,15 @@ wss.on('connection', (ws) => {
         users[userId] = {
           ws,
           position: data.position,
-          characterImage: data.characterImage
+          characterImage: data.characterImage,
+          hasMoved: data.hasMoved
         };
 
         const allUsers = Object.keys(users).map(id => ({
           id,
           position: users[id].position,
-          characterImage: users[id].characterImage
+          characterImage: users[id].characterImage,
+          hasMoved: users[id].hasMoved
         }));
 
         Object.keys(users).forEach(id => {
@@ -68,9 +70,10 @@ wss.on('connection', (ws) => {
       case 'move':
         if (users[userId]) {
           users[userId].position = data.position;
+          users[userId].hasMoved = data.hasMoved;
 
           Object.keys(users).forEach(id => {
-            users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position }));
+            users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
           });
         }
         break;
@@ -78,20 +81,7 @@ wss.on('connection', (ws) => {
       case 'send_offer':
         const recipientUser = users[data.recipient];
         if (recipientUser) {
-          if (!recipientUser.webRtcEndpoint) {
-            kurentoClient.create('MediaPipeline', (error, pipeline) => {
-              if (error) return console.error('Error creating MediaPipeline:', error);
-
-              pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-                if (error) return console.error('Error creating WebRtcEndpoint:', error);
-
-                recipientUser.webRtcEndpoint = webRtcEndpoint;
-                recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
-              });
-            });
-          } else {
-            recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
-          }
+          recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
         }
         break;
 
@@ -135,7 +125,8 @@ wss.on('connection', (ws) => {
           const otherClientsData = Object.keys(users).map(cId => ({
             id: cId,
             position: users[cId].position,
-            characterImage: users[cId].characterImage
+            characterImage: users[cId].characterImage,
+            hasMoved: users[cId].hasMoved
           })).filter(user => user.id !== id);
 
           users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
@@ -154,7 +145,8 @@ wss.on('connection', (ws) => {
       const otherClientsData = Object.keys(users).map(cId => ({
         id: cId,
         position: users[cId].position,
-        characterImage: users[cId].characterImage
+        characterImage: users[cId].characterImage,
+        hasMoved: users[cId].hasMoved
       })).filter(user => user.id !== id);
 
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));

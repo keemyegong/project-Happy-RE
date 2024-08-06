@@ -6,6 +6,7 @@ import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.KeywordRepository;
 import io.jsonwebtoken.lang.Assert;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class KeywordServiceImpl implements KeywordService {
         newOne.setSummary(keywordEntityDTO.getSummary());
         newOne.setRussellX(keywordEntityDTO.getRussellX());
         newOne.setRussellY(keywordEntityDTO.getRussellY());
+        newOne.setArchived(keywordEntityDTO.getArchived());
         return newOne;
     }
 
@@ -57,14 +59,8 @@ public class KeywordServiceImpl implements KeywordService {
 
 
     @Override
-    public List<KeywordEntity> insertDTOList(List<KeywordEntityDTO> keywordEntityDTOList) {
-        return keywordEntityDTOList.stream().map(m -> {
-            try {
-                return this.insertDTO(m);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
+    public List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity, List<KeywordEntityDTO> keywordEntityDTOList) {
+        return keywordEntityDTOList.stream().map(dto -> getKeywordEntity(dto, diaryEntity)).map(e -> this.insert(e)).toList();
     }
 
     @Override
@@ -83,6 +79,11 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public List<KeywordEntity> findByArchivedAndUserEntity(Boolean isArchived, UserEntity userEntity) {
+        return keywordRepository.findByArchivedAndUserEntity(isArchived, userEntity);
+    }
+
+    @Override
     public KeywordEntity update(KeywordEntity keywordDTOEntity) {
         KeywordEntity matchingEntity = keywordRepository.findById(keywordDTOEntity.getKeywordId()).orElseThrow();
         matchingEntity.setSequence(keywordDTOEntity.getSequence());
@@ -96,5 +97,18 @@ public class KeywordServiceImpl implements KeywordService {
     public void delete(KeywordEntity keywordDTOEntity) {
         KeywordEntity matchingEntity = keywordRepository.findById(keywordDTOEntity.getKeywordId()).orElseThrow();
         keywordRepository.delete(matchingEntity);
+    }
+
+    @Override
+    public void updateArchive(int keywordId, boolean archive) {
+        Optional<KeywordEntity> keywordEntityOptional  = keywordRepository.findById(keywordId);
+        if (keywordEntityOptional.isPresent()) {
+            KeywordEntity keywordEntity = keywordEntityOptional.get();
+            keywordEntity.setArchived(archive);
+            keywordRepository.save(keywordEntity);
+        } else {
+            throw new EntityNotFoundException("Keyword not found with id: " + keywordId);
+        }
+
     }
 }

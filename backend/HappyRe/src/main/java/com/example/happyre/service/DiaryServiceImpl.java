@@ -29,7 +29,7 @@ public class DiaryServiceImpl implements DiaryService {
         List<DiaryEntity> todayDiary = diaryRepository.findByUserEntityAndDate(diaryEntity.getUserEntity(), currentDate);
         if (todayDiary.size() != 0) throw new DiaryEntryAlreadyExistsException("같은 날짜의 Diary 가 이미 존재함");
         //Save 한 뒤, SQL 에서 지정해준 Date 값을 사용하기 위해 재 Fetch.
-        return diaryRepository.findById(diaryRepository.save(diaryEntity).getDiaryId()).get();
+        return diaryRepository.save(diaryEntity);
     }
 
     @Override

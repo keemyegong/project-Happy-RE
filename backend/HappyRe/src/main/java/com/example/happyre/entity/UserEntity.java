@@ -45,6 +45,7 @@ public class UserEntity {
     @Column(name = "russell_y")
     private Double russellY;
 
+    @Column(name = "myfrog")
     private Integer myfrog;
 
 }

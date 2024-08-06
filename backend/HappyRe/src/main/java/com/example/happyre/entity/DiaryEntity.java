@@ -26,7 +26,7 @@ public class DiaryEntity {
     @Column(updatable = false)
     private Timestamp date;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String summary;
 
 }
