@@ -19,8 +19,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [hasMoved, setHasMoved] = useState(false);
-  const remoteAudioRef = useRef(null);
+  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -38,14 +37,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'disconnect' }));
-        client.close();
-      }
-      Object.keys(peerConnections).forEach(key => {
-        peerConnections[key].peerConnection.close();
-        delete peerConnections[key];
-      });
     };
   }, []);
 
@@ -98,20 +89,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           image: user.characterImage
         })));
-        if (hasMoved) {
-          checkDistances(filteredUsers);
-        }
+        checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
         const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
         setUsers(prevUsers => [...prevUsers, newUser]);
-        if (hasMoved) {
-          checkDistances([...users, newUser]);
-        }
+        checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
-        if (hasMoved) {
-          checkDistances(users);
-        }
+        checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -138,10 +123,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   }, [position, userImage]);
 
   useEffect(() => {
-    if (clientId && hasMoved) {
+    if (clientId) {
       checkDistances(users);
     }
-  }, [clientId, users, hasMoved]);
+  }, [clientId, users]);
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
@@ -183,7 +168,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-    console.log('webrtc 연결 완료');
+    console.log('WebRTC 연결 완료');
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -197,8 +182,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (remoteAudioRef.current) {
-        remoteAudioRef.current.srcObject = event.streams[0];
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
       }
     };
 
@@ -208,8 +193,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (remoteAudioRef.current) {
-          remoteAudioRef.current.srcObject = null;
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
         }
       }
     };
@@ -233,6 +218,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
+
+    if (peerConnection.signalingState !== 'stable') {
+      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+      return;
+    }
+
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
@@ -257,6 +248,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
+
+    if (peerConnection.signalingState !== 'have-local-offer') {
+      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+      return;
+    }
+
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
   };
 
@@ -272,6 +269,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
+
+    if (peerConnection.signalingState !== 'stable' && peerConnection.signalingState !== 'have-local-offer' && peerConnection.signalingState !== 'have-remote-offer') {
+      console.error(`Attempted to addIceCandidate in unexpected state: ${peerConnection.signalingState}`);
+      return;
+    }
+
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
@@ -287,7 +290,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
     setPosition(newPosition);
-    setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'move', position: newPosition }));
     }
@@ -307,7 +309,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         position={position} 
         users={users} 
         movePosition={movePosition} 
-        remoteAudioRef={remoteAudioRef} 
+        localAudioRef={localAudioRef} 
         userImage={userImage} 
       />
       <CharacterList 
