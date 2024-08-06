@@ -72,7 +72,7 @@ const SignUp = () => {
                 Cookies.set('Authorization',jwtToken.substr(7), { expires: 30 })
               }).then((Response)=>{
                 universal.setIsAuthenticated(true);
-                navigate('/profile');
+                navigate('/usertest');
               })
             }).catch((error)=>{
               // axios 에러를 잡는 부분(회원가입쪽)
