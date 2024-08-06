@@ -118,7 +118,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
-          // Don't attach the stream to the local audio element
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -226,12 +225,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    if (peerConnection.signalingState === "stable") {
-      console.warn('Attempted to setRemoteDescription in stable state');
-      return;
+    if (peerConnection.signalingState !== "have-remote-offer") {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+    } else {
+      console.warn('Attempted to setRemoteDescription in wrong state');
     }
 
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
