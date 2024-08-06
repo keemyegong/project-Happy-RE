@@ -171,7 +171,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       ]
     });
     console.log('WebRTC 연결 완료');
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -182,13 +182,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -200,11 +200,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return { peerConnection, pendingCandidates: [] };
   };
 
@@ -215,11 +215,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     if (!peerConnections[sender]) {
-      const { peerConnection, pendingCandidates } = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender), pendingCandidates };
+      const peerConnection = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
     }
 
-    const { peerConnection, pendingCandidates } = peerConnections[sender];
+    const peerConnection = peerConnections[sender].peerConnection;
 
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
@@ -233,12 +233,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         recipient: sender
       }));
 
-      // 대기 중인 ICE 후보 처리
-      if (pendingCandidates) {
-        pendingCandidates.forEach(async candidate => {
+      if (pendingCandidates[sender]) {
+        pendingCandidates[sender].forEach(async candidate => {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         });
-        pendingCandidates.length = 0; // Clear pending candidates
+        setPendingCandidates(prev => {
+          const newPending = { ...prev };
+          delete newPending[sender];
+          return newPending;
+        });
       }
 
     } catch (error) {
@@ -287,8 +290,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      // 대기 중인 ICE 후보 저장
-      connection.pendingCandidates.push(candidate);
+      setPendingCandidates(prev => {
+        const newPending = { ...prev };
+        if (!newPending[sender]) {
+          newPending[sender] = [];
+        }
+        newPending[sender].push(candidate);
+        return newPending;
+      });
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
