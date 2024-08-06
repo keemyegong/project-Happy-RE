@@ -93,12 +93,12 @@ const connectUsers = (userId, otherUserId) => {
 
           senderEndpoint.generateOffer((error, offer) => {
             if (error) return console.error('Error generating offer from sender: ', error);
-            user.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: userId }));
+            user.ws.send(JSON.stringify({ type: 'offer', sdp: offer.toString(), sender: userId }));
           });
 
           receiverEndpoint.generateOffer((error, offer) => {
             if (error) return console.error('Error generating offer from receiver: ', error);
-            otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: otherUserId }));
+            otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: offer.toString(), sender: otherUserId }));
           });
         });
       });
@@ -166,10 +166,10 @@ wss.on('connection', (ws) => {
 
       case 'offer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
+          users[data.recipient].webRtcEndpoint.processOffer(data.offer.toString(), (error, sdpAnswer) => {
             if (error) return console.error('Error processing offer: ', error);
 
-            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
+            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer.toString(), sender: userId }));
           });
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
@@ -178,7 +178,7 @@ wss.on('connection', (ws) => {
 
       case 'answer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
+          users[data.recipient].webRtcEndpoint.processAnswer(data.answer.toString(), (error) => {
             if (error) return console.error('Error processing answer:', error);
           });
         } else {
