@@ -17,6 +17,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
+  const [hasMoved, setHasMoved] = useState(false);
   const remoteAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -143,7 +144,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2) {
         newNearbyUsers.push(user);
-        if (!peerConnections[user.id]) {
+        if (hasMoved && !peerConnections[user.id]) {
           client.send(JSON.stringify({
             type: 'send_offer',
             recipient: user.id
@@ -278,10 +279,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    if (peerConnection.remoteDescription) {
+    if (peerConnection.signalingState !== 'closed') {
       await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
     } else {
-      console.warn('Attempted to addIceCandidate when remoteDescription is null');
+      console.warn('Attempted to addIceCandidate in unexpected state:', peerConnection.signalingState);
     }
   };
 
@@ -297,6 +298,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
     setPosition(newPosition);
+    setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'move', position: newPosition }));
     }
@@ -316,6 +318,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         position={position} 
         users={users} 
         movePosition={movePosition} 
+        remoteAudioRef={remoteAudioRef} 
         userImage={userImage} 
       />
       <CharacterList 
@@ -324,7 +327,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleScroll={handleScroll} 
         talkingUsers={talkingUsers} 
       />
-      <audio ref={remoteAudioRef} autoPlay />
     </div>
   );
 }
