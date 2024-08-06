@@ -15,7 +15,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRefs = useRef({}); // 여러 오디오 요소를 관리하기 위해 객체 사용
+  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
 
@@ -109,9 +109,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
         checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
-        handleOffer(dataFromServer.offer, dataFromServer.sender);
+        handleOffer(dataFromServer.sdp, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
-        handleAnswer(dataFromServer.answer, dataFromServer.sender);
+        handleAnswer(dataFromServer.sdp, dataFromServer.sender);
       } else if (dataFromServer.type === 'candidate') {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'rtc_disconnect') {
@@ -125,6 +125,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
+          if (localAudioRef.current) {
+            localAudioRef.current.srcObject = currentStream;
+          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -154,7 +157,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
                 .then(() => {
                   client.send(JSON.stringify({
                     type: 'offer',
-                    offer: offer.sdp,
+                    sdp: offer.sdp,
                     recipient: user.id,
                     sender: clientId
                   }));
@@ -193,11 +196,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (!localAudioRefs.current[userId]) {
-        localAudioRefs.current[userId] = new Audio();
-        localAudioRefs.current[userId].autoplay = true;
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
       }
-      localAudioRefs.current[userId].srcObject = event.streams[0];
     };
 
     peerConnection.onconnectionstatechange = () => {
@@ -206,9 +207,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRefs.current[userId]) {
-          localAudioRefs.current[userId].srcObject = null;
-          delete localAudioRefs.current[userId];
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
         }
       }
     };
@@ -238,7 +238,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.send(JSON.stringify({
       type: 'answer',
-      answer: answer.sdp,
+      sdp: answer.sdp,
       sender: clientId,
       recipient: sender
     }));
@@ -339,6 +339,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               alt="your character"
               className="character-image your-character"
             />
+            <audio ref={localAudioRef} autoPlay />
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
