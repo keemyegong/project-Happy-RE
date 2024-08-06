@@ -47,6 +47,47 @@ const AIChat = () => {
     });
   }, [universal.fastUrl]);
 
+  const endChatSession = () => {
+    // 1. 채팅 로그 스프링 저장 요청
+    axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`,
+        withCredentials: true,
+        persona: 2,
+      }
+    }).then((response) => {
+      console.log("Chat log saved:", response.data);
+    }).catch((error) => {
+      console.error("Error saving chat log:", error);
+    });
+
+    // 2. 다이어리 요약 전송 및 세션 삭제 요청
+    axios.delete(`${universal.fastUrl}/fastapi/chatbot/`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`,
+        withCredentials: true,
+        persona: 2,
+      }
+    }).then((response) => {
+      console.log("Session ended and diary summary sent:", response.data);
+    }).catch((error) => {
+      console.error("Error ending session:", error);
+    });
+
+    // 3. 로컬 오디오 파일 s3 업로드 요청
+    axios.post(`${universal.fastUrl}/fastapi/api/s3_upload`, {}, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`,
+        withCredentials: true,
+        persona: 2,
+      }
+    }).then((response) => {
+      console.log("Audio file uploaded to S3:", response.data);
+    }).catch((error) => {
+      console.error("Error uploading audio file to S3:", error);
+    });
+  };
+
   // 녹음 시작
   const startRecording = () => {
     recorder.start().then(() => {
@@ -308,7 +349,8 @@ const AIChat = () => {
               setUserInput={setUserInput}
               eventProceeding={eventProceeding}
               eventStoping={eventStoping}
-              isButtonDisabled={isButtonDisabled} 
+              isButtonDisabled={isButtonDisabled}
+              endChatSession={endChatSession} // 채팅 종료 함수 전달
             />
 
           </div>
