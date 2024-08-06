@@ -21,8 +21,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
-  const pendingCandidates = {}; // To store ICE candidates until the remote description is set
-
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
       client.close();
@@ -153,7 +151,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
                 .catch(error => console.error('Error setting local description:', error));
             })
             .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user };
+          peerConnections[user.id] = { peerConnection, user, pendingCandidates: [] };
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -216,7 +214,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender), pendingCandidates: [] };
     }
   
     const peerConnection = peerConnections[sender].peerConnection;
@@ -232,6 +230,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         sender: clientId,
         recipient: sender
       }));
+
+      // Add any pending ICE candidates
+      peerConnections[sender].pendingCandidates.forEach(candidate => {
+        peerConnection.addIceCandidate(candidate).catch(error => {
+          console.error('Error adding ICE candidate:', error);
+        });
+      });
+      peerConnections[sender].pendingCandidates = [];
     } catch (error) {
       console.error('Error handling offer:', error);
     }
@@ -256,6 +262,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+
+    // Add any pending ICE candidates
+    peerConnections[sender].pendingCandidates.forEach(candidate => {
+      peerConnection.addIceCandidate(candidate).catch(error => {
+        console.error('Error adding ICE candidate:', error);
+      });
+    });
+    peerConnections[sender].pendingCandidates = [];
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -263,14 +277,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.remoteDescription) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -278,13 +292,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      if (!pendingCandidates[sender]) {
-        pendingCandidates[sender] = [];
-      }
-      pendingCandidates[sender].push(candidate);
+      console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
+      peerConnections[sender].pendingCandidates.push(new RTCIceCandidate(candidate));
     }
   };
-
+  
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
