@@ -125,6 +125,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
+          if (localAudioRef.current) {
+            localAudioRef.current.srcObject = currentStream;
+          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
