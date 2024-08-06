@@ -211,29 +211,28 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for offer');
       return;
     }
-
+  
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
       peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
     }
-
+  
     const peerConnection = peerConnections[sender].peerConnection;
-
-    if (peerConnection.signalingState !== 'stable') {
-      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
-      return;
+    
+    try {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+  
+      client.send(JSON.stringify({
+        type: 'answer',
+        answer: answer.sdp,
+        sender: clientId,
+        recipient: sender
+      }));
+    } catch (error) {
+      console.error('Error handling offer:', error);
     }
-
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
-    const answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(answer);
-
-    client.send(JSON.stringify({
-      type: 'answer',
-      answer: answer.sdp,
-      sender: clientId,
-      recipient: sender
-    }));
   };
 
   const handleAnswer = async (answer, sender) => {
@@ -270,13 +269,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
     const peerConnection = connection.peerConnection;
   
-    if (peerConnection.signalingState === 'stable' || peerConnection.signalingState === 'have-local-offer' || peerConnection.signalingState === 'have-remote-offer') {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    if (peerConnection.remoteDescription) {
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (error) {
+        console.error('Error adding ICE candidate:', error);
+      }
     } else {
-      console.error(`Attempted to addIceCandidate in unexpected state: ${peerConnection.signalingState}`);
+      console.error('Remote description not set yet. ICE candidate cannot be added.');
     }
   };
-
+  
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
