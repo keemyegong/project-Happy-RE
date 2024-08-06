@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
-import CoordinatesGraph from '../../components/CoordinatesGraph/CoordinatesGraph';
+import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
 import './RtcClient.css';
 
