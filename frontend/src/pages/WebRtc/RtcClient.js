@@ -262,20 +262,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
-    if (peerConnection.signalingState !== 'stable' && peerConnection.signalingState !== 'have-local-offer' && peerConnection.signalingState !== 'have-remote-offer') {
+  
+    if (peerConnection.signalingState === 'stable' || peerConnection.signalingState === 'have-local-offer' || peerConnection.signalingState === 'have-remote-offer') {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } else {
       console.error(`Attempted to addIceCandidate in unexpected state: ${peerConnection.signalingState}`);
-      return;
     }
-
-    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
   const handleRtcDisconnect = (userId) => {
