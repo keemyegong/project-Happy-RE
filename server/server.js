@@ -81,12 +81,12 @@ const connectUsers = (userId, otherUserId) => {
           user.webRtcEndpoint = senderEndpoint;
           otherUser.webRtcEndpoint = receiverEndpoint;
 
-          senderEndpoint.on('iceCandidate', (event) => {
+          senderEndpoint.on('IceCandidateFound', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             otherUser.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: userId }));
           });
 
-          receiverEndpoint.on('iceCandidate', (event) => {
+          receiverEndpoint.on('IceCandidateFound', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
           });
@@ -166,10 +166,10 @@ wss.on('connection', (ws) => {
 
       case 'offer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
+          users[data.recipient].webRtcEndpoint.processOffer(data.sdp, (error, sdpAnswer) => {
             if (error) return console.error('Error processing offer: ', error);
 
-            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
+            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', sdp: sdpAnswer, sender: userId }));
           });
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
@@ -178,7 +178,7 @@ wss.on('connection', (ws) => {
 
       case 'answer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
+          users[data.recipient].webRtcEndpoint.processAnswer(data.sdp, (error) => {
             if (error) return console.error('Error processing answer:', error);
           });
         } else {

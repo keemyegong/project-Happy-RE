@@ -125,9 +125,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
-          if (localAudioRef.current) {
-            localAudioRef.current.srcObject = currentStream;
-          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -206,12 +203,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
+        startMicrophone();
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
+        stopMicrophone();
       }
     };
 
@@ -298,6 +297,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
     } else {
       setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
+    }
+  };
+
+  const startMicrophone = () => {
+    if (stream) {
+      stream.getAudioTracks().forEach(track => track.enabled = true);
+    }
+  };
+
+  const stopMicrophone = () => {
+    if (stream) {
+      stream.getAudioTracks().forEach(track => track.enabled = false);
     }
   };
 
