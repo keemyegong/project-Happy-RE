@@ -109,9 +109,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
         checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
-        handleOffer(dataFromServer.sdp, dataFromServer.sender);
+        handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
-        handleAnswer(dataFromServer.sdp, dataFromServer.sender);
+        handleAnswer(dataFromServer.answer, dataFromServer.sender);
       } else if (dataFromServer.type === 'candidate') {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'rtc_disconnect') {
@@ -157,7 +157,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
                 .then(() => {
                   client.send(JSON.stringify({
                     type: 'offer',
-                    sdp: offer.sdp,
+                    offer: offer.sdp,
                     recipient: user.id,
                     sender: clientId
                   }));
@@ -220,7 +220,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return peerConnection;
   };
 
-  const handleOffer = async (sdp, sender) => {
+  const handleOffer = async (offer, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
       return;
@@ -232,19 +232,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
     client.send(JSON.stringify({
       type: 'answer',
-      sdp: answer.sdp,
+      answer: answer.sdp,
       sender: clientId,
       recipient: sender
     }));
   };
 
-  const handleAnswer = async (sdp, sender) => {
+  const handleAnswer = async (answer, sender) => {
     if (!sender) {
       console.error('No sender provided for answer');
       return;
@@ -256,7 +256,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
   };
 
   const handleCandidate = async (candidate, sender) => {
