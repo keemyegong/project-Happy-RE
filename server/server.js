@@ -15,7 +15,7 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 let users = {};
 let kurentoClient = null;
-const kurentoUri = 'ws://172.17.0.2:8888/kurento';
+const kurentoUri = 'ws://172.23.0.5:8888/kurento';
 
 const initializeKurentoClient = async () => {
   while (!kurentoClient) {
