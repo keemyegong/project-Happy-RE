@@ -1,6 +1,10 @@
+// src/components/RtcClient.js
+
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
+import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
+import CharacterList from '../../components/CharacterList/CharacterList';
 import './RtcClient.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -17,26 +21,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
-  const coordinatesGraphRef = useRef(null);
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
       client.close();
       return;
     }
-
-    const coordinatesGraph = coordinatesGraphRef.current;
-
-    const setHeights = () => {
-      if (coordinatesGraph) {
-        const width = coordinatesGraph.offsetWidth;
-        coordinatesGraph.style.height = `${width}px`;
-      }
-    };
-
-    setHeights();
-
-    window.addEventListener('resize', setHeights);
 
     window.addEventListener('beforeunload', () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
@@ -46,7 +36,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('resize', setHeights);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -116,8 +105,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'rtc_disconnect') {
         handleRtcDisconnect(dataFromServer.id);
-      } else if (dataFromServer.type === 'receive_offer') {
-        handleReceiveOffer(dataFromServer.sender);
+      } else if (dataFromServer.type === 'talking') {
+        setTalkingUsers(dataFromServer.talkingUsers);
       }
     };
 
@@ -150,10 +139,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          client.send(JSON.stringify({
-            type: 'send_offer',
-            recipient: user.id
-          }));
           const peerConnection = createPeerConnection(user.id);
           peerConnection.createOffer()
             .then(offer => {
@@ -287,18 +272,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  const handleReceiveOffer = async (sender) => {
-    if (!sender) {
-      console.error('No sender provided for receive_offer');
-      return;
-    }
-
-    if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
-    }
-  };
-
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
     setPosition(newPosition);
@@ -317,106 +290,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <div className="coordinates-graph" ref={coordinatesGraphRef}>
-        <div className="axes">
-          <div className="x-axis" />
-          <div className="y-axis" />
-          {[...Array(21)].map((_, i) => (
-            <div
-              key={`x-tick-${i}`}
-              className="x-tick"
-              style={{ left: `${(i / 20) * 100}%` }}
-            />
-          ))}
-          {[...Array(21)].map((_, i) => (
-            <div
-              key={`y-tick-${i}`}
-              className="y-tick"
-              style={{ top: `${(i / 20) * 100}%` }}
-            />
-          ))}
-          {users.map(user => (
-            <div 
-              key={user.id}
-              className="radar-pulse-small"
-              style={{
-                left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
-                top: `calc(${((1 - user.position.y) / 2) * 100}%)`
-              }}
-            />
-          ))}
-          <div className="your-character-container" style={{
-              left: `calc(${((position.x + 1) / 2) * 100}%)`,
-              top: `calc(${((1 - position.y) / 2) * 100}%)`
-            }}>
-            <div className="radar-pulse" />
-            <img
-              src={userImage}
-              alt="your character"
-              className="character-image your-character"
-            />
-            <audio ref={localAudioRef} autoPlay />
-            <div className="controls controls-up">
-              <button onClick={() => movePosition(0, 0.025)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
-                </svg>
-              </button>
-            </div>
-            <div className="controls controls-right">
-              <button onClick={() => movePosition(0.025, 0)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-right" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
-                </svg>
-              </button>
-            </div>
-            <div className="controls controls-down">
-              <button onClick={() => movePosition(0, -0.025)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
-                </svg>
-              </button>
-            </div>
-            <div className="controls controls-left">
-              <button onClick={() => movePosition(-0.025, 0)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="right-panel">
-        <div className="scroll-buttons">
-          <button onClick={() => handleScroll('up')}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448-.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
-            </svg>
-          </button>
-        </div>
-        <div className="character-list">
-          {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
-            <div 
-              key={user.id}
-              className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
-            >
-              <img 
-                src={user.image} 
-                alt="character"
-                className="character-image-small"
-              />
-            </div>
-          ))}
-        </div>
-        <div className="scroll-buttons">
-          <button onClick={() => handleScroll('down')}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+      <CoordinatesGraph 
+        position={position} 
+        users={users} 
+        movePosition={movePosition} 
+        localAudioRef={localAudioRef} 
+        userImage={userImage} 
+      />
+      <CharacterList 
+        nearbyUsers={nearbyUsers} 
+        displayStartIndex={displayStartIndex} 
+        handleScroll={handleScroll} 
+        talkingUsers={talkingUsers} 
+      />
     </div>
   );
 }
