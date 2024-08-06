@@ -139,21 +139,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (!peerConnections[user.id]) {
           const { peerConnection, pendingCandidates } = createPeerConnection(user.id);
           peerConnections[user.id] = { peerConnection, pendingCandidates };
-          peerConnection.createOffer()
-            .then(offer => {
-              peerConnection.setLocalDescription(offer)
-                .then(() => {
-                  client.send(JSON.stringify({
-                    type: 'offer',
-                    offer: offer.sdp,
-                    recipient: user.id,
-                    sender: clientId
-                  }));
-                })
-                .catch(error => console.error('Error setting local description:', error));
-            })
-            .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user, pendingCandidates };
+          if (clientId < user.id) {
+            peerConnection.createOffer()
+              .then(offer => {
+                peerConnection.setLocalDescription(offer)
+                  .then(() => {
+                    client.send(JSON.stringify({
+                      type: 'offer',
+                      offer: offer.sdp,
+                      recipient: user.id,
+                      sender: clientId
+                    }));
+                  })
+                  .catch(error => console.error('Error setting local description:', error));
+              })
+              .catch(error => console.error('Error creating offer:', error));
+          }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -208,6 +209,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return { peerConnection, pendingCandidates: [] };
   };
 
+  // handleOffer 함수 수정
   const handleOffer = async (offer, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
@@ -215,8 +217,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+      const { peerConnection, pendingCandidates } = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection, pendingCandidates, user: users.find(user => user.id === sender) };
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
@@ -233,6 +235,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         recipient: sender
       }));
 
+      // 대기 중인 ICE 후보 처리
       if (pendingCandidates[sender]) {
         pendingCandidates[sender].forEach(async candidate => {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -290,6 +293,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
+      // 대기 중인 ICE 후보 저장
       setPendingCandidates(prev => {
         const newPending = { ...prev };
         if (!newPending[sender]) {
