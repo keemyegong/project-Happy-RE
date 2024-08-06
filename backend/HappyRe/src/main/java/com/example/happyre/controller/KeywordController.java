@@ -30,7 +30,7 @@ public class KeywordController {
 
 
     @PostMapping("/")
-    public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody List<KeywordEntityDTO> KeywordEntityDTO) {
+    public ResponseEntity<?> createKeyword(HttpServletRequest request, @RequestBody List<KeywordEntityDTO> KeywordEntityDTO) {
         System.out.println("createkeywords :"+KeywordEntityDTO.toString() );
         try {
             UserEntity userEntity = userService.findByRequest(request);
@@ -53,6 +53,7 @@ public class KeywordController {
 
             return ResponseEntity.ok("Successfully created keywords");
         } catch (Exception e) {
+            System.out.println("Keyword insert ERROR : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Keywords 생성중 에러: " + e.getMessage());
         }
     }
