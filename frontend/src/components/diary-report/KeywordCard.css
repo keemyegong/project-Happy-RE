@@ -1,4 +1,3 @@
-/* keywordcard.css */
 @font-face {
   font-family: 'Pretendard-Regular';
   src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
@@ -6,7 +5,7 @@
 }
 
 .KeywordCard {
-  padding: 20px;
+  padding: 5px;
   color: white;
   font-family: 'Pretendard-Regular';
   border-radius: 10px;
@@ -17,47 +16,46 @@
   font-size: clamp(16px, 1.3vw, 20px);
   font-weight: 700;
   padding-bottom: 5px;
+  opacity: 0.9;
 }
 
 .keyword-content {
-  font-size: clamp(12px, 1.3vw, 14px);
+  font-size: clamp(11px, 1.3vw, 13px);
   font-weight: 100;
-  opacity: 0.7;
+  opacity: 0.9;
   padding-bottom: 5px;
 }
 
 .keyword-line {
   border-bottom: 0.5px solid white;
+  opacity: 0.9;
   margin: 10px 0;
 }
 
 .keyword-date {
-  font-size: clamp(12px, 1.3vw, 14px);
-  opacity: 0.7;
+  font-size: clamp(8px, 1.3vw, 10px);
+  opacity: 0.9;
   margin-bottom: 10px;
 }
 
 .emotion-tags {
-  font-size: clamp(12px, 1.3vw, 14px);
+  font-size: clamp(11px, 1.3vw, 13px);
   font-weight: 100;
-  opacity: 0.7;
 }
 
 .emotion-tag {
   margin-right: 5px;
+  opacity: 0.9;
 }
 
-.arrow-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arrow-button {
-  color: white;
+.emotion-tag-add-button {
   background: none;
   border: none;
-  font-size: 24px;
+  color: white;
+  font-size: 18px;
   cursor: pointer;
-  margin: 0 10px;
+}
+
+.emotion-add-container {
+  width: 100%;
 }

@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
 @font-face {
   font-family: 'Pretendard-Regular';
@@ -63,8 +64,15 @@
   border-radius: 10px;
 }
 
-.arrow-container {
+.keywordcard-arrow-container {
   margin-top: 10%;
+  display: flex;
+  align-items: center;
+}
+
+.keywordcard-arrow-button {
+  cursor: pointer;
+  padding: 5px;
 }
 
 .archive-myword-keywordcard-header {
@@ -127,18 +135,12 @@
 }
 
 /* 미디어 쿼리 추가 */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .archive-myword-graph {
     display: none;
   }
   .archive-myword-keywordcard {
     flex: 0 0 100%;
     max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .arrow-button {
-    display: none;
   }
 }

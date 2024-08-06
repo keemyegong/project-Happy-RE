@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ChatCam.css';
 import Button from '../Button/Button';
 
-const ChatCam = () => {
-  // 해파리 타입
+const ChatCam = ({ isCamEnabled }) => {
   const ChatType = 1;
   const UserProfile = '../../assets/characters/default.png'
 
-  // 해파리 데이터 가져오기
   const getChatData = (type) => {
     switch (type) {
       case 1:
@@ -34,6 +32,7 @@ const ChatCam = () => {
         return {};
     }
   };
+
   const chatData = getChatData(ChatType);
   const today = new Date();
 
@@ -44,11 +43,44 @@ const ChatCam = () => {
 
   const formattedDate = `${year}.${month}.${date}.${day}`;
 
+  const [userVideoStream, setUserVideoStream] = useState(null);
+
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        setUserVideoStream(stream);
+      })
+      .catch(error => {
+        console.error('Error accessing user camera:', error);
+      });
+  }, []);
+
   return (
     <div className='ChatCam'>
-      <div className='chat-cam-date'>{formattedDate}</div>
       <div className='chat-cam-container'>
-        <img className='chat-cam-ai-profile-img' src={chatData.imageSrc}/>
+        <div className='chat-cam-date'>{formattedDate}</div>
+        <img className='chat-cam-ai-profile-img' src={chatData.imageSrc} alt="AI profile" />
+        {isCamEnabled ? (
+          userVideoStream && (
+            <video 
+              className='chat-cam-user-video' 
+              autoPlay 
+              muted 
+              playsInline 
+              ref={video => {
+                if (video) {
+                  video.srcObject = userVideoStream;
+                }
+              }}
+            />
+          )
+        ) : (
+          <img 
+            className='chat-cam-user-video' 
+            src={require('../../assets/images/chatcam-user2.gif')} 
+            alt="User Jellyfish" 
+          />
+        )}
       </div>
     </div>
   );
