@@ -3,6 +3,7 @@ package com.example.happyre.service;
 import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.MessageEntity;
+import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.MessageRepository;
 import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +32,7 @@ public class MessageServiceImpl implements MessageService {
         newOne.setSummary(messageEntityDTO.getSummary());
         newOne.setRussellX(messageEntityDTO.getRussellX());
         newOne.setRussellY(messageEntityDTO.getRussellY());
+        newOne.setArchived(messageEntityDTO.getArchived());
         return newOne;
     }
 
@@ -83,6 +84,11 @@ public class MessageServiceImpl implements MessageService {
         return this.findByDiaryEntity(diaryService.findById(diaryId).get());
     }
 
+    @Override
+    public List<MessageEntity> findByArchivedAndUserEntity(Boolean isArchived, UserEntity userEntity) {
+        return messageRepository.findByArchivedAndUserEntity(isArchived, userEntity);
+    }
+
     public MessageEntity updateDTO(MessageEntityDTO messageEntityDTO) {
         Optional<MessageEntity> optionalMessageEntity = messageRepository.findById(messageEntityDTO.getMessageId());
         if (optionalMessageEntity.isEmpty()) return null;
@@ -124,8 +130,8 @@ public class MessageServiceImpl implements MessageService {
         int cnt = 0;
         ArrayList<MessageEntity> messageEntities = new ArrayList<>();
         try {
-            for(MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
-                MessageEntity messageEntity =  new MessageEntity();
+            for (MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
+                MessageEntity messageEntity = new MessageEntity();
 
                 messageEntity.setDiaryEntity(diaryEntity);
                 messageEntity.setSequence(++cnt);
@@ -139,7 +145,7 @@ public class MessageServiceImpl implements MessageService {
                 messageEntities.add(messageEntity);
             }
             return messageEntities;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
             System.out.println(e.getMessage());
             throw new RuntimeException(e);

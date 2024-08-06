@@ -1,6 +1,5 @@
 package com.example.happyre.entity;
 
-import com.example.happyre.dto.message.MessageEntityDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "message")
 @NoArgsConstructor
 public class MessageEntity {
-
 
 
     @Id
@@ -32,17 +30,17 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private Speaker speaker;
 
-    @Column(name = "audio_key",nullable = true)
+    @Column(name = "audio_key", nullable = true)
     private String audioKey;
 
     @Column(nullable = true)
     private String summary;
 
     @Column(name = "russell_x", nullable = true)
-    private Integer russellX ;
+    private Integer russellX;
 
     @Column(name = "russell_y", nullable = true)
-    private Integer russellY ;
+    private Integer russellY;
 
 
     @Column(name = "archived")
