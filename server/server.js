@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -39,99 +41,6 @@ const initializeKurentoClient = async () => {
 
 initializeKurentoClient();
 
-const calculateDistance = (pos1, pos2) => {
-  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
-};
-
-const checkAndConnectUsers = () => {
-  if (!kurentoClient) {
-    console.error('Kurento client is not initialized');
-    return;
-  }
-
-  const userIds = Object.keys(users);
-  userIds.forEach(userId => {
-    userIds.forEach(otherUserId => {
-      if (userId !== otherUserId && calculateDistance(users[userId].position, users[otherUserId].position) <= 0.2) {
-        if (!users[userId].pipeline && !users[otherUserId].pipeline) {
-          connectUsers(userId, otherUserId);
-        }
-      } else if (userId !== otherUserId && calculateDistance(users[userId].position, users[otherUserId].position) > 0.2) {
-        disconnectUsers(userId, otherUserId);
-      }
-    });
-  });
-};
-
-const connectUsers = (userId, otherUserId) => {
-  const user = users[userId];
-  const otherUser = users[otherUserId];
-
-  if (user && otherUser && !user.webRtcEndpoint && !otherUser.webRtcEndpoint) {
-    kurentoClient.create('MediaPipeline', (error, pipeline) => {
-      if (error) return console.error('Error creating MediaPipeline: ', error);
-      console.log(`MediaPipeline created for users ${userId} and ${otherUserId}`);
-
-      user.pipeline = pipeline;
-      otherUser.pipeline = pipeline;
-
-      pipeline.create('WebRtcEndpoint', (error, senderEndpoint) => {
-        if (error) return console.error('Error creating WebRtcEndpoint for sender: ', error);
-        console.log(`WebRtcEndpoint created for sender: ${userId}`);
-
-        pipeline.create('WebRtcEndpoint', (error, receiverEndpoint) => {
-          if (error) return console.error('Error creating WebRtcEndpoint for receiver: ', error);
-          console.log(`WebRtcEndpoint created for receiver: ${otherUserId}`);
-
-          user.webRtcEndpoint = senderEndpoint;
-          otherUser.webRtcEndpoint = receiverEndpoint;
-
-          senderEndpoint.on('IceCandidateFound', event => {
-            const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
-            otherUser.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: userId }));
-          });
-
-          receiverEndpoint.on('IceCandidateFound', event => {
-            const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
-            user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
-          });
-
-          senderEndpoint.generateOffer((error, offer) => {
-            if (error) return console.error('Error generating offer from sender: ', error);
-            user.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: userId }));
-          });
-
-          receiverEndpoint.generateOffer((error, offer) => {
-            if (error) return console.error('Error generating offer from receiver: ', error);
-            otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: otherUserId }));
-          });
-        });
-      });
-    });
-  }
-};
-
-const disconnectUsers = (userId, otherUserId) => {
-  const user = users[userId];
-  const otherUser = users[otherUserId];
-
-  if (user && otherUser && user.webRtcEndpoint && otherUser.webRtcEndpoint) {
-    user.webRtcEndpoint.release();
-    otherUser.webRtcEndpoint.release();
-    user.pipeline.release();
-
-    delete user.webRtcEndpoint;
-    delete otherUser.webRtcEndpoint;
-    delete user.pipeline;
-    delete otherUser.pipeline;
-
-    user.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
-    otherUser.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
-
-    console.log(`WebRTC connection closed between users ${userId} and ${otherUserId}`);
-  }
-};
-
 wss.on('connection', (ws) => {
   const userId = uuidv4();
   ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
@@ -156,8 +65,6 @@ wss.on('connection', (ws) => {
         Object.keys(users).forEach(id => {
           users[id].ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(user => user.id !== id) }));
         });
-
-        checkAndConnectUsers();
         break;
 
       case 'move':
@@ -167,8 +74,13 @@ wss.on('connection', (ws) => {
           Object.keys(users).forEach(id => {
             users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position }));
           });
+        }
+        break;
 
-          checkAndConnectUsers();
+      case 'send_offer':
+        const recipientUser = users[data.recipient];
+        if (recipientUser) {
+          recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
         }
         break;
 

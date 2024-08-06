@@ -116,8 +116,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'rtc_disconnect') {
         handleRtcDisconnect(dataFromServer.id);
-      } else if (dataFromServer.type === 'talking') {
-        setTalkingUsers(dataFromServer.talkingUsers);
+      } else if (dataFromServer.type === 'receive_offer') {
+        handleReceiveOffer(dataFromServer.sender);
       }
     };
 
@@ -150,6 +150,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
+          client.send(JSON.stringify({
+            type: 'send_offer',
+            recipient: user.id
+          }));
           const peerConnection = createPeerConnection(user.id);
           peerConnection.createOffer()
             .then(offer => {
@@ -280,6 +284,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       delete peerConnections[userId];
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
+    }
+  };
+
+  const handleReceiveOffer = async (sender) => {
+    if (!sender) {
+      console.error('No sender provided for receive_offer');
+      return;
+    }
+
+    if (!peerConnections[sender]) {
+      const peerConnection = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
     }
   };
 
