@@ -169,7 +169,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       ]
     });
     console.log('WebRTC 연결 완료');
-
+  
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -180,13 +180,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-
+  
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
       }
     };
-
+  
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -198,13 +198,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-
+  
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-
-    return peerConnection;
+  
+    return { peerConnection, pendingCandidates: [] };
   };
+  
 
   const handleOffer = async (offer, sender) => {
     if (!sender) {
@@ -213,11 +214,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   
     if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender), pendingCandidates: [] };
+      const { peerConnection, pendingCandidates } = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection, pendingCandidates };
     }
   
-    const peerConnection = peerConnections[sender].peerConnection;
+    const { peerConnection, pendingCandidates } = peerConnections[sender];
     
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
@@ -230,72 +231,65 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         sender: clientId,
         recipient: sender
       }));
-
+  
       // Add any pending ICE candidates
-      peerConnections[sender].pendingCandidates.forEach(candidate => {
-        peerConnection.addIceCandidate(candidate).catch(error => {
-          console.error('Error adding ICE candidate:', error);
-        });
+      pendingCandidates.forEach(candidate => {
+        peerConnection.addIceCandidate(candidate)
+          .catch(error => console.error('Error adding ICE candidate:', error));
       });
       peerConnections[sender].pendingCandidates = [];
+  
     } catch (error) {
       console.error('Error handling offer:', error);
     }
   };
+  
 
   const handleAnswer = async (answer, sender) => {
     if (!sender) {
       console.error('No sender provided for answer');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
-    const peerConnection = connection.peerConnection;
-
+    const { peerConnection } = connection;
+  
     if (peerConnection.signalingState !== 'have-local-offer') {
       console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       return;
     }
-
+  
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-
-    // Add any pending ICE candidates
-    peerConnections[sender].pendingCandidates.forEach(candidate => {
-      peerConnection.addIceCandidate(candidate).catch(error => {
-        console.error('Error adding ICE candidate:', error);
-      });
-    });
-    peerConnections[sender].pendingCandidates = [];
   };
 
   const handleCandidate = async (candidate, sender) => {
-    if (!sender) {
-      console.error('No sender provided for candidate');
-      return;
+  if (!sender) {
+    console.error('No sender provided for candidate');
+    return;
+  }
+
+  const connection = peerConnections[sender];
+  if (!connection) {
+    console.error(`No peer connection found for sender ${sender}`);
+    return;
+  }
+  const { peerConnection, pendingCandidates } = connection;
+
+  if (peerConnection.remoteDescription) {
+    try {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (error) {
+      console.error('Error adding ICE candidate:', error);
     }
-  
-    const connection = peerConnections[sender];
-    if (!connection) {
-      console.error(`No peer connection found for sender ${sender}`);
-      return;
-    }
-    const peerConnection = connection.peerConnection;
-  
-    if (peerConnection.remoteDescription) {
-      try {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (error) {
-        console.error('Error adding ICE candidate:', error);
-      }
-    } else {
-      console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
-      peerConnections[sender].pendingCandidates.push(new RTCIceCandidate(candidate));
-    }
-  };
+  } else {
+    console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
+    pendingCandidates.push(new RTCIceCandidate(candidate));
+  }
+};
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
