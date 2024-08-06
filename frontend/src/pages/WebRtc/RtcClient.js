@@ -107,6 +107,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleRtcDisconnect(dataFromServer.id);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
+      } else if (dataFromServer.type === 'update') {
+        setUsers(dataFromServer.clients);
       }
     };
 
@@ -320,7 +322,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     const newPosition = isKeyboard
       ? { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId }
       : { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId };
-  
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
