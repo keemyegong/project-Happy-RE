@@ -14,13 +14,15 @@ public interface KeywordService {
 
     KeywordEntity insertDTO(KeywordEntityDTO keywordEntityDTO) throws Exception;
 
-    List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity,List<KeywordEntityDTO> keywordEntityDTOList);
+    List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity, List<KeywordEntityDTO> keywordEntityDTOList);
 
     Optional<KeywordEntity> findById(int keywordId);
 
     List<KeywordEntity> findByDiaryEntity(DiaryEntity diaryEntity);
 
     List<KeywordEntity> findByKeywordAndUserEntity(String keyword, UserEntity userEntity);
+
+    List<KeywordEntity> findByArchivedAndUserEntity(Boolean isArchived, UserEntity userEntity);
 
     KeywordEntity update(KeywordEntity keywordDTOEntity);
 
