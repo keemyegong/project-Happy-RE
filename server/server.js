@@ -91,6 +91,14 @@ const connectUsers = (userId, otherUserId) => {
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
           });
 
+          senderEndpoint.gatherCandidates((error) => {
+            if (error) return console.error('Error gathering candidates from sender: ', error);
+          });
+
+          receiverEndpoint.gatherCandidates((error) => {
+            if (error) return console.error('Error gathering candidates from receiver: ', error);
+          });
+
           senderEndpoint.generateOffer((error, offer) => {
             if (error) return console.error('Error generating offer from sender: ', error);
             user.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: userId }));
