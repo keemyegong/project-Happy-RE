@@ -7,6 +7,7 @@ import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
 const peerConnections = {};
+const groupConnections = {};  // 새로운 그룹 연결 객체 추가
 
 const RtcClient = ({ initialPosition, characterImage }) => {
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
@@ -142,13 +143,41 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
-      } else if (peerConnections[user.id]) {
-        peerConnections[user.id].peerConnection.close();
-        delete peerConnections[user.id];
-        console.log(`WebRTC connection closed with user ${user.id}`);
+        addToGroupConnections(user.id);
+      } else {
+        removeFromGroupConnections(user.id);
       }
     });
     setNearbyUsers(newNearbyUsers);
+  };
+
+  const addToGroupConnections = (userId) => {
+    Object.keys(groupConnections).forEach(groupId => {
+      if (groupId !== userId) {
+        groupConnections[groupId].forEach(peerId => {
+          if (!peerConnections[peerId]) {
+            const peerConnection = createPeerConnection(peerId);
+            peerConnections[peerId] = { peerConnection };
+            attemptOffer(peerConnection, peerId);
+          }
+        });
+      }
+    });
+
+    if (!groupConnections[userId]) {
+      groupConnections[userId] = [];
+    }
+
+    groupConnections[userId].push(clientId);
+  };
+
+  const removeFromGroupConnections = (userId) => {
+    if (groupConnections[userId]) {
+      groupConnections[userId] = groupConnections[userId].filter(peerId => peerId !== clientId);
+      if (groupConnections[userId].length === 0) {
+        delete groupConnections[userId];
+      }
+    }
   };
 
   const createPeerConnection = (userId) => {
@@ -240,11 +269,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         sender: clientId,
         recipient: sender
       }));
-
-      if (peerConnection.signalingState === 'have-remote-offer') {
-        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
-      }
-
     } catch (error) {
       console.error('Error handling offer:', error);
     }
