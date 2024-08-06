@@ -9,6 +9,7 @@ import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.KeywordService;
 import com.example.happyre.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpRequest;
@@ -56,6 +57,22 @@ public class KeywordController {
             System.out.println("Keyword insert ERROR : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Keywords 생성중 에러: " + e.getMessage());
         }
+    }
+
+
+    @PutMapping("/{keywordId}")
+    public ResponseEntity<?> updateArchived(HttpServletRequest request,
+                                           @PathVariable Integer keywordId,
+                                           @RequestParam(required = true) Boolean archived){
+        try{
+            keywordService.updateArchive(keywordId, archived);
+            return ResponseEntity.ok("Successfully updated message");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message Not Found : " + e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error : " + e.getMessage());
+        }
+
     }
 
 

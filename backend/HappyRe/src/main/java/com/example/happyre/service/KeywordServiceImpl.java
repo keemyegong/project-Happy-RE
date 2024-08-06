@@ -8,6 +8,7 @@ import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.KeywordRepository;
 import io.jsonwebtoken.lang.Assert;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,5 +111,18 @@ public class KeywordServiceImpl implements KeywordService {
     public void delete(KeywordEntity keywordDTOEntity) {
         KeywordEntity matchingEntity = keywordRepository.findById(keywordDTOEntity.getKeywordId()).orElseThrow();
         keywordRepository.delete(matchingEntity);
+    }
+
+    @Override
+    public void updateArchive(int keywordId, boolean archive) {
+        Optional<KeywordEntity> keywordEntityOptional  = keywordRepository.findById(keywordId);
+        if (keywordEntityOptional.isPresent()) {
+            KeywordEntity keywordEntity = keywordEntityOptional.get();
+            keywordEntity.setArchived(archive);
+            keywordRepository.save(keywordEntity);
+        } else {
+            throw new EntityNotFoundException("Keyword not found with id: " + keywordId);
+        }
+
     }
 }
