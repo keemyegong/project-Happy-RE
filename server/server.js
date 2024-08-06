@@ -119,7 +119,7 @@ const disconnectUsers = (userId, otherUserId) => {
 
     user.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
     otherUser.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
-
+    
     console.log(`WebRTC connection closed between users ${userId} and ${otherUserId}`);
   }
 };
@@ -167,7 +167,11 @@ wss.on('connection', (ws) => {
       case 'offer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processOffer(data.sdp, (error, sdpAnswer) => {
-            if (error) return console.error('Error processing offer: ', error);
+            if (error) {
+              console.error('Error processing offer: ', error);
+              users[data.recipient].ws.send(JSON.stringify({ type: 'error', message: 'Error processing offer' }));
+              return;
+            }
 
             users[data.recipient].ws.send(JSON.stringify({ type: 'answer', sdp: sdpAnswer, sender: userId }));
           });
@@ -179,7 +183,11 @@ wss.on('connection', (ws) => {
       case 'answer':
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           users[data.recipient].webRtcEndpoint.processAnswer(data.sdp, (error) => {
-            if (error) return console.error('Error processing answer:', error);
+            if (error) {
+              console.error('Error processing answer:', error);
+              users[data.recipient].ws.send(JSON.stringify({ type: 'error', message: 'Error processing answer' }));
+              return;
+            }
           });
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
@@ -190,7 +198,11 @@ wss.on('connection', (ws) => {
         if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
           const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
           users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
-            if (error) return console.error('Error adding candidate:', error);
+            if (error) {
+              console.error('Error adding candidate:', error);
+              users[data.recipient].ws.send(JSON.stringify({ type: 'error', message: 'Error adding candidate' }));
+              return;
+            }
           });
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
