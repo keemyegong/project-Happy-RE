@@ -52,14 +52,15 @@ wss.on('connection', (ws) => {
           ws,
           position: data.position,
           characterImage: data.characterImage,
-          hasMoved: data.hasMoved
+          hasMoved: data.hasMoved,
+          id: userId // added id for comparison
         };
 
         const allUsers = Object.keys(users).map(id => ({
           id,
           position: users[id].position,
           characterImage: users[id].characterImage,
-          hasMoved: users[id].hasMoved
+          hasMoved: users[id].hasMoved // send hasMoved state
         }));
 
         Object.keys(users).forEach(id => {
@@ -86,33 +87,27 @@ wss.on('connection', (ws) => {
         break;
 
       case 'offer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processOffer(data.offer, (error, sdpAnswer) => {
-            if (error) return console.error('Error processing offer: ', error);
-
-            users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: userId }));
-          });
+        const offerRecipient = users[data.recipient];
+        if (offerRecipient) {
+          offerRecipient.ws.send(JSON.stringify({ type: 'offer', offer: data.offer, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
         break;
 
       case 'answer':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          users[data.recipient].webRtcEndpoint.processAnswer(data.answer, (error) => {
-            if (error) return console.error('Error processing answer:', error);
-          });
+        const answerRecipient = users[data.recipient];
+        if (answerRecipient) {
+          answerRecipient.ws.send(JSON.stringify({ type: 'answer', answer: data.answer, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
         break;
 
       case 'candidate':
-        if (users[data.recipient] && users[data.recipient].webRtcEndpoint) {
-          const candidate = kurento.getComplexType('IceCandidate')(data.candidate);
-          users[data.recipient].webRtcEndpoint.addIceCandidate(candidate, (error) => {
-            if (error) return console.error('Error adding candidate:', error);
-          });
+        const candidateRecipient = users[data.recipient];
+        if (candidateRecipient) {
+          candidateRecipient.ws.send(JSON.stringify({ type: 'candidate', candidate: data.candidate, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
@@ -126,7 +121,7 @@ wss.on('connection', (ws) => {
             id: cId,
             position: users[cId].position,
             characterImage: users[cId].characterImage,
-            hasMoved: users[cId].hasMoved
+            hasMoved: users[cId].hasMoved // send hasMoved state
           })).filter(user => user.id !== id);
 
           users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
@@ -146,7 +141,7 @@ wss.on('connection', (ws) => {
         id: cId,
         position: users[cId].position,
         characterImage: users[cId].characterImage,
-        hasMoved: users[cId].hasMoved
+        hasMoved: users[cId].hasMoved // send hasMoved state
       })).filter(user => user.id !== id);
 
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
