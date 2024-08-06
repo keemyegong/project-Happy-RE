@@ -96,16 +96,20 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           image: user.characterImage
         })));
-        checkDistances(filteredUsers);
+        if (hasMoved) {
+          checkDistances(filteredUsers);
+        }
       } else if (dataFromServer.type === 'new_user') {
         const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
         setUsers(prevUsers => [...prevUsers, newUser]);
-        checkDistances([...users, newUser]);
+        if (hasMoved) {
+          checkDistances([...users, newUser]);
+        }
       } else if (dataFromServer.type === 'move') {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
-        checkDistances(users);
-      } else if (dataFromServer.type === 'receive_offer') {
-        handleOfferRequest(dataFromServer.sender);
+        if (hasMoved) {
+          checkDistances(users);
+        }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -132,10 +136,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   }, [position, userImage]);
 
   useEffect(() => {
-    if (clientId) {
+    if (clientId && hasMoved) {
       checkDistances(users);
     }
-  }, [clientId, users]);
+  }, [clientId, users, hasMoved]);
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
@@ -144,11 +148,23 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2) {
         newNearbyUsers.push(user);
-        if (hasMoved && !peerConnections[user.id]) {
-          client.send(JSON.stringify({
-            type: 'send_offer',
-            recipient: user.id
-          }));
+        if (!peerConnections[user.id]) {
+          const peerConnection = createPeerConnection(user.id);
+          peerConnection.createOffer()
+            .then(offer => {
+              peerConnection.setLocalDescription(offer)
+                .then(() => {
+                  client.send(JSON.stringify({
+                    type: 'offer',
+                    offer: offer.sdp,
+                    recipient: user.id,
+                    sender: clientId
+                  }));
+                })
+                .catch(error => console.error('Error setting local description:', error));
+            })
+            .catch(error => console.error('Error creating offer:', error));
+          peerConnections[user.id] = { peerConnection, user };
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -165,7 +181,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-    console.log('WebRTC 연결 완료');
+    console.log('webrtc 연결 완료');
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -193,8 +209,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (remoteAudioRef.current) {
           remoteAudioRef.current.srcObject = null;
         }
-        peerConnection.close();
-        delete peerConnections[userId];
       }
     };
 
@@ -203,21 +217,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     return peerConnection;
-  };
-
-  const handleOfferRequest = async (sender) => {
-    const peerConnection = createPeerConnection(sender);
-    peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
-
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    client.send(JSON.stringify({
-      type: 'offer',
-      offer: offer.sdp,
-      sender: clientId,
-      recipient: sender
-    }));
   };
 
   const handleOffer = async (offer, sender) => {
@@ -232,20 +231,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    if (peerConnection.signalingState === 'stable' || peerConnection.signalingState === 'have-local-offer') {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
 
-      client.send(JSON.stringify({
-        type: 'answer',
-        answer: answer.sdp,
-        sender: clientId,
-        recipient: sender
-      }));
-    } else {
-      console.warn('Attempted to setRemoteDescription in unexpected state:', peerConnection.signalingState);
-    }
+    client.send(JSON.stringify({
+      type: 'answer',
+      answer: answer.sdp,
+      sender: clientId,
+      recipient: sender
+    }));
   };
 
   const handleAnswer = async (answer, sender) => {
@@ -260,11 +255,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    if (peerConnection.signalingState === 'have-remote-offer') {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-    } else {
-      console.warn('Attempted to setRemoteDescription in unexpected state:', peerConnection.signalingState);
-    }
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -279,11 +270,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    if (peerConnection.signalingState !== 'closed') {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-    } else {
-      console.warn('Attempted to addIceCandidate in unexpected state:', peerConnection.signalingState);
-    }
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   };
 
   const handleRtcDisconnect = (userId) => {
