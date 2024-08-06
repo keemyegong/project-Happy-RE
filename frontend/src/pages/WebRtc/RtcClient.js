@@ -220,7 +220,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return peerConnection;
   };
 
-  const handleOffer = async (offer, sender) => {
+  const handleOffer = async (sdp, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
       return;
@@ -232,7 +232,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
@@ -244,7 +244,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }));
   };
 
-  const handleAnswer = async (answer, sender) => {
+  const handleAnswer = async (sdp, sender) => {
     if (!sender) {
       console.error('No sender provided for answer');
       return;
@@ -256,7 +256,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp }));
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -343,7 +343,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+                    <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223.67"/>
                 </svg>
               </button>
             </div>
