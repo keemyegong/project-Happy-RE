@@ -91,15 +91,14 @@ const connectUsers = (userId, otherUserId) => {
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
           });
 
-          // senderEndpoint에서만 generateOffer를 수행
           senderEndpoint.generateOffer((error, offer) => {
             if (error) return console.error('Error generating offer from sender: ', error);
             user.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: userId }));
+          });
 
-            receiverEndpoint.processOffer(offer, (error, sdpAnswer) => {
-              if (error) return console.error('Error processing offer for receiver: ', error);
-              otherUser.ws.send(JSON.stringify({ type: 'answer', answer: sdpAnswer, sender: otherUserId }));
-            });
+          receiverEndpoint.generateOffer((error, offer) => {
+            if (error) return console.error('Error generating offer from receiver: ', error);
+            otherUser.ws.send(JSON.stringify({ type: 'offer', sdp: offer, sender: otherUserId }));
           });
         });
       });
@@ -120,7 +119,7 @@ const disconnectUsers = (userId, otherUserId) => {
 
     user.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: otherUserId }));
     otherUser.ws.send(JSON.stringify({ type: 'rtc_disconnect', id: userId }));
-
+    
     console.log(`WebRTC connection closed between users ${userId} and ${otherUserId}`);
   }
 };
