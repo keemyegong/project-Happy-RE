@@ -226,17 +226,23 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for offer');
       return;
     }
-
+  
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
       peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
     }
-
+  
     const peerConnection = peerConnections[sender].peerConnection;
+  
+    if (peerConnection.signalingState !== 'stable') {
+      console.error('Peer connection is not in stable state for offer');
+      return;
+    }
+  
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
-
+  
     client.send(JSON.stringify({
       type: 'answer',
       sdp: answer.sdp,
@@ -244,19 +250,25 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       recipient: sender
     }));
   };
-
+  
   const handleAnswer = async (answer, sender) => {
     if (!sender) {
       console.error('No sender provided for answer');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
+  
+    if (peerConnection.signalingState !== 'have-local-offer') {
+      console.error('Peer connection is not in have-local-offer state for answer');
+      return;
+    }
+  
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
   };
 
