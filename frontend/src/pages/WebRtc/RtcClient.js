@@ -226,6 +226,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
+    if (peerConnection.signalingState === "stable") {
+      console.warn('Attempted to setRemoteDescription in stable state');
+      return;
+    }
+
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
