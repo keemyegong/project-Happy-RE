@@ -1,12 +1,17 @@
 package com.example.happyre.entity;
 
+import com.example.happyre.dto.message.MessageEntityDTO;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "message")
+@NoArgsConstructor
 public class MessageEntity {
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,17 +32,21 @@ public class MessageEntity {
     @Enumerated(EnumType.STRING)
     private Speaker speaker;
 
-    @Column(name = "audio_key")
+    @Column(name = "audio_key",nullable = true)
     private String audioKey;
 
     @Column(nullable = true)
     private String summary;
 
-    @Column(nullable = true)
-    private Integer russellX;
+    @Column(name = "russell_x", nullable = true)
+    private Integer russellX ;
 
-    @Column(nullable = true)
-    private Integer russellY;
+    @Column(name = "russell_y", nullable = true)
+    private Integer russellY ;
+
+
+    @Column(name = "archived")
+    private Boolean archived = false;
 
     public enum Speaker {
         ai, user

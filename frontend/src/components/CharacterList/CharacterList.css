@@ -1,0 +1,80 @@
+.right-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 30%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 7%;
+  }
+  
+  .character-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: hidden;
+    max-height: 80%;
+  }
+  
+  .character-image-small-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    background-color: rgba(66, 78, 101, 1);
+    border-radius: 15px;
+  }
+  
+  .character-image-small {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+  }
+  
+  .character-image-small-wrapper.talking {
+    animation: talking 1s infinite;
+  }
+  
+  @keyframes talking {
+    0% {
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+    }
+    100% {
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+    }
+  }
+  
+  .scroll-buttons {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  
+  .scroll-buttons button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+    margin: 5px 0;
+  }
+  
+  .scroll-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .scroll-buttons button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+    margin: 10px 0;
+  }
+  

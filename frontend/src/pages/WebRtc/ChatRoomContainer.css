@@ -1,0 +1,6 @@
+.chat-room-container {
+  position: relative;
+  display: flex;
+  height: 100vh;
+  background-color: rgba(66, 78, 101, 0);
+}

@@ -13,7 +13,7 @@ import './Button.css';
 
 const Button = (props)=>{
     return(
-        <button className={props.className} onClick={props.onClick}>{props.content}</button>
+        <button disabled={props.disabled} className={props.className} onClick={props.onClick}>{props.content}</button>
     );
 };
 

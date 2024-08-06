@@ -1,25 +1,23 @@
+// keywordcard.js
 import React from 'react';
 import './KeywordCard.css';
 
-const DiaryReport = ({ selectedDay }) => {
-  const { year, month, date, dayLabel } = selectedDay;
-
-  const KeywordTitle = 'LOREM';
-  const KeywordContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-  const EmotionTags = { 1: '#기쁨', 2: '#신남', 3: '#행복' };
+const KeywordCard = ({ props }) => {
+  const { title, date, content, emotionTags } = props;
 
   return (
     <div className='KeywordCard'>
-      <div className='keyword-title'>{KeywordTitle}</div>
-      <div className='keyword-content'>{KeywordContent}</div>
+      <div className='keyword-title'>{title}</div>
+      <div className='keyword-content'>{content}</div>
       <p className='keyword-line'></p>
+      <div className='keyword-date'>{date}</div>
       <span className='emotion-tags'>
-        {Object.entries(EmotionTags).map(([key, tag]) => (
-          <span key={key} className='emotion-tag'>{tag}</span>
+        {emotionTags.map((tag, index) => (
+          <span key={index} className='emotion-tag'>{tag}</span>
         ))}
       </span>
     </div>
   );
 };
 
-export default DiaryReport;
+export default KeywordCard;

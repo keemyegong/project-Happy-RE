@@ -11,9 +11,8 @@ import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {
 
-    @Query("SELECT d FROM DiaryEntity d WHERE DATE(d.date) = :currentDate AND d.userEntity = :userEntity")
+    @Query("SELECT d FROM DiaryEntity d WHERE FUNCTION('DATE', d.date) = :currentDate AND d.userEntity = :userEntity")
     List<DiaryEntity> findByUserEntityAndDate(@Param("userEntity") UserEntity userEntity, @Param("currentDate") Date currentDate);
-
 
     List<DiaryEntity> findByUserEntity(UserEntity userEntity);
 

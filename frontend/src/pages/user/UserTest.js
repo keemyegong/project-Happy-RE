@@ -3,10 +3,13 @@ import { universeVariable } from '../../App';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import './UserTest.css';
+import Button from '../../components/Button/Button';
+import { useNavigate  } from "react-router-dom";
 
 const UserTest = () => {
   const universal = useContext(universeVariable);
   const [selectedChoices, setSelectedChoices] = useState([]);
+  let navigate = useNavigate ();
 
   const choiceLabels = [
     { label: '놀람', coordinates: [0, 1] },
@@ -72,6 +75,16 @@ const UserTest = () => {
     })
       .then((response) => {
         console.log('Data sent successfully:', response.data);
+        axios.put(
+          `${universal.defaultUrl}/api/user/me`,
+          {},
+          {
+            headers: {
+            Authorization : `Bearer ${Cookies.get('Authorization')}`
+          }}).then((response)=>{
+            navigate('/profile')
+          }).catch((err)=>console.log(err))
+
       })
       .catch((error) => {
         console.error('Error sending data:', error);
@@ -96,9 +109,8 @@ const UserTest = () => {
           </button>
         ))}
       </div>
-      <button className="submit-button" onClick={handleSubmit}>
-        제출
-      </button>
+      <Button className="btn light-btn small submit-button" content={"제출"} onClick={handleSubmit} />
+
     </div>
   );
 };

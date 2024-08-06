@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
@@ -14,14 +14,15 @@ import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
 import Message from './pages/message/Message';
 import Diary from './pages/diary/Diary';
+import Archive from './pages/archive-page/Archive'
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
+import defaultImage from './assets/characters/default.png'
 
 import './App.css';
 
 export const universeVariable = createContext();
-import defaultImage from './assets/characters/default.png'
 
 
 const PrivateRoute = ({ children }) => {
@@ -40,7 +41,7 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-const AppContent = () => {
+const AppContent = (setHappyreNumber) => {
   const location = useLocation();
 
   // 현재 경로가 '/profile'인지 확인
@@ -64,22 +65,22 @@ const AppContent = () => {
           <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
           <Route path="/signup/agreement" element={<PublicRoute><SignUpAgreement /></PublicRoute>} />
           <Route path="/emotion" element={<EmotionGraph />} />
-          
           <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
           <Route path="/webrtc"
             element={
-              <PrivateRoute>
+              // <PrivateRoute>
                 <RtcClient
                   initialPosition={initialPosition}
                   characterImage={characterImage}
                 />
-              </PrivateRoute>
+              // </PrivateRoute>
             }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
+          <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         </Routes>
       </div>
     </div>
@@ -87,15 +88,23 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const [happyreNumber, setHappyreNumber] = useState(1);
+
   return (
     <universeVariable.Provider
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://192.168.31.229:8000',
+        fastUrl: 'https://i11b204.p.ssafy.io',
+        // fastUrl: 'http://127.0.0.1:8000',
+        isAuthenticated,
+        setIsAuthenticated,
+        
       }}
     >
       <Router>
-        <AppContent />
+        <AppContent setHappyreNumber={setHappyreNumber} />
       </Router>
     </universeVariable.Provider>
   );

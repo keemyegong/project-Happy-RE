@@ -2,7 +2,6 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.user.JoinUserDTO;
 import com.example.happyre.dto.user.ModifyUserDTO;
-import com.example.happyre.dto.user.UserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/test")
-    public  ResponseEntity<?> me(HttpServletRequest request) {
+    public ResponseEntity<?> me(HttpServletRequest request) {
         return ResponseEntity.ok().body("test!!!!!!!!!!!!!!");
     }
 
@@ -123,10 +122,15 @@ public class UserController {
             System.out.println(joinUserDTO);
             userService.joinProcess(joinUserDTO);
             return ResponseEntity.ok("Join process successfully");
-        } catch (IllegalStateException e) {
+        } catch (IllegalAccessException e) {
+            //409 : aleady exist user
             System.out.println("IllegalStateException : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (RuntimeException e){
+            //400 : email validation
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
+            //500 IO error
             System.out.println("Exception : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

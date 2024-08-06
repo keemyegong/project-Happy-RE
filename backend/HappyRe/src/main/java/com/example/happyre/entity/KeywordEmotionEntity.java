@@ -13,8 +13,9 @@ public class KeywordEmotionEntity {
     @Column(name = "keyword_emotion_id")
     private Integer keywordEmotionId;
 
-    @Column(name = "keyword_id")
-    private Integer keywordId;
+    @ManyToOne
+    @JoinColumn(name = "keyword_id")
+    private KeywordEntity keywordEntity;
 
     @ManyToOne
     @JoinColumn(name = "emotion_id")

@@ -4,5 +4,8 @@ import lombok.Data;
 
 @Data
 public class DiaryEntityDTO {
+    private Integer diaryId;
+    private Integer userId;
+    //    private Timestamp date;
     private String summary;
 }

@@ -1,5 +1,6 @@
 import React, { useState,useContext, useEffect, useRef } from 'react';
 import {universeVariable} from '../../App';
+import Swal from 'sweetalert2'
 
 import axios from 'axios';
 import './UserUpdate.css';
@@ -71,7 +72,15 @@ const UserUpdate = ()=>{
     let userInfo = {};
 
     if(password!==password2){
-      alert('비밀번호가 다릅니다!')
+      Swal.fire({
+        title: '비밀번호가 다릅니다!',
+        icon: "warning",
+        iconColor: "#4B4E6D",
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+      });
+
     } else{
       if (password != null ){
         userInfo = {
@@ -136,6 +145,7 @@ const UserUpdate = ()=>{
           {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
         ).then((Response)=>{
           Cookies.remove('Authorization',{path:'/'});
+          universal.setIsAuthenticated(false);
           navigate('/');
         })
       }} />

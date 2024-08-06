@@ -1,121 +1,421 @@
-// const express = require('express');
-// const https = require('https');
-// const fs = require('fs');
-// const WebSocket = require('ws');
-// const kurento = require('kurento-client');
-// const path = require('path');
+// import React, { useEffect, useState, useRef } from 'react';
+// import { w3cwebsocket as W3CWebSocket } from "websocket";
+// import defaultImg from '../../assets/characters/default.png';
+// import './RtcClient.css';
 
-// const app = express();
-// const server = https.createServer({
-//   cert: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/fullchain.pem'),
-//   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
-// }, app);
+// const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
+// const peerConnections = {};
 
-// const wss = new WebSocket.Server({ noServer: true });
+// const RtcClient = ({ initialPosition, characterImage }) => {
+//   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
+//   const [users, setUsers] = useState([]);
+//   const [clientId, setClientId] = useState(null);
+//   const [stream, setStream] = useState(null);
+//   const [displayStartIndex, setDisplayStartIndex] = useState(0);
+//   const [userImage, setUserImage] = useState(characterImage || defaultImg);
+//   const [talkingUsers, setTalkingUsers] = useState([]);
+//   const [nearbyUsers, setNearbyUsers] = useState([]);
+//   const localAudioRef = useRef(null);
+//   const containerRef = useRef(null);
+//   const coordinatesGraphRef = useRef(null);
 
-// const ws_uri = 'ws://i11b204.p.ssafy.io:8888/kurento';
+//   useEffect(() => {
+//     if (window.location.pathname !== '/webrtc') {
+//       client.close();
+//       return;
+//     }
 
-// kurento(ws_uri, (error, kurentoClient) => {
-//   if (error) return console.error('Kurento connection error:', error);
+//     const coordinatesGraph = coordinatesGraphRef.current;
 
-//   kurentoClient.create('MediaPipeline', (error, pipeline) => {
-//     if (error) return console.error('MediaPipeline error:', error);
+//     const setHeights = () => {
+//       if (coordinatesGraph) {
+//         const width = coordinatesGraph.offsetWidth;
+//         coordinatesGraph.style.height = `${width}px`;
+//       }
+//     };
 
-//     pipeline.create('WebRtcEndpoint', (error, webRtcEndpoint) => {
-//       if (error) return console.error('WebRtcEndpoint error:', error);
+//     setHeights();
 
-//       console.log('WebRtcEndpoint created successfully');
+//     window.addEventListener('resize', setHeights);
+
+//     window.addEventListener('beforeunload', () => {
+//       client.send(JSON.stringify({ type: 'disconnect' }));
+//       client.close();
 //     });
-//   });
-// });
 
-// let idCounter = 0;
-// const users = {};
+//     window.addEventListener('keydown', handleKeyDown);
 
-// wss.on('connection', (ws, req) => {
-//   const userId = idCounter++;
-//   users[userId] = { id: userId, ws: ws, position: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 } };
-//   console.log(`User connected: ${userId}`);
-//   ws.send(JSON.stringify({ type: 'assign_id', position: users[userId].position, id: userId }));
+//     return () => {
+//       window.removeEventListener('resize', setHeights);
+//       window.removeEventListener('keydown', handleKeyDown);
+//     };
+//   }, []);
 
-//   const otherUsers = Object.values(users).filter(user => user.id !== userId);
-//   ws.send(JSON.stringify({ type: 'all_users', users: otherUsers.map(user => ({ id: user.id, position: user.position })) }));
-
-//   ws.on('message', async (message) => {
-//     const data = JSON.parse(message);
-//     console.log(`Received message from user ${userId}:`, data);
-//     switch (data.type) {
-//       case 'move':
-//         handleMove(userId, data.position);
+//   const handleKeyDown = (event) => {
+//     switch (event.key) {
+//       case 'ArrowUp':
+//         movePosition(0, 0.025);
 //         break;
-//       case 'offer':
-//         console.log(`Received offer from user ${userId}`);
+//       case 'ArrowDown':
+//         movePosition(0, -0.025);
 //         break;
-//       case 'candidate':
-//         console.log(`Received candidate from user ${userId}`);
+//       case 'ArrowLeft':
+//         movePosition(-0.025, 0);
 //         break;
-//       case 'disconnect':
-//         handleDisconnect(userId);
+//       case 'ArrowRight':
+//         movePosition(0.025, 0);
+//         break;
+//       default:
 //         break;
 //     }
-//   });
+//   };
 
-//   ws.on('close', () => {
-//     console.log(`User disconnected: ${userId}`);
-//     handleDisconnect(userId);
-//   });
-// });
+//   useEffect(() => {
+//     if (window.location.pathname !== '/webrtc') return;
 
-// function handleMove(userId, position) {
-//   users[userId].position = position;
-//   broadcast({ users: Object.values(users).filter(user => user.id !== userId).map(user => ({ id: user.id, position: user.position })) });
+//     client.onopen = () => {
+//       console.log('WebSocket Client Connected');
+//     };
 
-//   const nearbyUsers = getNearbyUsers(userId, 0.2);
-//   if (nearbyUsers.length > 0) {
-//     console.log(`User ${userId} is near users:`, nearbyUsers.map(u => u.id));
-//   }
-// }
+//     client.onclose = () => {
+//       console.log('WebSocket Client Disconnected');
+//     };
 
-// function handleDisconnect(userId) {
-//   delete users[userId];
-//   broadcast({ type: 'disconnect', id: userId });
-// }
+//     client.onerror = (error) => {
+//       console.error('WebSocket Error: ', error);
+//     };
 
-// function getNearbyUsers(userId, distance) {
-//   const currentUser = users[userId];
-//   return Object.values(users).filter(user => {
-//     if (user.id === userId) return false;
-//     const dx = user.position.x - currentUser.position.x;
-//     const dy = user.position.y - currentUser.position.y;
-//     return Math.sqrt(dx * dx + dy * dy) <= distance;
-//   });
-// }
+//     client.onmessage = (message) => {
+//       const dataFromServer = JSON.parse(message.data);
+//       if (dataFromServer.type === 'assign_id') {
+//         setClientId(dataFromServer.id);
+//         client.send(JSON.stringify({
+//           type: 'connect',
+//           position,
+//           characterImage: userImage
+//         }));
+//       } else if (dataFromServer.type === 'all_users') {
+//         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
+//         setUsers(filteredUsers.map(user => ({
+//           ...user,
+//           image: user.characterImage
+//         })));
+//         checkDistances(filteredUsers);
+//       } else if (dataFromServer.type === 'new_user') {
+//         const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
+//         setUsers(prevUsers => [...prevUsers, newUser]);
+//         checkDistances([...users, newUser]);
+//       } else if (dataFromServer.type === 'move') {
+//         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
+//         checkDistances(users);
+//       } else if (dataFromServer.type === 'offer') {
+//         handleOffer(dataFromServer.sdp, dataFromServer.sender);
+//       } else if (dataFromServer.type === 'answer') {
+//         handleAnswer(dataFromServer.sdp, dataFromServer.sender);
+//       } else if (dataFromServer.type === 'candidate') {
+//         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
+//       } else if (dataFromServer.type === 'rtc_disconnect') {
+//         handleRtcDisconnect(dataFromServer.id);
+//       } else if (dataFromServer.type === 'talking') {
+//         setTalkingUsers(dataFromServer.talkingUsers);
+//       }
+//     };
 
-// function broadcast(message) {
-//   wss.clients.forEach(client => {
+//     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+//       navigator.mediaDevices.getUserMedia({ audio: true })
+//         .then(currentStream => {
+//           setStream(currentStream);
+//         }).catch(error => {
+//           console.error('Error accessing media devices.', error);
+//         });
+//     } else {
+//       console.error('getUserMedia is not supported in this browser.');
+//     }
+//   }, [position, userImage]);
+
+//   useEffect(() => {
+//     if (clientId) {
+//       checkDistances(users);
+//     }
+//   }, [clientId, users]);
+
+//   const checkDistances = (currentUsers) => {
+//     const newNearbyUsers = [];
+//     currentUsers.forEach(user => {
+//       if (user.id === undefined || clientId === null) return;
+//       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
+//       if (distance <= 0.2) {
+//         newNearbyUsers.push(user);
+//         if (!peerConnections[user.id]) {
+//           const peerConnection = createPeerConnection(user.id);
+//           peerConnection.createOffer()
+//             .then(offer => {
+//               peerConnection.setLocalDescription(offer)
+//                 .then(() => {
+//                   client.send(JSON.stringify({
+//                     type: 'offer',
+//                     sdp: offer.sdp,
+//                     recipient: user.id,
+//                     sender: clientId
+//                   }));
+//                 })
+//                 .catch(error => console.error('Error setting local description:', error));
+//             })
+//             .catch(error => console.error('Error creating offer:', error));
+//           peerConnections[user.id] = { peerConnection, user };
+//         }
+//       } else if (peerConnections[user.id]) {
+//         peerConnections[user.id].peerConnection.close();
+//         delete peerConnections[user.id];
+//         console.log(`WebRTC connection closed with user ${user.id}`);
+//       }
+//     });
+//     setNearbyUsers(newNearbyUsers);
+//   };
+
+//   const createPeerConnection = (userId) => {
+//     const peerConnection = new RTCPeerConnection({
+//       iceServers: [
+//         { urls: 'stun:stun.l.google.com:19302' }
+//       ]
+//     });
+//     console.log('webrtc 연결완료');
+
+//     peerConnection.onicecandidate = (event) => {
+//       if (event.candidate) {
+//         client.send(JSON.stringify({
+//           type: 'candidate',
+//           candidate: event.candidate,
+//           sender: clientId,
+//           recipient: userId
+//         }));
+//       }
+//     };
+
+//     peerConnection.ontrack = (event) => {
+//       if (localAudioRef.current) {
+//         if (event.streams[0] !== stream) {
+//           localAudioRef.current.srcObject = event.streams[0];
+//         }
+//       }
+//     };
+
+//     peerConnection.onconnectionstatechange = () => {
+//       if (peerConnection.connectionState === 'connected') {
+//         console.log(`WebRTC connection established with user ${userId}`);
+//         startMicrophone();
+//       }
+//       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+//         console.log('WebRTC 연결이 끊어졌습니다.');
+//         if (localAudioRef.current) {
+//           localAudioRef.current.srcObject = null;
+//         }
+//         stopMicrophone();
+//       }
+//     };
+
+//     if (stream) {
+//       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+//     }
+
+//     return peerConnection;
+//   };
+
+//   const handleOffer = async (sdp, sender) => {
+//     if (!sender) {
+//       console.error('No sender provided for offer');
+//       return;
+//     }
+
+//     if (!peerConnections[sender]) {
+//       const peerConnection = createPeerConnection(sender);
+//       peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+//     }
+
+//     const peerConnection = peerConnections[sender].peerConnection;
+//     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp }));
+//     const answer = await peerConnection.createAnswer();
+//     await peerConnection.setLocalDescription(answer);
+
+//     client.send(JSON.stringify({
+//       type: 'answer',
+//       sdp: answer.sdp,
+//       sender: clientId,
+//       recipient: sender
+//     }));
+//   };
+
+//   const handleAnswer = async (sdp, sender) => {
+//     if (!sender) {
+//       console.error('No sender provided for answer');
+//       return;
+//     }
+
+//     const connection = peerConnections[sender];
+//     if (!connection) {
+//       console.error(`No peer connection found for sender ${sender}`);
+//       return;
+//     }
+//     const peerConnection = connection.peerConnection;
+//     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp }));
+//   };
+
+//   const handleCandidate = async (candidate, sender) => {
+//     if (!sender) {
+//       console.error('No sender provided for candidate');
+//       return;
+//     }
+
+//     const connection = peerConnections[sender];
+//     if (!connection) {
+//       console.error(`No peer connection found for sender ${sender}`);
+//       return;
+//     }
+//     const peerConnection = connection.peerConnection;
+//     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+//   };
+
+//   const handleRtcDisconnect = (userId) => {
+//     if (peerConnections[userId]) {
+//       peerConnections[userId].peerConnection.close();
+//       delete peerConnections[userId];
+//       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
+//       console.log(`WebRTC connection closed with user ${userId}`);
+//     }
+//   };
+
+//   const movePosition = (dx, dy) => {
+//     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
+//     setPosition(newPosition);
 //     if (client.readyState === WebSocket.OPEN) {
-//       client.send(JSON.stringify(message));
+//       client.send(JSON.stringify({ type: 'move', position: newPosition }));
 //     }
-//   });
+//   };
+
+//   const handleScroll = (direction) => {
+//     if (direction === 'up') {
+//       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
+//     } else {
+//       setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
+//     }
+//   };
+
+//   const startMicrophone = () => {
+//     if (stream) {
+//       stream.getAudioTracks().forEach(track => track.enabled = true);
+//     }
+//   };
+
+//   const stopMicrophone = () => {
+//     if (stream) {
+//       stream.getAudioTracks().forEach(track => track.enabled = false);
+//     }
+//   };
+
+//   return (
+//     <div className="chat-room-container" ref={containerRef}>
+//       <div className="coordinates-graph" ref={coordinatesGraphRef}>
+//         <div className="axes">
+//           <div className="x-axis" />
+//           <div className="y-axis" />
+//           {[...Array(21)].map((_, i) => (
+//             <div
+//               key={`x-tick-${i}`}
+//               className="x-tick"
+//               style={{ left: `${(i / 20) * 100}%` }}
+//             />
+//           ))}
+//           {[...Array(21)].map((_, i) => (
+//             <div
+//               key={`y-tick-${i}`}
+//               className="y-tick"
+//               style={{ top: `${(i / 20) * 100}%` }}
+//             />
+//           ))}
+//           {users.map(user => (
+//             <div 
+//               key={user.id}
+//               className="radar-pulse-small"
+//               style={{
+//                 left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
+//                 top: `calc(${((1 - user.position.y) / 2) * 100}%)`
+//               }}
+//             />
+//           ))}
+//           <div className="your-character-container" style={{
+//               left: `calc(${((position.x + 1) / 2) * 100}%)`,
+//               top: `calc(${((1 - position.y) / 2) * 100}%)`
+//             }}>
+//             <div className="radar-pulse" />
+//             <img
+//               src={userImage}
+//               alt="your character"
+//               className="character-image your-character"
+//             />
+//             <audio ref={localAudioRef} autoPlay />
+//             <div className="controls controls-up">
+//               <button onClick={() => movePosition(0, 0.025)}>
+//                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+//                     <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1 .223.67"/>
+//                 </svg>
+//               </button>
+//             </div>
+//             <div className="controls controls-right">
+//               <button onClick={() => movePosition(0.025, 0)}>
+//                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-right" viewBox="0 0 16 16">
+//                   <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"/>
+//                 </svg>
+//               </button>
+//             </div>
+//             <div className="controls controls-down">
+//               <button onClick={() => movePosition(0, -0.025)}>
+//                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+//                   <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+//                 </svg>
+//               </button>
+//             </div>
+//             <div className="controls controls-left">
+//               <button onClick={() => movePosition(-0.025, 0)}>
+//                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-left" viewBox="0 0 16 16">
+//                   <path fillRule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+//                 </svg>
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//       <div className="right-panel">
+//         <div className="scroll-buttons">
+//           <button onClick={() => handleScroll('up')}>
+//             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+//               <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448-.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
+//             </svg>
+//           </button>
+//         </div>
+//         <div className="character-list">
+//           {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
+//             <div 
+//               key={user.id}
+//               className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
+//             >
+//               <img 
+//                 src={user.image} 
+//                 alt="character"
+//                 className="character-image-small"
+//               />
+//             </div>
+//           ))}
+//         </div>
+//         <div className="scroll-buttons">
+//           <button onClick={() => handleScroll('down')}>
+//             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+//               <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
+//             </svg>
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
 // }
 
-// app.use(express.static(path.join(__dirname, 'build')));
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
-// });
-
-// server.on('upgrade', (request, socket, head) => {
-//   // const { pathname } = new URL(request.url, `https://${request.headers.host}`);
-  
-//   // if (pathname === '/webrtc') {
-//     wss.handleUpgrade(request, socket, head, (ws) => {
-//       wss.emit('connection', ws, request);
-//     });
-//   // } else {
-//   //   socket.destroy();
-//   // }
-// });
-
-// server.listen(5001, () => {
-//   console.log('Server is running on port 5001');
-// });
+// export default RtcClient;
