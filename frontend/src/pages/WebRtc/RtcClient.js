@@ -250,7 +250,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+    if (peerConnection.signalingState !== "stable") {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+    } else {
+      console.warn('Attempted to setRemoteDescription in stable state');
+    }
   };
 
   const handleCandidate = async (candidate, sender) => {
