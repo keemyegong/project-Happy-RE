@@ -55,21 +55,12 @@
 }
 
 .choice-button.selected {
-  color: #d4d43b;
+  color: #c0cce4;
 }
 
 .submit-button {
-  color: #fff;
-  background-color: #333758;
-  align-self: center;
   margin-top: 20px;
   padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #54587E;
 }
 
 .go-login {
