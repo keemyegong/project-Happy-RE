@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -52,15 +54,14 @@ wss.on('connection', (ws) => {
           ws,
           position: data.position,
           characterImage: data.characterImage,
-          hasMoved: data.hasMoved,
-          id: userId // added id for comparison
+          hasMoved: data.hasMoved
         };
 
         const allUsers = Object.keys(users).map(id => ({
           id,
           position: users[id].position,
           characterImage: users[id].characterImage,
-          hasMoved: users[id].hasMoved // send hasMoved state
+          hasMoved: users[id].hasMoved
         }));
 
         Object.keys(users).forEach(id => {
@@ -87,27 +88,24 @@ wss.on('connection', (ws) => {
         break;
 
       case 'offer':
-        const offerRecipient = users[data.recipient];
-        if (offerRecipient) {
-          offerRecipient.ws.send(JSON.stringify({ type: 'offer', offer: data.offer, sender: userId }));
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify({ type: 'offer', offer: data.offer, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
         break;
 
       case 'answer':
-        const answerRecipient = users[data.recipient];
-        if (answerRecipient) {
-          answerRecipient.ws.send(JSON.stringify({ type: 'answer', answer: data.answer, sender: userId }));
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify({ type: 'answer', answer: data.answer, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
         break;
 
       case 'candidate':
-        const candidateRecipient = users[data.recipient];
-        if (candidateRecipient) {
-          candidateRecipient.ws.send(JSON.stringify({ type: 'candidate', candidate: data.candidate, sender: userId }));
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify({ type: 'candidate', candidate: data.candidate, sender: userId }));
         } else {
           console.error(`User ${data.recipient} does not exist or WebRtcEndpoint is not initialized`);
         }
@@ -121,7 +119,7 @@ wss.on('connection', (ws) => {
             id: cId,
             position: users[cId].position,
             characterImage: users[cId].characterImage,
-            hasMoved: users[cId].hasMoved // send hasMoved state
+            hasMoved: users[cId].hasMoved
           })).filter(user => user.id !== id);
 
           users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
@@ -141,7 +139,7 @@ wss.on('connection', (ws) => {
         id: cId,
         position: users[cId].position,
         characterImage: users[cId].characterImage,
-        hasMoved: users[cId].hasMoved // send hasMoved state
+        hasMoved: users[cId].hasMoved
       })).filter(user => user.id !== id);
 
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
