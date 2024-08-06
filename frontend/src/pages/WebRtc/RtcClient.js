@@ -1,9 +1,7 @@
-// src/components/RtcClient.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
-import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
+import CoordinatesGraph from '../../components/CoordinatesGraph/CoordinatesGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
 import './RtcClient.css';
 
@@ -19,23 +17,29 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (window.location.pathname !== '/webrtc') {
-      client.close();
-      return;
-    }
+    const handleBeforeUnload = () => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'disconnect' }));
+      }
+    };
 
-    window.addEventListener('beforeunload', () => {
-      client.send(JSON.stringify({ type: 'disconnect' }));
-      client.close();
-    });
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleBeforeUnload();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -114,9 +118,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
-          if (localAudioRef.current) {
-            localAudioRef.current.srcObject = currentStream;
-          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -185,9 +186,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-      }
+      const remoteAudio = document.createElement('audio');
+      remoteAudio.srcObject = event.streams[0];
+      remoteAudio.autoplay = true;
+      document.body.appendChild(remoteAudio);
     };
 
     peerConnection.onconnectionstatechange = () => {
@@ -196,9 +198,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
-        }
       }
     };
 
@@ -294,7 +293,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         position={position} 
         users={users} 
         movePosition={movePosition} 
-        localAudioRef={localAudioRef} 
+        localAudioRef={null} 
         userImage={userImage} 
       />
       <CharacterList 
