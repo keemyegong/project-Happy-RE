@@ -93,6 +93,18 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public void updateArchive(int messageId, boolean archive) {
+
+        MessageEntity messageEntity = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalStateException("메시지를 찾을 수 없습니다. ID: " + messageId));
+        // 메시지의 아카이브 상태 업데이트
+        messageEntity.setArchived(archive);
+        // 변경 사항 저장
+        messageRepository.save(messageEntity);
+
+    }
+
+    @Override
     public void delete(MessageEntity messageDTOEntity) {
         //사전에 Check 되었다고 가정
         MessageEntity matchingEntity = messageRepository.findById(messageDTOEntity.getMessageId()).get();
@@ -104,5 +116,47 @@ public class MessageServiceImpl implements MessageService {
         MessageEntity matchingEntity = messageRepository.findById(messageEntityDTO.getMessageId()).get();
         messageRepository.delete(matchingEntity);
     }
+
+    @Override
+    public void insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList) {
+        int cnt = 0;
+        try {
+            for(MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
+                MessageEntity messageEntity =  new MessageEntity();
+
+                messageEntity.setDiaryEntity(diaryEntity);
+                messageEntity.setSequence(++cnt);
+                messageEntity.setContent(messageEntityDTO.getContent());
+                messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
+                messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
+                messageEntity.setSummary(messageEntityDTO.getSummary());
+                messageEntity.setRussellX(messageEntityDTO.getRussellX());
+                messageEntity.setRussellY(messageEntityDTO.getRussellY());
+                messageRepository.save(messageEntity);
+            }
+        }catch (Exception e) {
+            System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+//    public MessageEntity extracted(DiaryEntity diaryEntity, MessageEntityDTO messageEntityDTO) {
+//        MessageEntity messageEntity =  new MessageEntity();
+//
+//        messageEntity.setDiaryEntity(diaryEntity);
+//        messageEntity.setSequence(messageEntityDTO.getSequence());
+//        messageEntity.setContent(messageEntityDTO.getContent());
+//        messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
+//        messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
+//        messageEntity.setSummary(messageEntityDTO.getSummary());
+//        messageEntity.setRussellX(messageEntityDTO.getRussellX());
+//        messageEntity.setRussellY(messageEntityDTO.getRussellY());
+//
+//
+//        return messageEntity;
+//    }
 
 }

@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,9 +35,24 @@ public class MessageController {
 
     @PostMapping
     public ResponseEntity<?> createMessage(HttpServletRequest request, @RequestBody List<MessageEntityDTO> messageEntityDTOs) {
+        System.out.println("createMessage :"+messageEntityDTOs.toString() );
         try {
             UserEntity userEntity = userService.findByRequest(request);
-
+            if(userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            System.out.println("user Entity : "+userEntity.toString());
+            LocalDate today = LocalDate.now();
+            List<DiaryEntity> todayDiarys =  diaryService.findByUserAndDate(userEntity ,  java.sql.Date.valueOf(today));
+            if(todayDiarys.isEmpty()) {
+                //만들고 시작
+                DiaryEntity diaryEntity = new DiaryEntity();
+                diaryEntity.setUserEntity(userEntity);
+                todayDiarys.add(diaryService.insert(diaryEntity)) ;
+            }
+            DiaryEntity diaryEntity=todayDiarys.get(0);
+            System.out.println("Diary Entity : "+ diaryEntity.toString());
+            messageService.insertMessageDTOList(diaryEntity,messageEntityDTOs);
 
             return ResponseEntity.ok("Successfully created message");
         } catch (Exception e) {
@@ -56,6 +74,21 @@ public class MessageController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 검색중 에러: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateArchived(HttpServletRequest request,
+                                    @PathVariable Integer id,
+                                    @RequestParam(required = true) Boolean archived) {
+        try{
+            messageService.updateArchive(id, archived);
+            return ResponseEntity.ok("Successfully updated message");
+        }catch(IllegalAccessError e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message Not Found : " + e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error : " + e.getMessage());
+        }
+
     }
 
 

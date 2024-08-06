@@ -26,10 +26,13 @@ public class KeywordEntity {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @Column(name = "russell_x", nullable = false)
+    @Column(name = "russell_x", nullable = true)
     private Double russellX;
 
-    @Column(name = "russell_y", nullable = false)
+    @Column(name = "russell_y", nullable = true)
     private Double russellY;
+
+    @Column(name = "archived")
+    private Boolean archived = false;
 
 }

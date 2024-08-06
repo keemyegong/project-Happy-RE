@@ -22,7 +22,11 @@ public interface MessageService {
 
     MessageEntity updateDTO(MessageEntityDTO messageEntityDTO);
 
+    void updateArchive(int messageId, boolean archive);
+
     void delete(MessageEntity messageDTOEntity);
 
     void deleteDTO(MessageEntityDTO messageEntityDTO);
+
+    void insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList);
 }

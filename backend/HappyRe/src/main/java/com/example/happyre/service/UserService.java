@@ -98,6 +98,9 @@ public class UserService {
             if (modifyUserDTO.getProfileUrl() != null) {
                 userEntity.setProfileUrl(modifyUserDTO.getProfileUrl());
             }
+            if (modifyUserDTO.getMyfrog() != null){
+                userEntity.setMyfrog(modifyUserDTO.getMyfrog());
+            }
             userRepository.save(userEntity);
         } else {
             throw new RuntimeException("User not found");

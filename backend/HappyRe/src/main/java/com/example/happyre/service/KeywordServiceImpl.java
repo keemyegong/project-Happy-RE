@@ -58,13 +58,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<KeywordEntity> insertDTOList(List<KeywordEntityDTO> keywordEntityDTOList) {
-        return keywordEntityDTOList.stream().map(m -> {
-            try {
-                return this.insertDTO(m);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
+
     }
 
     @Override
