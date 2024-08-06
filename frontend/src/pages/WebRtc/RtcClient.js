@@ -39,6 +39,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         client.send(JSON.stringify({ type: 'disconnect' }));
         client.close();
       }
+      Object.keys(peerConnections).forEach(key => {
+        peerConnections[key].peerConnection.close();
+        delete peerConnections[key];
+      });
     };
   }, []);
 
@@ -188,6 +192,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (remoteAudioRef.current) {
           remoteAudioRef.current.srcObject = null;
         }
+        peerConnection.close();
+        delete peerConnections[userId];
       }
     };
 
@@ -225,7 +231,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    if (peerConnection.signalingState === 'stable' || peerConnection.signalingState === 'have-local-offer') {
+    if (peerConnection.signalingState === 'have-local-offer' || peerConnection.signalingState === 'stable') {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
@@ -272,7 +278,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    if (peerConnection.remoteDescription) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } else {
+      console.warn('Attempted to addIceCandidate when remoteDescription is null');
+    }
   };
 
   const handleRtcDisconnect = (userId) => {
