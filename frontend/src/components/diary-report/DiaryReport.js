@@ -1,4 +1,3 @@
-// diaryreport.js
 import React, { useState } from 'react';
 import './DiaryReport.css';
 import KeywordCard from './KeywordCard';
@@ -69,6 +68,7 @@ const DiaryReport = ({ selectedDay }) => {
                 <KeywordCard
                   key={`positive-${index}`}
                   props={keyword}
+                  plusButton={true}
                 />
               ))}
             </div>
@@ -80,6 +80,7 @@ const DiaryReport = ({ selectedDay }) => {
                 <KeywordCard
                   key={`negative-${index}`}
                   props={keyword}
+                  plusButton={true}
                 />
               ))}
             </div>
