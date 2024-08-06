@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import math
 import json
@@ -7,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from typing import List
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from .Chatbot import Chatbot, DiarySummarizeChatbot
+from .Chatbot import Chatbot, DiarySummarizeChatbot, SummarizeChatbot
 from packages.dependencies import decode_jwt
 from models import ChatRequest, TestMod
 import httpx
@@ -41,7 +42,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
-POST_MESSAGE_LOCAL_TEST=os.environ.get("POST_MESSAGE_LOCAL_TEST")
+SPRING_KEYWORD_SUMMARY_URL = os.environ.get("SPRING_KEYWORD_SUMMARY_URL")
 
 
 personas = PERSONAS
@@ -71,7 +72,8 @@ async def emotion_tagging(user_id: str, text: str):
         
     if russel_coord[0] < -0.8:
         trigger = True
-        user_emotion_russel[user_id][text] = russel_coord
+        
+    user_emotion_russel[user_id][text] = russel_coord
     
     return trigger
     
@@ -126,7 +128,6 @@ async def test(user_id:str=Depends(decode_jwt)):
     
     user_emotion_russel[user_id] = {
         "어제 비를 맞아서 기분이 개같아":(-1,0.5),
-        "그래도 로또 맞아서 괜찮음":(1,0),
     }
     
     return user_message
@@ -134,11 +135,10 @@ async def test(user_id:str=Depends(decode_jwt)):
 # post 요청 테스트 용 함수
 @router.post('/test')
 async def post_test(request:Request):
-    print("######test")
-    print(f"new_headers : {request.headers}")
-    print("//////////////test")
-    print(f"바디 \n - {await request.json()}")
-    return {"authorization" : request.headers["authorization"]}
+    return request.headers
+
+# ---------------------------------------------------여기까지 테스트 함수 -------------------------------------------------
+
 # POST 요청으로 chabot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
 @router.post('/')
@@ -164,10 +164,12 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     api_instance = user_session[user_id]
     user_input = request.user_input
     audio = request.audio
+    
     if request.request == "user":
         message_session_update(user_id, user_input, "user", audio)
     elif request.request == "chatbot":
         message_session_update(user_id, user_input, "starter", audio)
+    
     
     response = api_instance.generateResponse(user_input)
     # json_item_data = jsonable_encoder(response)
@@ -205,25 +207,26 @@ async def post_message_request(request:Request):
     print(f"여기서 들어온 헤더 : {header}")
     token = header["authorization"].split(" ")[-1]
     user_id = decode_jwt(token)
-    summary_instance = DiarySummarizeChatbot(api_key)
     print("됨?")
     try:
         for idx, data in enumerate(user_message[user_id]):
             data = user_message[user_id][idx]
             russel_coord = user_emotion_russel[user_id]
+            data["sequence"] = idx+1
             if data["speaker"] == "starter":
                 continue
             elif data["speaker"] == "user":
-                data["sequence"] = idx+1
-                data["russelX"] = russel_coord[data["content"]][0]
-                data["russelY"] = russel_coord[data["content"]][1]
+                if data["content"] in russel_coord:
+                    data["russelX"] = russel_coord[data["content"]][0]
+                    data["russelY"] = russel_coord[data["content"]][1]
+                else:
+                    data["russelX"] = None
+                    data["russelY"] = None
             else:
                 data["russelX"] = None
                 data["russelY"] = None
         print("여기서 빠진거임?")
-        message_item = {
-                user_id : user_message[user_id]
-            }
+        message_item = user_message[user_id]
         try:
             print("////////////////////////////////")
             new_headers = {
@@ -232,12 +235,15 @@ async def post_message_request(request:Request):
             }
             async with httpx.AsyncClient() as client:
                 print("메시지 전송 시작")
-                response = await client.post(POST_MESSAGE_LOCAL_TEST, json=message_item, headers=new_headers)
+                print(f"SPRING_MESSAGE_POST_URL : {SPRING_MESSAGE_POST_URL}")
+                print(f"message_item : \n {message_item}")
+                response = await client.post(SPRING_MESSAGE_POST_URL, json=message_item, headers=new_headers)
                 print(f"response : {response}")
                 if response.status_code != 200:
                     print(f"뭔가 오류남 : {response.json()}")
                     raise HTTPException(status_code=500, detail=f"Error: {response.text}")
         except Exception as e:
+            print(str(e))
             raise HTTPException(status_code=500, detail=str(e))
         
         # try:
@@ -255,9 +261,59 @@ async def post_message_request(request:Request):
     print("유저 섹션 삭제")
     return user_message
 # 세션에서 삭제
-@router.delete('/session')
-async def session_delete(user_id: str=Depends(decode_jwt)):
-            
+@router.delete('/')
+async def session_delete(request:Request):
+    
+    header = request.headers["authorization"]
+    user_id = decode_jwt(header.split(" ")[-1])
+    
+    new_header = {
+        "authorization": header,
+        "content-type": "application/json"
+    }
+    
+    chatbot_instance = user_session[user_id]
+    prompt = '지금까지의 대화에서 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 리스트 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
+    
+    response = chatbot_instance.generateResponse(prompt)
+    print(f"response : \n {response}")
+    print(f"user_emotion_russel : \n {user_emotion_russel}")
+    print(f"spring_url : {SPRING_KEYWORD_SUMMARY_URL}")
+    try:
+        result = json.loads(response.strip())
+        file = response.replace("`", "").strip()
+        temp = file.replace("json","").strip()
+        result = json.loads(temp)
+        
+        for idx, data in enumerate(result):
+            data["russelX"] = user_emotion_russel[user_id][data["message"]][0]
+            data["russelY"] = user_emotion_russel[user_id][data["message"]][1]
+            data["sequence"] = idx+1
+            del data["message"]
+        
+        print(f"result : \n {result}")
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=result, headers=new_header)
+                print(f"returned response : {response}")
+                
+                if user_id in user_session:
+                    del user_session[user_id]
+                    print('삭제됨')
+    
+                if user_id in user_emotion_russel:
+                    del user_emotion_russel[user_id]
+                    print('user_emotion_russel deleted')
+                    
+                return {"content":response.status_code}
+        except Exception as e:
+            print(f"Error : {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+        
+    except Exception as e:
+        print("에러 떳음메")
+        print(f"Another Error : {str(e)}")
+        return HTTPException(status_code=500, detail=str(e))
     if user_id in user_session:
         del user_session[user_id]
         print('삭제됨')
@@ -265,19 +321,9 @@ async def session_delete(user_id: str=Depends(decode_jwt)):
     if user_id in user_emotion_russel:
         del user_emotion_russel[user_id]
         print('user_emotion_russel deleted')
-
     
     # print(user_emotion_russel)
     # print(user_session)
     # return uuid_dict
-    return JSONResponse(content="session deleted",status_code=200)
-
-@router.post("/summarize_russel")
-async def summarize_russel(request:Request):
-    summary_instance = DiarySummarizeChatbot(api_key)
-    token = request.headers["authorization"].split(" ")[-1]
-    user_id = decode_jwt(token)
-    messages = user_message[user_id]
     
-    response = summary_instance.generateResponse('야발')
-    return response
+    # return JSONResponse(content=response,status_code=200)

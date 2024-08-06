@@ -130,8 +130,7 @@ class DiarySummarizeChatbot:
                 of 'russelX' and 'russelY'. These values range from -1 to 1, wher 'russelX' closer to 1 indicates a positive\
                 emotion, and closer to -1 indicates a negative emotion. 'russelY' closer to 1 indicates an excited state, and\
                 closer to -1 indicates a calm state.\
-                Please format the result as shown below and you must respond in Korean.\
-                - {messages : [{'keyword': '키링','summary' : '키링이 갖고 싶어','emotion' : 'positive'}]}"
+                유저가 제공한 템플릿에 맞춰 요약해줘"
             ),
             MessagesPlaceholder(variable_name="messages"),
         ],
@@ -147,12 +146,13 @@ class DiarySummarizeChatbot:
     def generateResponse(self, user_input):
         # todo: sanitize user input
         self.history.add_user_message(user_input)
-
+        print("testtest 12 12 ")
         response = self.chain.invoke(
             {
                 "messages": self.history.messages,
             }
         )
+        print(f"response content : {response.content}")
         self.history.add_ai_message(response.content)
         return response.content
 
@@ -195,12 +195,13 @@ class SummarizeChatbot:
     def generateResponse(self, user_input):
         # todo: sanitize user input
         self.history.add_user_message(user_input)
-
+        
         response = self.chain.invoke(
             {
                 "messages": self.history.messages,
             }
         )
+        
         self.history.add_ai_message(response.content)
         return response.content
 
