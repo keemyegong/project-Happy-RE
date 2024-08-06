@@ -70,6 +70,8 @@ public class KeywordServiceImpl implements KeywordService {
                 keywordEntity.setSummary(keywordEntityDTO.getSummary());
                 keywordEntity.setRussellX(keywordEntityDTO.getRussellX());
                 keywordEntity.setRussellY(keywordEntityDTO.getRussellY());
+
+                keywordRepository.save(keywordEntity);
             }
         }catch (Exception e) {
             System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");

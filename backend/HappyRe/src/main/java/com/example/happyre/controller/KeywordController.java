@@ -29,7 +29,7 @@ public class KeywordController {
     private final UserService userService;
 
 
-    @PostMapping("/")
+    @PostMapping()
     public ResponseEntity<?> createKeyword(HttpServletRequest request, @RequestBody List<KeywordEntityDTO> KeywordEntityDTO) {
         System.out.println("createkeywords :"+KeywordEntityDTO.toString() );
         try {
