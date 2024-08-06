@@ -208,8 +208,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     client.send(JSON.stringify({
       type: 'offer',
       offer: offer.sdp,
-      recipient: sender,
-      sender: clientId
+      sender: clientId,
+      recipient: sender
     }));
   };
 
@@ -225,12 +225,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
-    if (peerConnection.signalingState !== "have-remote-offer") {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
-    } else {
-      console.warn('Attempted to setRemoteDescription in wrong state');
-    }
-
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
@@ -254,7 +249,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
     const peerConnection = connection.peerConnection;
-    if (peerConnection.signalingState !== "stable") {
+    if (peerConnection.signalingState === 'have-remote-offer') {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
     } else {
       console.warn('Attempted to setRemoteDescription in stable state');
