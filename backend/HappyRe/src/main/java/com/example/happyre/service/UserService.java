@@ -10,6 +10,8 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +24,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 @Service
@@ -111,26 +115,37 @@ public class UserService {
         }
     }
 
-    public void joinProcess(JoinUserDTO joinUserDTO) {
+    public void joinProcess(JoinUserDTO joinUserDTO) throws Exception {
         System.out.println("joinProcess start");
         String email = joinUserDTO.getEmail();
         String password = joinUserDTO.getPassword();
         String name = joinUserDTO.getName();
 
-        UserEntity isExist = userRepository.findByEmail(email);
-        if (isExist != null) {
-            throw new IllegalStateException("User with email " + email + " already exists");
-        }
-        System.out.println("joinProcess start");
-        UserEntity data = new UserEntity();
-        data.setEmail(email);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
-        data.setName(name);
-        data.setRole("ROLE_USER");
-        data.setSocialLogin("local");
-        System.out.println("저장성공");
-        userRepository.save(data);
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
 
+        if (!matcher.matches()) {
+            throw new RuntimeException("Invalid email");
+        }
+
+        UserEntity isExist =userRepository.findByEmail(email);
+        if (isExist != null) {
+            throw new IllegalAccessException("User email aleady exist");
+        }
+        try{
+            System.out.println("joinProcess start");
+            UserEntity data = new UserEntity();
+            data.setEmail(email);
+            data.setPassword(bCryptPasswordEncoder.encode(password));
+            data.setName(name);
+            data.setRole("ROLE_USER");
+            data.setSocialLogin("local");
+            System.out.println("저장성공");
+            userRepository.save(data);
+        }catch(Exception e){
+            throw new IOException("User creation failed");
+        }
 
     }
 
