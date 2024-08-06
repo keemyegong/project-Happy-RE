@@ -18,7 +18,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [pendingCandidates, setPendingCandidates] = useState({});
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -137,23 +136,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          const { peerConnection, pendingCandidates } = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection, pendingCandidates };
+          const peerConnection = createPeerConnection(user.id);
+          peerConnections[user.id] = { peerConnection };
           if (clientId < user.id) {
-            peerConnection.createOffer()
-              .then(offer => {
-                peerConnection.setLocalDescription(offer)
-                  .then(() => {
-                    client.send(JSON.stringify({
-                      type: 'offer',
-                      offer: offer.sdp,
-                      recipient: user.id,
-                      sender: clientId
-                    }));
-                  })
-                  .catch(error => console.error('Error setting local description:', error));
-              })
-              .catch(error => console.error('Error creating offer:', error));
+            attemptOffer(peerConnection, user.id);
           }
         }
       } else if (peerConnections[user.id]) {
@@ -206,10 +192,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
 
-    return { peerConnection, pendingCandidates: [] };
+    return peerConnection;
   };
 
-  // handleOffer 함수 수정
+  const attemptOffer = (peerConnection, recipientId) => {
+    peerConnection.createOffer()
+      .then(offer => {
+        peerConnection.setLocalDescription(offer)
+          .then(() => {
+            client.send(JSON.stringify({
+              type: 'offer',
+              offer: offer.sdp,
+              recipient: recipientId,
+              sender: clientId
+            }));
+          })
+          .catch(error => console.error('Error setting local description:', error));
+      })
+      .catch(error => console.error('Error creating offer:', error));
+  };
+
   const handleOffer = async (offer, sender) => {
     if (!sender) {
       console.error('No sender provided for offer');
@@ -217,8 +219,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     if (!peerConnections[sender]) {
-      const { peerConnection, pendingCandidates } = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, pendingCandidates, user: users.find(user => user.id === sender) };
+      const peerConnection = createPeerConnection(sender);
+      peerConnections[sender] = { peerConnection };
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
@@ -235,16 +237,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         recipient: sender
       }));
 
-      // 대기 중인 ICE 후보 처리
-      if (pendingCandidates[sender]) {
-        pendingCandidates[sender].forEach(async candidate => {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-        setPendingCandidates(prev => {
-          const newPending = { ...prev };
-          delete newPending[sender];
-          return newPending;
-        });
+      if (peerConnection.signalingState === 'have-remote-offer') {
+        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       }
 
     } catch (error) {
@@ -271,6 +265,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+
+    // Add pending ICE candidates if any
+    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+    for (const candidate of pendingCandidates) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+    peerConnections[sender].pendingCandidates = [];
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -293,15 +294,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      // 대기 중인 ICE 후보 저장
-      setPendingCandidates(prev => {
-        const newPending = { ...prev };
-        if (!newPending[sender]) {
-          newPending[sender] = [];
-        }
-        newPending[sender].push(candidate);
-        return newPending;
-      });
+      // Save pending ICE candidates
+      if (!peerConnections[sender].pendingCandidates) {
+        peerConnections[sender].pendingCandidates = [];
+      }
+      peerConnections[sender].pendingCandidates.push(candidate);
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
