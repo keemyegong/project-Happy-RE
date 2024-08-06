@@ -81,12 +81,12 @@ const connectUsers = (userId, otherUserId) => {
           user.webRtcEndpoint = senderEndpoint;
           otherUser.webRtcEndpoint = receiverEndpoint;
 
-          senderEndpoint.on('iceCandidate', (event) => {
+          senderEndpoint.on('OnIceCandidate', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             otherUser.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: userId }));
           });
 
-          receiverEndpoint.on('iceCandidate', (event) => {
+          receiverEndpoint.on('OnIceCandidate', (event) => {
             const candidate = kurento.getComplexType('IceCandidate')(event.candidate);
             user.ws.send(JSON.stringify({ type: 'candidate', candidate, sender: otherUserId }));
           });
