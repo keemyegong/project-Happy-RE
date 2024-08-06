@@ -106,10 +106,160 @@
 
 .change-happyre-persona{
   width: 100%;
+  height: 200px;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .calender-container{
   width: 100%;
+}
+
+.happyre-persona-image{
+  width: 200px;
+}
+
+.persona-image-container{
+  position: relative;
+}
+
+.persona-change-button{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 5%;
+  right: 15%;
+  width: 40px;
+  height: 40px;
+  background-color: rgb(14,13,33);
+  border-radius: 100%;
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+.persona-change-button:hover{
+  background-color: rgb(33,33,53);
+}
+
+.material-symbols-outlined {
+  color: white;
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+
+
+.persona-chat-container {
+  font-size: 13px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.persona-chat {
+  background-color: #4B4E6D;
+  border-radius: 15px;
+  padding: 20px;
+  max-width: 100%;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.persona-chat::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: -10px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: #4B4E6D;
+  border-right: 0;
+  border-bottom: 0;
+  margin-top: 5px;
+  margin-left: -10px;
+  border-width: 15px;
+}
+
+.modal-backdrop {
+  z-index: 1040 !important;
+}
+
+.modal {
+  z-index: 1050 !important;
+}
+
+.modal-background{
+  background-color: #4B4E6D;
+}
+
+
+/* 모달 콘텐츠 스타일 조정 */
+.custom-modal .modal-content {
+  background-color: #282c34; /* 모달 배경 색상 */
+  color: white; /* 모달 텍스트 색상 */
+}
+
+
+.happyre-choice-preview{
+  width: 100%
+}
+
+.borderless{
+  border: none;
+}
+
+.show-modal{
+  z-index: 10000;
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.show-modal-backdrop{
+  z-index: 1040 !important;
+
+}
+
+.unshow-modal{
+  display: none;
+}
+
+.upside{
+  z-index: 10000;
+}
+
+.happyre-persona-change-container{
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-wrap: normal;
+  align-items: center;
+  min-width: 500px
+}
+
+.happyre-persona-icon-container{
+
+  padding: 20px;
+  cursor: pointer;
+  max-width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
 }
