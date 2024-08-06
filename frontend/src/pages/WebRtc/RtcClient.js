@@ -1,5 +1,3 @@
-// src/components/RtcClient.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
@@ -14,6 +12,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
+  const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
@@ -81,7 +80,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         client.send(JSON.stringify({
           type: 'connect',
           position,
-          characterImage: userImage
+          characterImage: userImage,
+          hasMoved
         }));
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
@@ -95,7 +95,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setUsers(prevUsers => [...prevUsers, newUser]);
         checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
-        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position } : user));
+        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved } : user));
         checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
@@ -120,7 +120,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } else {
       console.error('getUserMedia is not supported in this browser.');
     }
-  }, [position, userImage]);
+  }, [position, userImage, hasMoved]);
 
   useEffect(() => {
     if (clientId) {
@@ -131,9 +131,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
     currentUsers.forEach(user => {
-      if (user.id === undefined || clientId === null) return;
+      if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
-      if (distance <= 0.2) {
+      if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
           const peerConnection = createPeerConnection(user.id);
@@ -292,8 +292,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const movePosition = (dx, dy) => {
     const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
     setPosition(newPosition);
+    setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
 
