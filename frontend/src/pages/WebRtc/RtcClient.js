@@ -1,3 +1,5 @@
+// src/components/RtcClient.js
+
 import React, { useEffect, useState, useRef } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
