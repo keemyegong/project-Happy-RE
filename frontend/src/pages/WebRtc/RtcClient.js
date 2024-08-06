@@ -136,7 +136,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          const peerConnection = createPeerConnection(user.id);
+          const { peerConnection, pendingCandidates } = createPeerConnection(user.id);
+          peerConnections[user.id] = { peerConnection, pendingCandidates };
           peerConnection.createOffer()
             .then(offer => {
               peerConnection.setLocalDescription(offer)
@@ -151,7 +152,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
                 .catch(error => console.error('Error setting local description:', error));
             })
             .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user, pendingCandidates: [] };
+          peerConnections[user.id] = { peerConnection, user, pendingCandidates };
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
