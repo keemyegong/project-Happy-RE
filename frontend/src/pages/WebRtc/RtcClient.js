@@ -21,6 +21,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
+  const pendingCandidates = {}; // To store ICE candidates until the remote description is set
+
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
       client.close();
@@ -261,14 +263,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-  
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-  
+
     if (peerConnection.remoteDescription) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -276,10 +278,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      console.error('Remote description not set yet. ICE candidate cannot be added.');
+      if (!pendingCandidates[sender]) {
+        pendingCandidates[sender] = [];
+      }
+      pendingCandidates[sender].push(candidate);
     }
   };
-  
+
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
