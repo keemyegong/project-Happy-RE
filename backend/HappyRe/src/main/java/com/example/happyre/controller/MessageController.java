@@ -84,11 +84,7 @@ public class MessageController {
             UserEntity userEntity = userService.findByRequest(request);
             if (!userEntity.getId().equals(messageEntity.getDiaryEntity().getUserEntity().getId()))
                 ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한 없음(유저 불일치)");
-            messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
-            messageEntity.setSequence(messageEntityDTO.getSequence());
-            messageEntity.setContent(messageEntityDTO.getContent());
-            messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
-            return ResponseEntity.ok(messageService.update(messageEntity));
+            return ResponseEntity.ok(messageService.updateDTO(messageEntityDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 수정중 에러: " + e.getMessage());
         }

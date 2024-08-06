@@ -31,8 +31,8 @@ KOBERT_CHECKPOINT_Y = os.environ.get('KOBERT_CHECKPOINT_Y')
 print(KOBERT_CHECKPOINT_X)
 print(KOBERT_CHECKPOINT_Y)
 
-# kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
-# kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
+kobert_x = HappyreKoBert(KOBERT_CHECKPOINT_X)
+kobert_y = HappyreKoBert(KOBERT_CHECKPOINT_Y)
 
 # 현재 경로와 BASE_DIR 경로
 current_dir = os.path.dirname(os.path.abspath(__file__))

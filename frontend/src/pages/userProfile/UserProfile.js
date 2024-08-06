@@ -12,7 +12,24 @@ import { schemeCategory10 } from 'd3-scale-chromatic';
 import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 
+import artist from '../../assets/characters/art.png'
+import butler from '../../assets/characters/butler.png'
+import defaultPersona from '../../assets/characters/default.png'
+import soldier from '../../assets/characters/soldier.png'
+import steel from '../../assets/characters/steel.png'
+
+import { Modal } from 'react-bootstrap';
+
 const UserProfile =  ()=>{
+
+  const happyRelist = [defaultPersona, soldier, butler, steel, artist]
+  const happyReHello = [
+    "안녕하세요! 해피리에요!",
+    "대충 장군이 할 것 같은 말",
+    "대충 집사가 할 것 같은 말",
+    "대충 철학자가 할 것 같은 말",
+    "대충 셰익스피어같은 말"
+  ]
   const data = [
     { text: 'Hey', value: 15 },
     { text: 'lol', value: 25 },
@@ -34,11 +51,16 @@ const UserProfile =  ()=>{
   const [emotionData, setEmotionData] = useState([]); 
   const universal = useContext(universeVariable);
   let navigate = useNavigate ();
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   
   useEffect(()=>{
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
-
 
     axios.get(`${universal.defaultUrl}/api/user/me`,
       {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
@@ -46,6 +68,7 @@ const UserProfile =  ()=>{
       console.log(Response.data)
       setNickname(Response.data.name);
       setEmail(Response.data.email);
+      localStorage.setItem("personaNumber", Response.data.myfrog);
 
     }).then(()=>{
       axios.get(`${universal.defaultUrl}/api/user/profileimg`,
@@ -67,9 +90,31 @@ const UserProfile =  ()=>{
     })
   },[])
 
+  const showModal = ()=>{
+
+    setShow(show=='show-modal'?'unshow-modal':'show-modal');
+  }
+
+  const changePersona = (happyreNumber)=>{
+    localStorage.setItem("personaNumber", happyreNumber);
+    axios.put(
+      `${universal.defaultUrl}/api/user/me`,
+      {
+        myfrog:happyreNumber,
+      },
+      {
+        headers: {
+        Authorization : `Bearer ${Cookies.get('Authorization')}`
+      }})
+    setShow(show=='show-modal'?'unshow-modal':'show-modal');
+
+  }
+  
   const schemeCategory10ScaleOrdinal = scaleOrdinal(schemeCategory10);
 
   return(
+    <>
+
     <div className='container-fluid user-profile-container'>
       <div className='row' >
         <div className='col-12 col-md-4 col-xxl-2 '>
@@ -80,7 +125,7 @@ const UserProfile =  ()=>{
           <div className='default-info-container'>
             <p className='nickname'>{nickname}</p>
             <p className='email'>{email}</p>
-            <Button className='profile-edit-btn btn dark-btn small' content='Edit Profile' onClick={()=>{
+            <Button className='profile-edit-btn btn light-btn small' content='Edit Profile' onClick={()=>{
               navigate('/user/update')
             }} />
           </div>
@@ -101,12 +146,11 @@ const UserProfile =  ()=>{
               fontWeight="bold"
               fontSize={(word) => Math.log2(word.value) * 2.2}
               spiral="rectangular"
-              rotate={(word) => (word.value*100)% 360}
+              // rotate={(word) => (word.value*100)% 360}
               padding={5}
-              random={Math.random}
               fill={(d, i) => {
                 const rand = Math.floor(Math.random() * 10);
-                return `rgba(${rand*20},200,150,0.7)`
+                return `rgba(215,218,249,${1-rand*0.07})`
               }}
               
               />
@@ -116,7 +160,7 @@ const UserProfile =  ()=>{
 
               </div>
           </div>
-          <div className='col-12 col-xxl-6 '> 
+          <div className='col-12 col-xxl-6'> 
             <div className='profile-emotion-title text-white'>
               <p className='profile-emotion-title-text'>Emotion Graph</p>
             </div>
@@ -124,8 +168,22 @@ const UserProfile =  ()=>{
               <EmotionGraph data={emotionData} />
             </div>
 
-            <div className='change-happyre-persona'>
+            <div className='change-happyre-persona my-5'>
               {/* 해피리 페르소나 영역 */}
+              <div className='persona-chat-container '>
+                <div className='persona-chat '>
+                  {happyReHello[localStorage.getItem('personaNumber')]}
+                </div>
+              </div>
+              <div className='persona-image-container'>
+                <img className='happyre-persona-image' alt='해파리 페르소나' src={happyRelist[localStorage.getItem('personaNumber')]} />
+                <div className='persona-change-button' onClick={showModal}>
+                <span class="material-symbols-outlined">
+                edit
+                </span>
+                </div>
+                
+              </div>
             </div>
 
           </div>
@@ -134,6 +192,41 @@ const UserProfile =  ()=>{
         </div>  
       </div>
     </div>
+    
+    <div className={show}>
+      <div className='happyre-persona-change-container'>
+        <div className='row row-cols-2 row-cols-lg-3 justify-content-center'>
+          <div className='col'>
+            <div className='happyre-persona-icon-container' onClick={()=>{changePersona(0)}}>
+              <img src={happyRelist[0]} className='happyre-choice-preview' />
+            </div>
+          </div>
+          <div className='col'>
+            <div className='happyre-persona-icon-container' onClick={()=>{changePersona(1)}}>
+              <img src={happyRelist[1]} className='happyre-choice-preview' />
+            </div>
+          </div>
+          <div className='col'>
+            <div className='happyre-persona-icon-container' onClick={()=>{changePersona(2)}}>
+              <img src={happyRelist[2]} className='happyre-choice-preview' />
+            </div>
+          </div>
+          <div className='col'>
+            <div className='happyre-persona-icon-container' onClick={()=>{changePersona(3)}}>
+              <img src={happyRelist[3]} className='happyre-choice-preview' />
+            </div>
+          </div>
+          <div className='col'>
+            <div className='happyre-persona-icon-container' onClick={()=>{changePersona(4)}}>
+              <img src={happyRelist[4]} className='happyre-choice-preview' />
+            </div>
+          </div>
+
+        </div>
+        <Button className='btn light-btn small' content='Close' onClick={showModal} />
+      </div>
+    </div>
+    </>
   );
 
 }
