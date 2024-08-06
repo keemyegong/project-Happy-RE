@@ -14,7 +14,7 @@ public interface KeywordService {
 
     KeywordEntity insertDTO(KeywordEntityDTO keywordEntityDTO) throws Exception;
 
-    List<KeywordEntity> insertDTOList(List<KeywordEntityDTO> keywordEntityDTOList);
+    List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity,List<KeywordEntityDTO> keywordEntityDTOList);
 
     Optional<KeywordEntity> findById(int keywordId);
 

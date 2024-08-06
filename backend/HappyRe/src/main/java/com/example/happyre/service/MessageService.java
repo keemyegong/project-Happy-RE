@@ -4,6 +4,7 @@ import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.MessageEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,11 @@ public interface MessageService {
 
     MessageEntity updateDTO(MessageEntityDTO messageEntityDTO);
 
+    void updateArchive(int messageId, boolean archive);
+
     void delete(MessageEntity messageDTOEntity);
 
     void deleteDTO(MessageEntityDTO messageEntityDTO);
+
+    ArrayList<MessageEntity> insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList);
 }
