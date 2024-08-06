@@ -15,7 +15,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
+  const localAudioRefs = useRef({}); // 여러 오디오 요소를 관리하기 위해 객체 사용
   const containerRef = useRef(null);
   const coordinatesGraphRef = useRef(null);
 
@@ -125,9 +125,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(currentStream => {
           setStream(currentStream);
-          if (localAudioRef.current) {
-            localAudioRef.current.srcObject = currentStream;
-          }
         }).catch(error => {
           console.error('Error accessing media devices.', error);
         });
@@ -196,9 +193,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
+      if (!localAudioRefs.current[userId]) {
+        localAudioRefs.current[userId] = new Audio();
+        localAudioRefs.current[userId].autoplay = true;
       }
+      localAudioRefs.current[userId].srcObject = event.streams[0];
     };
 
     peerConnection.onconnectionstatechange = () => {
@@ -207,8 +206,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
+        if (localAudioRefs.current[userId]) {
+          localAudioRefs.current[userId].srcObject = null;
+          delete localAudioRefs.current[userId];
         }
       }
     };
@@ -339,7 +339,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               alt="your character"
               className="character-image your-character"
             />
-            <audio ref={localAudioRef} autoPlay />
             <div className="controls controls-up">
               <button onClick={() => movePosition(0, 0.025)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
