@@ -28,4 +28,5 @@ public interface KeywordService {
 
     void delete(KeywordEntity keywordEntity);
 
+    void updateArchive(int keywordId, boolean archive);
 }

@@ -18,7 +18,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [pendingCandidates, setPendingCandidates] = useState({});
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -137,23 +136,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          const { peerConnection, pendingCandidates } = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection, pendingCandidates };
-          peerConnection.createOffer()
-            .then(offer => {
-              peerConnection.setLocalDescription(offer)
-                .then(() => {
-                  client.send(JSON.stringify({
-                    type: 'offer',
-                    offer: offer.sdp,
-                    recipient: user.id,
-                    sender: clientId
-                  }));
-                })
-                .catch(error => console.error('Error setting local description:', error));
-            })
-            .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user, pendingCandidates };
+          const peerConnection = createPeerConnection(user.id);
+          peerConnections[user.id] = { peerConnection };
+          if (clientId < user.id) {
+            attemptOffer(peerConnection, user.id);
+          }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -171,7 +158,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       ]
     });
     console.log('WebRTC 연결 완료');
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -182,13 +169,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -198,114 +185,127 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
+        // ICE 후보 초기화
+        if (peerConnections[userId]) {
+          delete peerConnections[userId].pendingCandidates;
+        }
       }
     };
-  
+
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
-    return { peerConnection, pendingCandidates: [] };
-  };
-  
 
-  // handleOffer 함수 수정
-const handleOffer = async (offer, sender) => {
-  if (!sender) {
+    return peerConnection;
+  };
+
+  const attemptOffer = (peerConnection, recipientId) => {
+    peerConnection.createOffer()
+      .then(offer => {
+        peerConnection.setLocalDescription(offer)
+          .then(() => {
+            client.send(JSON.stringify({
+              type: 'offer',
+              offer: offer.sdp,
+              recipient: recipientId,
+              sender: clientId
+            }));
+          })
+          .catch(error => console.error('Error setting local description:', error));
+      })
+      .catch(error => console.error('Error creating offer:', error));
+  };
+
+  const handleOffer = async (offer, sender) => {
+    if (!sender) {
       console.error('No sender provided for offer');
       return;
-  }
+    }
 
-  if (!peerConnections[sender]) {
+    if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
-  }
+      peerConnections[sender] = { peerConnection };
+    }
 
-  const peerConnection = peerConnections[sender].peerConnection;
+    const peerConnection = peerConnections[sender].peerConnection;
 
-  try {
+    try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
       client.send(JSON.stringify({
-          type: 'answer',
-          answer: answer.sdp,
-          sender: clientId,
-          recipient: sender
+        type: 'answer',
+        answer: answer.sdp,
+        sender: clientId,
+        recipient: sender
       }));
 
-      // 대기 중인 ICE 후보 처리
-      if (pendingCandidates[sender]) {
-          pendingCandidates[sender].forEach(async candidate => {
-              await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          });
-          setPendingCandidates(prev => {
-              const newPending = { ...prev };
-              delete newPending[sender];
-              return newPending;
-          });
+      if (peerConnection.signalingState === 'have-remote-offer') {
+        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       }
 
-  } catch (error) {
+    } catch (error) {
       console.error('Error handling offer:', error);
-  }
-};
-  
+    }
+  };
 
-const handleAnswer = async (answer, sender) => {
-  if (!sender) {
+  const handleAnswer = async (answer, sender) => {
+    if (!sender) {
       console.error('No sender provided for answer');
       return;
-  }
-
-  const connection = peerConnections[sender];
-  if (!connection) {
-      console.error(`No peer connection found for sender ${sender}`);
-      return;
-  }
-  const peerConnection = connection.peerConnection;
-
-  if (peerConnection.signalingState !== 'have-local-offer') {
-      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
-      return;
-  }
-
-  await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-};
-
-  const handleCandidate = async (candidate, sender) => {
-    if (!sender) {
-        console.error('No sender provided for candidate');
-        return;
     }
 
     const connection = peerConnections[sender];
     if (!connection) {
-        console.error(`No peer connection found for sender ${sender}`);
-        return;
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
+    }
+    const peerConnection = connection.peerConnection;
+
+    if (peerConnection.signalingState !== 'have-local-offer') {
+      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+      return;
+    }
+
+    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+
+    // Add pending ICE candidates if any
+    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+    for (const candidate of pendingCandidates) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+    peerConnections[sender].pendingCandidates = [];
+  };
+
+  const handleCandidate = async (candidate, sender) => {
+    if (!sender) {
+      console.error('No sender provided for candidate');
+      return;
+    }
+
+    const connection = peerConnections[sender];
+    if (!connection) {
+      console.error(`No peer connection found for sender ${sender}`);
+      return;
     }
     const peerConnection = connection.peerConnection;
 
     if (peerConnection.remoteDescription) {
-        try {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        } catch (error) {
-            console.error('Error adding ICE candidate:', error);
-        }
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (error) {
+        console.error('Error adding ICE candidate:', error);
+      }
     } else {
-        // 대기 중인 ICE 후보 저장
-        setPendingCandidates(prev => {
-            const newPending = { ...prev };
-            if (!newPending[sender]) {
-                newPending[sender] = [];
-            }
-            newPending[sender].push(candidate);
-            return newPending;
-        });
-        console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
+      // Save pending ICE candidates
+      if (!peerConnections[sender].pendingCandidates) {
+        peerConnections[sender].pendingCandidates = [];
+      }
+      peerConnections[sender].pendingCandidates.push(candidate);
+      console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
-};
+  };
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {

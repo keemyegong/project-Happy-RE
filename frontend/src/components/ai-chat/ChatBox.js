@@ -1,47 +1,43 @@
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
-import { universeVariable } from '../../App';
+import React, { useEffect, useState, useContext} from 'react';
 import './ChatBox.css';
 import Button from '../Button/Button';
 import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, toggleMic, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled }) => {
+const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession }) => {
   const ChatType = 1;
-  const universal = useContext(universeVariable);
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
 
   const getChatData = (type) => {
     switch (type) {
       case 1:
         return {
-          imageSrc: require(`../../assets/characters/default.png`),
+          imageSrc: require('../../assets/characters/default.png'),
           titleName: '해피리',
           titleType: '기본 해파리'
         };
       case 2:
         return {
-          imageSrc: require(`../../assets/characters/art.png`),
+          imageSrc: require('../../assets/characters/art.png'),
           titleName: '셰익스피어',
           titleType: '셰익스피어 해파리'
         };
       case 3:
         return {
-          imageSrc: require(`../../assets/characters/butler.png`),
+          imageSrc: require('../../assets/characters/butler.png'),
           titleName: '집사',
           titleType: '집사 해파리'
         };
       case 4:
         return {
-          imageSrc: require(`../../assets/characters/soldier.png`),
+          imageSrc: require('../../assets/characters/soldier.png'),
           titleName: '장군',
           titleType: '장군 해파리'
         };
       case 5:
         return {
-          imageSrc: require(`../../assets/characters/steel.png`),
+          imageSrc: require('../../assets/characters/steel.png'),
           titleName: '철학자',
           titleType: '철학자 해파리'
         };
@@ -51,47 +47,6 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, toggleMic,
   };
 
   const chatData = getChatData(ChatType);
-
-  const handleQuit = async () => {
-    try {
-      // 채팅 로그 스프링 저장 요청
-      await axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {
-        chatHistory,
-      }, {
-        headers: {
-          Authorization: `Bearer ${Cookies.get('Authorization')}`,
-          withCredentials: true,
-          persona: 2,
-        }
-      });
-
-      // 다이어리 요약 전송 및 세션 삭제 요청
-      await axios.delete(`${universal.fastUrl}/fastapi/chatbot/`, {
-        headers: {
-          Authorization: `Bearer ${Cookies.get('Authorization')}`,
-          withCredentials: true,
-          persona: 2,
-        }
-      });
-
-      // 로컬 오디오 파일 s3 업로드 요청
-      await axios.post(`${universal.fastUrl}/fastapi/api/s3_upload`, {
-        // 필요한 데이터 추가
-      }, {
-        headers: {
-          Authorization: `Bearer ${Cookies.get('Authorization')}`,
-          withCredentials: true,
-          persona: 2,
-        }
-      });
-
-      // 모달을 보여주기
-      setShowModal(true);
-
-    } catch (error) {
-      console.error("Error during quit process: ", error);
-    }
-  };
 
   return (
     <div className='container chat-box-container'>
@@ -103,7 +58,7 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, toggleMic,
           <p className='chat-title-name'>{chatData.titleName}</p>
           <p className='chat-title-type'>{chatData.titleType}</p>
         </div>
-        <div className='col-3 chat-quit' onClick={handleQuit}>
+        <div className='col-3 chat-quit' onClick={endChatSession}>
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
@@ -137,7 +92,7 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, toggleMic,
         <hr className="chat-box-title-border border-light border-1" />
         <div className='row chat-box-footer'>
           <div className='col-10 p-0 position-relative'>
-            <input
+          <input
               type="text"
               className={`chat-box-footer-input form-control ${!isMicMuted ? 'recording' : ''}`}
               value={isMicMuted ? userInput : 'Recording now......'}
