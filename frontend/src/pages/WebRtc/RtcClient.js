@@ -20,7 +20,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
+  const streamRef = useRef(null);
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null); // 추가된 부분
 
@@ -200,8 +200,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
+      if (streamRef.current) {
+        // streamRef에 스트림 추가
+        streamRef.current.srcObject = event.streams[0];
       }
     };
 
@@ -362,7 +363,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         localAudioRef={localAudioRef} 
         userImage={userImage} 
       />
-      <AudioEffect audioRef={localAudioRef} /> {/* 추가된 부분 */}
+      <AudioEffect stream={streamRef.current?.srcObject} />
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = ({ audioRef }) => {
+const AudioEffect = ({ stream }) => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -9,15 +9,19 @@ const AudioEffect = ({ audioRef }) => {
   const bufferLengthRef = useRef(null);
 
   useEffect(() => {
+    if (!stream) return;
+
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
     bufferLengthRef.current = analyser.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
-
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
       analyser.getByteTimeDomainData(dataArrayRef.current);
@@ -51,20 +55,13 @@ const AudioEffect = ({ audioRef }) => {
 
     drawWaveform();
 
-    if (audioRef.current) {
-      const source = audioContext.createMediaStreamSource(audioRef.current.srcObject);
-      source.connect(analyser);
-    }
-
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
 
     return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
+      audioContext.close();
     };
-  }, [audioRef]);
+  }, [stream]);
 
   useEffect(() => {
     const handleResize = () => {
