@@ -345,28 +345,32 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for answer');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.signalingState !== 'have-local-offer') {
       console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       return;
     }
-
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-
-    // Add pending ICE candidates if any
-    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
-    for (const candidate of pendingCandidates) {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  
+    try {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+      // Add pending ICE candidates if any
+      const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+      for (const candidate of pendingCandidates) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+      peerConnections[sender].pendingCandidates = [];
+    } catch (error) {
+      console.error('Error handling answer:', error);
     }
-    peerConnections[sender].pendingCandidates = [];
   };
+  
 
   const handleCandidate = async (candidate, sender) => {
     if (!sender) {
