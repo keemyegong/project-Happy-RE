@@ -24,12 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
-
-import java.util.ArrayList;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Diary")
@@ -82,6 +77,61 @@ public class DiaryController {
                     .body("Diary 가져오는중 에러: " + e.getMessage());
         }
     }
+
+    @GetMapping("/detail/")
+    public ResponseEntity<?> getDiaryDetail(HttpServletRequest request,
+                                            @RequestParam(required = false) Integer diaryid) {
+        try {
+            DiaryEntity diaryEntity;
+            if (diaryid != null) {
+                Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryid);
+                if (optionalDiary.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+                }
+
+                diaryEntity = optionalDiary.get();
+            } else {
+                //없으면 오늘자로 검색
+                UserEntity userEntity = userService.findByRequest(request);
+                List<DiaryEntity> list = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+                diaryEntity = list.get(list.size() - 1);
+            }
+            List<MessageEntity> byDiaryEntityMessage = messageService.findByDiaryEntity(diaryEntity);
+            List<KeywordEntity> byDiaryEntityKeyword = keywordService.findByDiaryEntity(diaryEntity);
+
+            DiaryDetailResponseDTO res = new DiaryDetailResponseDTO(byDiaryEntityMessage, byDiaryEntityKeyword);
+            return ResponseEntity.ok(res);
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 가져오는중 에러: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getMyDiaries(HttpServletRequest request,
+                                          @RequestParam(required = false) Integer year,
+                                          @RequestParam(required = false) Integer month,
+                                          @RequestParam(required = false) Integer day,
+                                          @RequestParam(required = false) Integer period) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            List<DiaryEntity> diaries;
+            if (year != null && month != null && day != null) {
+                Date date = Date.valueOf(LocalDate.of(year, month, day));
+                diaries = diaryService.searchForWeek(userEntity, date, period);
+            } else {
+                diaries = diaryService.findByUserEntity(userEntity);
+
+            }
+            return ResponseEntity.ok(diaries);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 가져오는중 에러: " + e.getMessage());
+        }
+    }
+
     @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
     @PutMapping("/updatesummary")
     public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestBody DiarySummaryDTO diarySummaryDTO) {
@@ -106,62 +156,6 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Diary Summary 편집중 에러: " + e.getMessage());
-        }
-    }
-
-
-
-    @GetMapping("/detail/")
-    public ResponseEntity<?> getDiaryDetail(HttpServletRequest request,
-                                      @RequestParam(required = false) Integer diaryid) {
-        try {
-            DiaryEntity diaryEntity;
-            if (diaryid != null) {
-                Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryid);
-                if (optionalDiary.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
-                }
-
-                diaryEntity = optionalDiary.get();
-            }else{
-                //없으면 오늘자로 검색
-                UserEntity userEntity = userService.findByRequest(request);
-                List<DiaryEntity> list = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
-                diaryEntity = list.get(list.size() - 1);
-            }
-            List<MessageEntity> byDiaryEntityMessage = messageService.findByDiaryEntity(diaryEntity);
-            List<KeywordEntity> byDiaryEntityKeword = keywordService.findByDiaryEntity(diaryEntity);
-
-            DiaryDetailResponseDTO respon = new DiaryDetailResponseDTO(byDiaryEntityMessage, byDiaryEntityKeword);
-            return ResponseEntity.ok(respon);
-        } catch (AccessDeniedException ade) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Diary 가져오는중 에러: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/")
-    public ResponseEntity<?> getMyDiaries(HttpServletRequest request,
-                                          @RequestParam(required = false) Integer year ,
-                                          @RequestParam(required = false) Integer month,
-                                          @RequestParam(required = false) Integer day,
-                                          @RequestParam(required = false) Integer period ){
-        try {
-            UserEntity userEntity = userService.findByRequest(request);
-            List<DiaryEntity> diaries;
-            if(year != null && month != null && day!= null){
-                Date date = Date.valueOf(LocalDate.of(year, month, day));
-                diaries = diaryService.searchForWeek(userEntity, date, period);
-            }else{
-                diaries = diaryService.findByUserEntity(userEntity);
-
-            }
-            return ResponseEntity.ok(diaries);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Diary 가져오는중 에러: " + e.getMessage());
         }
     }
 

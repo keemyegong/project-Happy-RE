@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -115,7 +114,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<KeywordEntity> getMyKeywords(UserEntity userEntity) {
-        List<DiaryEntity> diaryEntityList =  diaryService.findByUserEntity(userEntity);
+        List<DiaryEntity> diaryEntityList = diaryService.findByUserEntity(userEntity);
         List<KeywordEntity> keywordEntityList = keywordRepository.findByDiaryEntities(diaryEntityList);
 
 

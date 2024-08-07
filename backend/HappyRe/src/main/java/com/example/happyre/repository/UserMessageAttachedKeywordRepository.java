@@ -1,6 +1,5 @@
 package com.example.happyre.repository;
 
-import com.example.happyre.entity.UserMessageArchivedEntity;
 import com.example.happyre.entity.UserMessageAttachedKeywordEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
