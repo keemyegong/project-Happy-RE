@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
+import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -22,7 +22,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
-  const audioEffectRef = useRef(null); // 추가된 부분
+  const audioEffectRef = useRef(null);
 
   useEffect(() => {
     positionRef.current = position;
@@ -245,7 +245,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               audioEffectRef.current.addStream(userId, event.streams[0]);
           }
       }
-  };
+    };
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
