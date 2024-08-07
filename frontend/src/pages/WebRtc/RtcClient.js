@@ -18,7 +18,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [pendingCandidates, setPendingCandidates] = useState({});
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -43,16 +42,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.025);
+        movePosition(0, 0.025, true);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.025);
+        movePosition(0, -0.025, true);
         break;
       case 'ArrowLeft':
-        movePosition(-0.025, 0);
+        movePosition(-0.025, 0, true);
         break;
       case 'ArrowRight':
-        movePosition(0.025, 0);
+        movePosition(0.025, 0, true);
         break;
       default:
         break;
@@ -108,6 +107,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleRtcDisconnect(dataFromServer.id);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
+      } else if (dataFromServer.type === 'update') {
+        setUsers(dataFromServer.clients);
       }
     };
 
@@ -137,23 +138,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
         if (!peerConnections[user.id]) {
-          const { peerConnection, pendingCandidates } = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection, pendingCandidates };
-          peerConnection.createOffer()
-            .then(offer => {
-              peerConnection.setLocalDescription(offer)
-                .then(() => {
-                  client.send(JSON.stringify({
-                    type: 'offer',
-                    offer: offer.sdp,
-                    recipient: user.id,
-                    sender: clientId
-                  }));
-                })
-                .catch(error => console.error('Error setting local description:', error));
-            })
-            .catch(error => console.error('Error creating offer:', error));
-          peerConnections[user.id] = { peerConnection, user, pendingCandidates };
+          const peerConnection = createPeerConnection(user.id);
+          peerConnections[user.id] = { peerConnection };
+          if (clientId < user.id) {
+            attemptOffer(peerConnection, user.id);
+          }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
@@ -198,6 +187,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
+        // ICE 후보 초기화
+        if (peerConnections[userId]) {
+          delete peerConnections[userId].pendingCandidates;
+        }
       }
     };
 
@@ -205,7 +198,24 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
 
-    return { peerConnection, pendingCandidates: [] };
+    return peerConnection;
+  };
+
+  const attemptOffer = (peerConnection, recipientId) => {
+    peerConnection.createOffer()
+      .then(offer => {
+        peerConnection.setLocalDescription(offer)
+          .then(() => {
+            client.send(JSON.stringify({
+              type: 'offer',
+              offer: offer.sdp,
+              recipient: recipientId,
+              sender: clientId
+            }));
+          })
+          .catch(error => console.error('Error setting local description:', error));
+      })
+      .catch(error => console.error('Error creating offer:', error));
   };
 
   const handleOffer = async (offer, sender) => {
@@ -216,7 +226,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection, user: users.find(user => user.id === sender) };
+      peerConnections[sender] = { peerConnection };
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
@@ -233,15 +243,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         recipient: sender
       }));
 
-      if (pendingCandidates[sender]) {
-        pendingCandidates[sender].forEach(async candidate => {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-        setPendingCandidates(prev => {
-          const newPending = { ...prev };
-          delete newPending[sender];
-          return newPending;
-        });
+      if (peerConnection.signalingState === 'have-remote-offer') {
+        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       }
 
     } catch (error) {
@@ -268,6 +271,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+
+    // Add pending ICE candidates if any
+    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+    for (const candidate of pendingCandidates) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+    peerConnections[sender].pendingCandidates = [];
   };
 
   const handleCandidate = async (candidate, sender) => {
@@ -290,14 +300,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      setPendingCandidates(prev => {
-        const newPending = { ...prev };
-        if (!newPending[sender]) {
-          newPending[sender] = [];
-        }
-        newPending[sender].push(candidate);
-        return newPending;
-      });
+      // Save pending ICE candidates
+      if (!peerConnections[sender].pendingCandidates) {
+        peerConnections[sender].pendingCandidates = [];
+      }
+      peerConnections[sender].pendingCandidates.push(candidate);
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
@@ -311,8 +318,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  const movePosition = (dx, dy) => {
-    const newPosition = { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
+  const movePosition = (dx, dy, isKeyboard = false) => {
+    const newPosition = isKeyboard
+      ? { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId }
+      : { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
+    console.log(newPosition)
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {

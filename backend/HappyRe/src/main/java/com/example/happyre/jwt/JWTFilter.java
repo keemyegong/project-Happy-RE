@@ -87,8 +87,8 @@ public class JWTFilter extends OncePerRequestFilter {
         }
         System.out.println("Now Token : " + token);
         //토큰 소멸 시간 검증
-        if(token == null){
-            filterChain.doFilter(request,response);
+        if (token == null) {
+            filterChain.doFilter(request, response);
             return;
         }
         if (jwtUtil.isExpired(token)) {

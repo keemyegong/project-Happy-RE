@@ -89,9 +89,10 @@ const AppContent = (setHappyreNumber) => {
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const [happyreNumber, setHappyreNumber] = useState(1);
-
+  const [isOverlayVisible, setOverlayVisible] = useState(false);
+  const toggleOverlay = () => {
+    setOverlayVisible(!isOverlayVisible);
+  };
   return (
     <universeVariable.Provider
       value={{
@@ -100,11 +101,11 @@ const App = () => {
         // fastUrl: 'http://192.168.31.229:8000',
         isAuthenticated,
         setIsAuthenticated,
-        
+        toggleOverlay,
       }}
     >
       <Router>
-        <AppContent setHappyreNumber={setHappyreNumber} />
+        <AppContent/>
       </Router>
     </universeVariable.Provider>
   );

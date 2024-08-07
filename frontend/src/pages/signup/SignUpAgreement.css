@@ -34,6 +34,7 @@
 }
 
 .custom-checkbox{
+  max-width: 20px !important;
   border: 1px solid #8f90b9;
   background-color: #000000;
 }

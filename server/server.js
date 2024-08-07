@@ -16,7 +16,8 @@ let users = {};
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
-  ws.send(JSON.stringify({ type: 'assign_id', id: userId }));
+  const userInfo = { id: userId, connectedAt: Date.now() };
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -27,14 +28,16 @@ wss.on('connection', (ws) => {
           ws,
           position: data.position,
           characterImage: data.characterImage,
-          hasMoved: data.hasMoved
+          hasMoved: data.hasMoved,
+          connectedAt: userInfo.connectedAt
         };
 
         const allUsers = Object.keys(users).map(id => ({
           id,
           position: users[id].position,
           characterImage: users[id].characterImage,
-          hasMoved: users[id].hasMoved
+          hasMoved: users[id].hasMoved,
+          connectedAt: users[id].connectedAt
         }));
 
         Object.keys(users).forEach(id => {
@@ -78,7 +81,8 @@ wss.on('connection', (ws) => {
             id: cId,
             position: users[cId].position,
             characterImage: users[cId].characterImage,
-            hasMoved: users[cId].hasMoved
+            hasMoved: users[cId].hasMoved,
+            connectedAt: users[cId].connectedAt
           })).filter(user => user.id !== id);
 
           users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
@@ -98,7 +102,8 @@ wss.on('connection', (ws) => {
         id: cId,
         position: users[cId].position,
         characterImage: users[cId].characterImage,
-        hasMoved: users[cId].hasMoved
+        hasMoved: users[cId].hasMoved,
+        connectedAt: users[cId].connectedAt
       })).filter(user => user.id !== id);
 
       users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
