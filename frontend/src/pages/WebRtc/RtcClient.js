@@ -302,8 +302,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const movePosition = (dx, dy, isKeyboard = false) => {
     const newPosition = isKeyboard
-      ? { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId }
-      : { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId };
+      ? { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId }
+      : { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId };
     console.log(newPosition)
     setPosition(newPosition);
     setHasMoved(true);
@@ -311,6 +311,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
+  
 
   const handleKeyDown = (event) => {
     switch (event.key) {
