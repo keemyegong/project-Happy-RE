@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = forwardRef((props, ref) => {
+const AudioEffect = () => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -17,13 +17,11 @@ const AudioEffect = forwardRef((props, ref) => {
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
       analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
 
-      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
@@ -50,12 +48,9 @@ const AudioEffect = forwardRef((props, ref) => {
     };
 
     drawWaveform();
-  }, []);
 
-  useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
-      const canvas = canvasRef.current;
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight / 5;
     };
@@ -68,15 +63,19 @@ const AudioEffect = forwardRef((props, ref) => {
     };
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    addMediaElement: (element) => {
-      const source = audioContextRef.current.createMediaElementSource(element);
-      source.connect(analyserRef.current);
-      source.connect(audioContextRef.current.destination); // 연결된 오디오를 스피커로 출력
+  useEffect(() => {
+    const audioContext = audioContextRef.current;
+    const analyser = analyserRef.current;
+
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      const source = audioContext.createMediaElementSource(audioElement);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
     }
-  }));
+  }, []);
 
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
-});
+};
 
 export default AudioEffect;
