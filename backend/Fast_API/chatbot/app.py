@@ -94,46 +94,6 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     print(f"Message session update End")
     
 # ----------------------------------라우팅 함수--------------------------------------------
-    
-# Get 요청 테스트 용 함수
-@router.get('/message_test')
-async def test(user_id:str=Depends(decode_jwt)):
-    
-    user_message[user_id] = [
-        {
-            "content":"어제 비를 맞아서 기분이 개같아",
-            "speaker":"user",
-            "audioKey":"test1.wav"
-        },
-        {
-            "content":"괜찮나요?",
-            "speaker":"ai",
-            "audioKey":"test2.wav"
-        },
-        {
-            "content":"그래도 로또 맞아서 괜찮음",
-            "speaker":"user",
-            "audioKey":"test3.wav"
-        },
-        {
-            "content":"다행이네요",
-            "speaker":"ai",
-            "audioKey":"test4.wav"
-        },
-    ]
-    
-    user_emotion_russel[user_id] = {
-        "어제 비를 맞아서 기분이 개같아":(-1,0.5),
-    }
-    
-    return user_message
-
-# post 요청 테스트 용 함수
-@router.post('/test')
-async def post_test(request:Request):
-    return request.headers
-
-# ---------------------------------------------------여기까지 테스트 함수 -------------------------------------------------
 
 # POST 요청으로 chabot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
@@ -174,8 +134,7 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     print("---------------------------------------")
     print(f"user session: {user_session}")
     print("---------------------------------------")
-    
-    pprint(f"message_session: {user_message}")
+    pprint(f"user message: {user_message}")
     
     content = {
         "content":response,
@@ -207,8 +166,8 @@ async def post_message_request(request:Request):
                 continue
             elif data["speaker"] == "user":
                 if data["content"] in russel_coord:
-                    data["russelX"] = russel_coord[data["content"]][0]
-                    data["russelY"] = russel_coord[data["content"]][1]
+                    data["russelX"], data["russelY"] = russel_coord[data["content"]]
+                    
                 else:
                     data["russelX"] = None
                     data["russelY"] = None
@@ -231,19 +190,11 @@ async def post_message_request(request:Request):
             print(f"Message Sending Error : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
         
-        # try:
-        #     response = summary_instance.generateResponse(message_item)
-        #     return response
-        # except Exception as e:
-        #     print("밤이 깊었네")
-        #     raise HTTPException(status_code=500, detail=str(e))
-            
     except Exception as e:
         print(f"Message Posting Error : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     print("----------------------------------------------------메시지 포스트 완료 -------------------------------------------")
-    #
-    # del user_message[user_id]
+    
     return user_message
 # 세션에서 삭제
 @router.delete('/')
@@ -314,10 +265,3 @@ async def session_delete(request:Request):
     except Exception as e:
         print(f"Error While Summary Posting: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-    
-    # print(user_emotion_russel)
-    # print(user_session)
-    # return uuid_dict
-    
-    # return JSONResponse(content=response,status_code=200)

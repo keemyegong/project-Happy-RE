@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
+import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -22,7 +22,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
-  const audioEffectRef = useRef(null); // 추가된 부분
+  const audioEffectRef = useRef(null);
 
   useEffect(() => {
     positionRef.current = position;
@@ -37,14 +37,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     window.addEventListener('beforeunload', () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
       client.close();
+      cleanupConnections();
     });
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      client.close();
     };
   }, []);
+
+  const cleanupConnections = () => {
+    Object.keys(peerConnections).forEach(userId => {
+      peerConnections[userId].peerConnection.close();
+      delete peerConnections[userId];
+      if (audioEffectRef.current) {
+        audioEffectRef.current.removeStream(userId);
+      }
+    });
+  };
 
   const movePosition = (dx, dy) => {
     const newPosition = { 
@@ -107,7 +119,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -134,7 +146,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         })));
       }
     };
@@ -198,6 +210,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(user.id);
+        }
         console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
