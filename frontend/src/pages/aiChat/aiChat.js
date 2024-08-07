@@ -66,6 +66,7 @@ const AIChat = () => {
   }
   const endChatSession = () => {
     // 1. 채팅 로그 스프링 저장 요청
+    
     axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`,
