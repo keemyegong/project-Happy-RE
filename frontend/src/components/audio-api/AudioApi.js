@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = React.forwardRef((props, ref) => {
+const AudioEffect = forwardRef((props, ref) => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -24,8 +24,8 @@ const AudioEffect = React.forwardRef((props, ref) => {
       requestAnimationFrame(drawWaveform);
       analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
 
-      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'; // 이전 프레임 제거
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스 초기화
+      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
       canvasCtx.beginPath();
@@ -53,7 +53,7 @@ const AudioEffect = React.forwardRef((props, ref) => {
     drawWaveform();
   }, []);
 
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     addStream: (userId, stream) => {
       if (!streams.current[userId]) {
         const source = audioContextRef.current.createMediaStreamSource(stream);
@@ -65,6 +65,17 @@ const AudioEffect = React.forwardRef((props, ref) => {
       if (streams.current[userId]) {
         streams.current[userId].disconnect(analyserRef.current);
         delete streams.current[userId];
+      }
+      if (Object.keys(streams.current).length === 0) {
+        // Reset the analyser if no streams are left
+        analyserRef.current.disconnect();
+        audioContextRef.current.close().then(() => {
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+          analyserRef.current = audioContextRef.current.createAnalyser();
+          analyserRef.current.fftSize = 2048;
+          bufferLengthRef.current = analyserRef.current.frequencyBinCount;
+          dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
+        });
       }
     }
   }));
