@@ -63,6 +63,7 @@ async def emotion_tagging(user_id: str, text: str):
         "text": "(0,0)"
     }
     '''
+    print("Emotion tagging start")
     trigger = False
     
     russel_coord = await emotion_analysis(text)
@@ -74,21 +75,15 @@ async def emotion_tagging(user_id: str, text: str):
         trigger = True
         
     user_emotion_russel[user_id][text] = russel_coord
-    
+    print("Emotion tagging End")
     return trigger
-    
-    # user_emotion_russel[user_id].append(tagged_coord)
-    
-    # print(f"AI test : {user_emotion_russel[user_id][text]}")
-    # print(f"user_emotion_russel: {user_emotion_russel}")
-    # print("---------------------------------------")
-    
 
 
 def message_session_update(user_id:str, text:str, speaker:str, audio:str="None"):
     '''
     유저의 메세지 세션에 유저의 대화와 챗봇의 대화를 업데이트
     '''
+    print("Message session update start")
     if user_id not in user_message:
         user_message[user_id] = []
     user_message[user_id].append({
@@ -96,6 +91,7 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
         "speaker":speaker,
         "audioKey":audio
     })
+    print(f"Message session update End")
     
 # ----------------------------------라우팅 함수--------------------------------------------
     
@@ -148,18 +144,15 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     들어온 텍스트를 OpenAI에 보내고 유저 메세지 세션 업데이트
     응답온 텍스트를 메세지 세션에 업데이트하고 반환
     '''
-    # print('post 요청')
+    print("Chatbot Post Start")
     
     # front에서 header에 담긴 페르소나 정보 받기
     persona_number = int(requestforP.headers["persona"])
-    print(persona_number)
     # persona_number = 2
     
     if user_id not in user_session:
         # Chatbot 생성시에 persona를 선택
         user_session[user_id] = Chatbot(api_key=api_key,persona=personas[persona_number])
-    
-    print(user_id)
         
     api_instance = user_session[user_id]
     user_input = request.user_input
@@ -172,10 +165,7 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     
     
     response = api_instance.generateResponse(user_input)
-    # json_item_data = jsonable_encoder(response)
-    
-    # message_session_update(user_id, json_item_data, "ai", None)
-    
+
     trigger = False
     if request.request == "user":
         trigger = await emotion_tagging(user_id, user_input)
@@ -191,7 +181,7 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
         "content":response,
         "trigger":trigger
     }
-    
+    print("Chatbot Post End")
     return JSONResponse(content=content, status_code=200)
 
 # spring 메세지 저장 요청 함수
@@ -201,13 +191,13 @@ async def post_message_request(request:Request):
     Spring 서버로 메세지 세션 저장 요청
     
     '''
-    print("메세지 포스트 시작")
+    print("--------------------------------------------------메세지 포스트 시작--------------------------------------------------------------")
+    print(f"{SPRING_MESSAGE_POST_URL}")
     
     header = request.headers
-    print(f"여기서 들어온 헤더 : {header}")
     token = header["authorization"].split(" ")[-1]
     user_id = decode_jwt(token)
-    print("됨?")
+    message_item = []
     try:
         for idx, data in enumerate(user_message[user_id]):
             data = user_message[user_id][idx]
@@ -225,25 +215,20 @@ async def post_message_request(request:Request):
             else:
                 data["russelX"] = None
                 data["russelY"] = None
-        print("여기서 빠진거임?")
-        message_item = user_message[user_id]
+            message_item.append(data)
+        print("메세지 만들기 완료")
         try:
-            print("////////////////////////////////")
             new_headers = {
                 "authorization": header["authorization"],
                 "content-type": "application/json"
             }
             async with httpx.AsyncClient() as client:
-                print("메시지 전송 시작")
-                print(f"SPRING_MESSAGE_POST_URL : {SPRING_MESSAGE_POST_URL}")
-                print(f"message_item : \n {message_item}")
                 response = await client.post(SPRING_MESSAGE_POST_URL, json=message_item, headers=new_headers)
                 print(f"response : {response}")
                 if response.status_code != 200:
-                    print(f"뭔가 오류남 : {response.json()}")
                     raise HTTPException(status_code=500, detail=f"Error: {response.text}")
         except Exception as e:
-            print(str(e))
+            print(f"Message Sending Error : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
         
         # try:
@@ -254,16 +239,16 @@ async def post_message_request(request:Request):
         #     raise HTTPException(status_code=500, detail=str(e))
             
     except Exception as e:
+        print(f"Message Posting Error : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+    print("----------------------------------------------------메시지 포스트 완료 -------------------------------------------")
     #
     # del user_message[user_id]
-    print("유저 섹션 삭제")
     return user_message
 # 세션에서 삭제
 @router.delete('/')
 async def session_delete(request:Request):
-    
+    print("# ------------------------------------------------섹션 삭제 시작 --------------------------------------------------")
     header = request.headers["authorization"]
     user_id = decode_jwt(header.split(" ")[-1])
     
@@ -276,51 +261,60 @@ async def session_delete(request:Request):
     prompt = '지금까지의 대화에서 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 리스트 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
     
     response = chatbot_instance.generateResponse(prompt)
-    print(f"response : \n {response}")
-    print(f"user_emotion_russel : \n {user_emotion_russel}")
-    print(f"spring_url : {SPRING_KEYWORD_SUMMARY_URL}")
+    print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")
+    
     try:
         result = json.loads(response.strip())
         file = response.replace("`", "").strip()
         temp = file.replace("json","").strip()
         result = json.loads(temp)
         
+        summary_list = []
         for idx, data in enumerate(result):
-            data["russelX"] = user_emotion_russel[user_id][data["message"]][0]
-            data["russelY"] = user_emotion_russel[user_id][data["message"]][1]
+            print(f"data : \n {data}")
+            print(f"user emotion russel : \n {user_emotion_russel[user_id]}")
+            if data["message"] not in user_emotion_russel[user_id]:
+                continue
+            data["russelX"], data["russelY"] = user_emotion_russel[user_id][data["message"]]
             data["sequence"] = idx+1
+
             del data["message"]
-        
-        print(f"result : \n {result}")
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=result, headers=new_header)
-                print(f"returned response : {response}")
-                
-                if user_id in user_session:
-                    del user_session[user_id]
-                    print('삭제됨')
-    
-                if user_id in user_emotion_russel:
-                    del user_emotion_russel[user_id]
-                    print('user_emotion_russel deleted')
-                    
-                return {"content":response.status_code}
-        except Exception as e:
-            print(f"Error : {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
-        
+            summary_list.append(data)
+            print(f"data after russel: \n {data}")
+        print(f"Summary List : {summary_list}")
     except Exception as e:
-        print("에러 떳음메")
-        print(f"Another Error : {str(e)}")
-        return HTTPException(status_code=500, detail=str(e))
-    if user_id in user_session:
-        del user_session[user_id]
-        print('삭제됨')
-    
-    if user_id in user_emotion_russel:
-        del user_emotion_russel[user_id]
-        print('user_emotion_russel deleted')
+            print(f"Error while summarize : {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
+            print(f"returned response : {response}")
+            
+            if user_id in user_session:
+                del user_session[user_id]
+                print('User Session Deleted')
+
+            if user_id in user_emotion_russel:
+                del user_emotion_russel[user_id]
+                print('User Emotion Russel Deleted')
+                
+            if user_id in user_message:
+                del user_message[user_id]
+                print("User Message Deleted")
+            print(f'''
+                    삭제 확인
+                    User Session : {user_session}
+                    ----------------------------------------
+                    User Emotion Russel : {user_emotion_russel}
+                    ---------------------------------------
+                    User Message : {user_message}
+                ''')
+            print("------------------------------------------------ 섹션 삭제 완료 ----------------------------------------")
+            return {"content":response.status_code}
+    except Exception as e:
+        print(f"Error While Summary Posting: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
     
     # print(user_emotion_russel)
     # print(user_session)

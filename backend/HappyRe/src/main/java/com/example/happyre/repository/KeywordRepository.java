@@ -19,4 +19,9 @@ public interface KeywordRepository extends JpaRepository<KeywordEntity, Integer>
 
     @Query("SELECT k FROM KeywordEntity k INNER JOIN k.diaryEntity d WHERE d.userEntity = :userEntity AND k.archived = :isArchived")
     List<KeywordEntity> findByArchivedAndUserEntity(@Param("isArchived") Boolean isArchived, @Param("userEntity") UserEntity userEntity);
+
+    @Query("SELECT k FROM KeywordEntity k WHERE k.diaryEntity IN :diaryEntities")
+    List<KeywordEntity> findByDiaryEntities(@Param("diaryEntities") List<DiaryEntity> diaryEntities);
+
+
 }

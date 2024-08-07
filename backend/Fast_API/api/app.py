@@ -40,14 +40,15 @@ async def clova(file_location : str):
     Clova API를 이용하여 음성 파일을 텍스트로 변환
     파일 경로를 인자로 받음
     '''
-    print('클로바로 들어왓슈')
+    print('Clova start')
     try:
         response = ClovaSpeechClient().req_upload(file=file_location, completion='sync').json()["text"]
         if not response:
             return "Recognition Failed"
     except KeyError as e:
-        print(e)
+        print(f"Clova Error : {str(e)}")
         return 'Recognition Failed'
+    print(f"Clova End")
     return response
 
 # 파일 업로드
@@ -56,31 +57,25 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
     Amazon s3 서버로 오디오 파일을 업로드
     s3에 유저의 폴더가 없으면 유저 폴더 생성
     '''
-    print("파일 업로드 시작")
+    print("File Upload Start")
     user_audio_dir = os.path.join(AUDIO_DIR, str(user_id))
     for root, dirs, files in os.walk(f"{BASE_DIR}\\audio\\{user_id}"):
-        print({
-            "root":root,
-            "dirs": dirs,
-            "files": files
-        })
         for filename in files:
-            # file_unique_name,file_extension = filename.split(".")
-            # id = generate_uuid(file_unique_name)
-            # temp = f"{id}.{file_extension}"
-            # uuid_dict[filename] = temp
             
             local_path = os.path.join(root, filename)
             absolute_path = os.path.abspath(local_path)
-            s3_path = os.path.join(f"{user_id}/", os.path.relpath(absolute_path, user_audio_dir))
-            
+            # s3_path = os.path.join(f"/", os.path.relpath(absolute_path, user_audio_dir))
+            # print(f"s3_path : {s3_path}")
+            print(f"abs_path : {absolute_path}")
+            print(f"filename : {filename}")
             try:
                 with open(absolute_path, 'rb') as file:
-                    s3_client.upload_fileobj(file, BUCKET_NAME, s3_path)
+                    s3_client.upload_fileobj(file, BUCKET_NAME, filename)
 
             except s3_client.exceptions.S3UploadFailedError as e:
+                print(f"File upload Error : {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Could not upload file: {e}")
-    print("파일 업로드 종료")
+    print("File Upload End")
     
 # -----------------------------------------------라우팅 함수----------------------------------------------------------
 
@@ -104,8 +99,8 @@ async def speech_to_text(user_id:str=Depends(decode_jwt), file: UploadFile = Fil
     요청이 들어온 파일을 로컬에 업로드 하고,
     텍스트로 변환하여 반환
     '''
+    print(f"Speech to Text Start")
     AUDIO_DIR = f"{BASE_DIR}\\audio\\{user_id}"
-    print("요청 들어왔슈")
     # 해당 유저의 폴더가 없는 경우 폴더 생성
     if not os.path.exists(AUDIO_DIR):
         os.makedirs(AUDIO_DIR)
@@ -114,8 +109,6 @@ async def speech_to_text(user_id:str=Depends(decode_jwt), file: UploadFile = Fil
     file_extension = file.filename.split('.')[-1]
     
     uuid_file = f"{uuid.uuid4()}.{file_extension}"
-    print(file.filename)
-    print(uuid_file)
 
     # 파일 경로 설정
     file_location = os.path.join(AUDIO_DIR, uuid_file)
@@ -128,8 +121,7 @@ async def speech_to_text(user_id:str=Depends(decode_jwt), file: UploadFile = Fil
         "text":response,
         "audio":uuid_file
         }
-    
-    print(result)
+    print("Speech to Text End")
     return JSONResponse(result)
 
 @router.post("/s3_upload")
@@ -138,25 +130,32 @@ async def s3_upload(user_id: str=Depends(decode_jwt)):
     로컬 유저 폴더의 모든 오디오 파일을 Amazon s3에 업로드
     '''
     AUDIO_DIR = f"{BASE_DIR}\\audio\\"
-    print("들어 오긴 했냐")
+    print("--------------------------------------------------------파일 업로드 시작 -----------------------------------------------------------")
     
     # S3 파일 업로드 로직
     # s3에 유저 폴더가 있는지 확인
-    try:
-        s3_response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"{user_id}/", MaxKeys=1)
-        # 없으면 만들기
-        if "Contents" not in s3_response:
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=f"{user_id}/")
-            print("폴더 생성 완료")
-        else:
-            print("폴더가 이미 존재")
+    # try:
+    #     # s3_client.put_object(Bucket=BUCKET_NAME)
+    #     print("업로드 시작")
+    #     # s3_response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"{user_id}/", MaxKeys=1)
+    #     # # 없으면 만들기
+    #     # if "Contents" not in s3_response:
+    #     #     s3_client.put_object(Bucket=BUCKET_NAME, Key=f"{user_id}/")
+    #     #     print("폴더 생성 완료")
+    #     # else:
+    #     #     print("폴더가 이미 존재")
     
-    except s3_client.exception.ClientError as e:
-        print("폴더 생성 실패")
-        raise HTTPException(status_code=500, detail=f"Could not verify or create folder: {e}")
+    # except s3_client.exception.ClientError as e:
+    #     print("폴더 생성 실패")
+    #     raise HTTPException(status_code=500, detail=f"Could not verify or create folder: {e}")
     
     # 로컬 오디오 폴더에 있는 파일들을 업로드
-    file_upload(user_id, AUDIO_DIR)
+    try:
+        await file_upload(user_id, AUDIO_DIR)
+    except Exception as e:
+        print(f"Error Occured in 'file upload' : {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    print("-------------------------------------------------------업로드 완료--------------------------------------------------------")
     return JSONResponse(content="File uploaded", status_code=200)
 
 @router.delete('/s3_delete')
@@ -175,8 +174,9 @@ def delete_s3_file(filenames:List[str]=Body(...), user_id:str=Depends(decode_jwt
             s3_client.delete_object(Bucket=BUCKET_NAME, Key=prefix)
             print(f"File {filename} deleted successfully from s3 {user_id} foldeer")
         except ClientError as e:
-            print(e)
+            print(f"S3 delete Error : {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error occur during deleting file {filename}")
     except ClientError as e:
+        print(f"S3 delete Error : {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error occured : {e}")
     return "Delete successful"
