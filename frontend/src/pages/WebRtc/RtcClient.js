@@ -151,14 +151,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-    const newGroups = {};
-
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-
         if (!peerConnections[user.id]) {
           const peerConnection = createPeerConnection(user.id);
           peerConnections[user.id] = { peerConnection };
@@ -166,47 +163,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
-
-        // 그룹에 속한 유저들과 연결
-        newNearbyUsers.forEach(nearbyUser => {
-          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
-            const peerConnection = createPeerConnection(nearbyUser.id);
-            peerConnections[nearbyUser.id] = { peerConnection };
-            if (clientId < nearbyUser.id) {
-              attemptOffer(peerConnection, nearbyUser.id);
-            }
-          }
-        });
-
-        // 그룹에 추가
-        if (!newGroups[user.id]) {
-          newGroups[user.id] = [];
-        }
-        newNearbyUsers.forEach(nearbyUser => {
-          if (nearbyUser.id !== user.id && !newGroups[user.id].includes(nearbyUser.id)) {
-            newGroups[user.id].push(nearbyUser.id);
-          }
-        });
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
         console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
-
-    // 그룹 내 연결 처리
-    Object.keys(newGroups).forEach(userId => {
-      newGroups[userId].forEach(nearbyUserId => {
-        if (!peerConnections[nearbyUserId]) {
-          const peerConnection = createPeerConnection(nearbyUserId);
-          peerConnections[nearbyUserId] = { peerConnection };
-          if (clientId < nearbyUserId) {
-            attemptOffer(peerConnection, nearbyUserId);
-          }
-        }
-      });
-    });
-
     setNearbyUsers(newNearbyUsers);
   };
 
