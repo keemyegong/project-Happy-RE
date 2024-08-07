@@ -105,14 +105,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           hasMoved
         }));
       } else if (dataFromServer.type === 'all_users') {
-        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
+        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
+          ...user,
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+        }));
         setUsers(filteredUsers.map(user => ({
           ...user,
           image: user.characterImage
         })));
         checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
-        const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
+        const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 } };
         setUsers(prevUsers => [...prevUsers, newUser]);
         checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
@@ -129,7 +132,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
       } else if (dataFromServer.type === 'update') {
-        setUsers(dataFromServer.clients);
+        setUsers(dataFromServer.clients.map(user => ({
+          ...user,
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+        })));
       }
     };
 
@@ -234,6 +240,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
+        // AudioEffect에 스트림 추가
+        if (audioEffectRef.current) {
+          audioEffectRef.current.addStream(userId, event.streams[0]);
+        }
       }
     };
 
@@ -395,7 +405,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <div className="graph-chat-container">
         <div className='coordinates-graph-container'>
           <CoordinatesGraph 
             position={position} 
@@ -406,11 +415,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           />
         </div>
         <div className='audio-effect-container'>
-          <AudioEffect
-            stream={audioEffectRef}
-          />
+          <AudioEffect ref={audioEffectRef} />
         </div>
-      </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 

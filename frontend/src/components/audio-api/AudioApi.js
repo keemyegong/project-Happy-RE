@@ -18,11 +18,12 @@ const AudioEffect = React.forwardRef((props, ref) => {
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
       analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
+
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);  // 이전 그림 지우기
 
       canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
       canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
