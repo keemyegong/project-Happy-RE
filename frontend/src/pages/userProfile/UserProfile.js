@@ -92,7 +92,7 @@ const UserProfile =  ()=>{
             Authorization : `Bearer ${Cookies.get('Authorization')}`,
            'Content-Type': 'application/json'
         }}
-        ).then((Response)=>{
+        ).then((response)=>{
           // 키워드 값과 카운트를 저장할 맵 객체 생성
           const keywordMap = new Map();
 
