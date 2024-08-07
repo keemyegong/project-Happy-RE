@@ -14,7 +14,7 @@ public interface KeywordService {
 
     KeywordEntity insertDTO(KeywordEntityDTO keywordEntityDTO) throws Exception;
 
-    List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity,List<KeywordEntityDTO> keywordEntityDTOList);
+    List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity, List<KeywordEntityDTO> keywordEntityDTOList);
 
     Optional<KeywordEntity> findById(int keywordId);
 
@@ -22,8 +22,13 @@ public interface KeywordService {
 
     List<KeywordEntity> findByKeywordAndUserEntity(String keyword, UserEntity userEntity);
 
+    List<KeywordEntity> findByArchivedAndUserEntity(Boolean isArchived, UserEntity userEntity);
+
     KeywordEntity update(KeywordEntity keywordDTOEntity);
 
     void delete(KeywordEntity keywordEntity);
 
+    void updateArchive(int keywordId, boolean archive);
+
+    List<KeywordEntity> getMyKeywords(UserEntity userEntity);
 }

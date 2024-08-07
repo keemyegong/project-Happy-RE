@@ -1,19 +1,19 @@
 package com.example.happyre.service;
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
-import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.KeywordEntity;
-import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.KeywordRepository;
 import io.jsonwebtoken.lang.Assert;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -32,6 +32,7 @@ public class KeywordServiceImpl implements KeywordService {
         newOne.setSummary(keywordEntityDTO.getSummary());
         newOne.setRussellX(keywordEntityDTO.getRussellX());
         newOne.setRussellY(keywordEntityDTO.getRussellY());
+        newOne.setArchived(keywordEntityDTO.getArchived());
         return newOne;
     }
 
@@ -59,24 +60,8 @@ public class KeywordServiceImpl implements KeywordService {
 
 
     @Override
-    public List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity,List<KeywordEntityDTO> keywordEntityDTOList) {
-        int cnt = 0;
-        try {
-            for(KeywordEntityDTO keywordEntityDTO : keywordEntityDTOList) {
-                KeywordEntity keywordEntity = new KeywordEntity();
-                keywordEntity.setDiaryEntity(diaryEntity);
-                keywordEntity.setSequence(keywordEntityDTO.getSequence());
-                keywordEntity.setKeyword(keywordEntityDTO.getKeyword());
-                keywordEntity.setSummary(keywordEntityDTO.getSummary());
-                keywordEntity.setRussellX(keywordEntityDTO.getRussellX());
-                keywordEntity.setRussellY(keywordEntityDTO.getRussellY());
-            }
-        }catch (Exception e) {
-            System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-            System.out.println(e.getMessage());
-            throw new RuntimeException(e);
-        }
-        return null;
+    public List<KeywordEntity> insertDTOList(DiaryEntity diaryEntity, List<KeywordEntityDTO> keywordEntityDTOList) {
+        return keywordEntityDTOList.stream().map(dto -> getKeywordEntity(dto, diaryEntity)).map(e -> this.insert(e)).toList();
     }
 
     @Override
@@ -95,6 +80,11 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
+    public List<KeywordEntity> findByArchivedAndUserEntity(Boolean isArchived, UserEntity userEntity) {
+        return keywordRepository.findByArchivedAndUserEntity(isArchived, userEntity);
+    }
+
+    @Override
     public KeywordEntity update(KeywordEntity keywordDTOEntity) {
         KeywordEntity matchingEntity = keywordRepository.findById(keywordDTOEntity.getKeywordId()).orElseThrow();
         matchingEntity.setSequence(keywordDTOEntity.getSequence());
@@ -108,5 +98,27 @@ public class KeywordServiceImpl implements KeywordService {
     public void delete(KeywordEntity keywordDTOEntity) {
         KeywordEntity matchingEntity = keywordRepository.findById(keywordDTOEntity.getKeywordId()).orElseThrow();
         keywordRepository.delete(matchingEntity);
+    }
+
+    @Override
+    public void updateArchive(int keywordId, boolean archive) {
+        Optional<KeywordEntity> keywordEntityOptional  = keywordRepository.findById(keywordId);
+        if (keywordEntityOptional.isPresent()) {
+            KeywordEntity keywordEntity = keywordEntityOptional.get();
+            keywordEntity.setArchived(archive);
+            keywordRepository.save(keywordEntity);
+        } else {
+            throw new EntityNotFoundException("Keyword not found with id: " + keywordId);
+        }
+
+    }
+
+    @Override
+    public List<KeywordEntity> getMyKeywords(UserEntity userEntity) {
+        List<DiaryEntity> diaryEntityList =  diaryService.findByUserEntity(userEntity);
+        List<KeywordEntity> keywordEntityList = keywordRepository.findByDiaryEntities(diaryEntityList);
+
+
+        return keywordEntityList;
     }
 }

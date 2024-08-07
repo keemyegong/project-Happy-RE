@@ -2,31 +2,31 @@ import React, { useState, useEffect } from 'react';
 import './ChatCam.css';
 import Button from '../Button/Button';
 
-const ChatCam = ({ isCamEnabled }) => {
-  const ChatType = 1;
+const ChatCam = ({ isCamEnabled, persona }) => {
+  const ChatType = Number(persona);
   const UserProfile = '../../assets/characters/default.png'
 
   const getChatData = (type) => {
     switch (type) {
-      case 1:
+      case 0:
         return {
           imageSrc: require(`../../assets/characters/default.png`),
         };
-      case 2:
-        return {
-          imageSrc: require(`../../assets/characters/art.png`),
-        };
-      case 3:
-        return {
-          imageSrc: require(`../../assets/characters/butler.png`),
-        };
-      case 4:
+      case 1:
         return {
           imageSrc: require(`../../assets/characters/soldier.png`),
         };
-      case 5:
+      case 2:
+        return {
+          imageSrc: require(`../../assets/characters/butler.png`),
+        };
+      case 3:
         return {
           imageSrc: require(`../../assets/characters/steel.png`),
+        };
+      case 4:
+        return {
+          imageSrc: require(`../../assets/characters/art.png`),
         };
       default:
         return {};
@@ -46,6 +46,7 @@ const ChatCam = ({ isCamEnabled }) => {
   const [userVideoStream, setUserVideoStream] = useState(null);
 
   useEffect(() => {
+    console.log(persona);
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         setUserVideoStream(stream);

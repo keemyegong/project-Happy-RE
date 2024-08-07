@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { universeVariable } from '../../App';
 import Cookies from 'js-cookie';
 import axios from 'axios';
@@ -9,6 +9,8 @@ import { useNavigate  } from "react-router-dom";
 const UserTest = () => {
   const universal = useContext(universeVariable);
   const [selectedChoices, setSelectedChoices] = useState([]);
+  const [resultnumber, setResultnumber] = useState(0);
+  const [data,setData] = useState([]);
   let navigate = useNavigate ();
 
   const choiceLabels = [
@@ -44,6 +46,7 @@ const UserTest = () => {
         ? prev.filter((item) => item !== index)
         : [...prev, index]
     );
+
   };
 
   const handleSubmit = () => {
@@ -66,7 +69,22 @@ const UserTest = () => {
       y: averageCoordinates[1].toFixed(2),
     };
 
-    axios.put(`${universal.defaultUrl}/api/user/russel`, data, {
+    setData(data);
+
+    if(data.x >= 0 && data.y >= 0) setResultnumber(1);
+    if(data.x < 0 && data.y >= 0) setResultnumber(2);
+    if(data.x < 0 && data.y < 0) setResultnumber(3);
+    if(data.x >= 0 && data.y < 0) setResultnumber(4);
+
+  };
+
+  useEffect(()=>{
+    localStorage.setItem("personaNumber", resultnumber);
+    submit(data);
+  },[resultnumber])
+
+  const submit = (data)=>{
+    axios.put(`${universal.defaultUrl}/api/user/russell`, data, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -77,11 +95,14 @@ const UserTest = () => {
         console.log('Data sent successfully:', response.data);
         axios.put(
           `${universal.defaultUrl}/api/user/me`,
-          {},
+          {
+            myfrog:resultnumber,
+          },
           {
             headers: {
             Authorization : `Bearer ${Cookies.get('Authorization')}`
           }}).then((response)=>{
+            // console.log(resultnumber);
             navigate('/profile')
           }).catch((err)=>console.log(err))
 
@@ -89,8 +110,7 @@ const UserTest = () => {
       .catch((error) => {
         console.error('Error sending data:', error);
       });
-  };
-
+  }
   return (
     <div className="styled-container">
       <div className="question-container">

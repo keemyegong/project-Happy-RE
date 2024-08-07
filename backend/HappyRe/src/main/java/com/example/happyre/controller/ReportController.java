@@ -64,7 +64,7 @@ public class ReportController {
                 return k;
             }).toList();
             messageService.insertDTOList(messageEntityDTOList);
-            keywordService.insertDTOList(diaryEntity,keywordEntityDTOList);
+            keywordService.insertDTOList(diaryEntity, keywordEntityDTOList);
             return ResponseEntity.status(HttpStatus.OK).body("Report 등록 완료");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Report 등록 중 에러: " + e.getMessage());
