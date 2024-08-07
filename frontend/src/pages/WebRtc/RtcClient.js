@@ -64,7 +64,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition)
+    console.log(newPosition);
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
