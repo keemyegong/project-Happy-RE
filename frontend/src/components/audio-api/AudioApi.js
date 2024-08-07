@@ -15,7 +15,7 @@ const AudioEffect = ({ stream }) => {
     bufferLengthRef.current = analyser.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
-    if (stream) {
+    if (stream && stream.getAudioTracks().length > 0) {
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
       analyser.connect(audioContext.destination);

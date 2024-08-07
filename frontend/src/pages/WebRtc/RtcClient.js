@@ -239,9 +239,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (streamRef.current) {
         const inboundStream = event.streams[0];
-        inboundStream.getTracks().forEach(track => streamRef.current.addTrack(track));
+        inboundStream.getTracks().forEach(track => {
+          if (track.kind === 'audio') {
+            streamRef.current.addTrack(track);
+          }
+        });
       }
     };
+    
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
