@@ -114,9 +114,9 @@ const UserTest = () => {
   return (
     <div className="styled-container">
       <div className="question-container">
-        <h4>당신이 경험하고 있는 기분을 나타내는 단어를 클릭해주세요.</h4>
-        <h4>이들 중에는 서로 비슷한 단어도 있습니다.</h4>
-        <h4>그렇지만 당신이 경험한 기분을 나타낸다고 생각되는 단어를 클릭해주세요.</h4>
+        <h4>당신이 경험하고 있는 기분을 나타내는 단어가 있나요?</h4>
+        <h4>이들 중에는 서로 비슷한 단어도 있습니다</h4>
+        <h4>당신이 경험한 기분과 가깝다고 생각되는 단어를 모두 클릭해 주세요</h4>
       </div>
       <div className="choices-container">
         {choiceLabels.map((item, index) => (
@@ -129,7 +129,7 @@ const UserTest = () => {
           </button>
         ))}
       </div>
-      <Button className="btn light-btn small submit-button" content={"제출"} onClick={handleSubmit} />
+      <Button className="btn light-btn small submit-button" content={"다 골랐어요!"} onClick={handleSubmit} />
 
     </div>
   );

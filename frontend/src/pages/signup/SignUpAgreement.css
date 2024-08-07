@@ -1,5 +1,11 @@
+.signup-agreement-title {
+  font-family: "Poiret One", sans-serif;
+  font-size: 30px;
+}
+
 .agreement{
   margin-top: 30px;
+  font-family: Pretendard;
 }
 
 .agreement-text{
@@ -17,7 +23,10 @@
   width: 100%;
   word-wrap: break-word;
   white-space: pre-wrap; 
-  
+  font-family: Pretendard;
+  font-weight: 100;
+  letter-spacing: 1px;
+  line-height: 20px;
 }
 
 .signup-agreement-container{
@@ -26,7 +35,6 @@
   width: 600px;
 
 }
-
 
 .custom-checkbox{
   border: 0.5px solid white;
@@ -51,6 +59,7 @@
 
 .checkbox-label{
   color: #B2B2B2;
+  font-family: Pretendard;
   font-size: 12px;
 }
 
@@ -65,5 +74,9 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.agree-next-btn {
+  font-family: Pretendard;
 }
 
