@@ -1,10 +1,14 @@
 package com.example.happyre.controller;
 
+import com.example.happyre.dto.diary.DiaryDetailResponseDTO;
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
+import com.example.happyre.service.KeywordService;
+import com.example.happyre.service.MessageService;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,8 +25,6 @@ import java.sql.Date;
 import java.time.LocalDate;
 
 import java.util.ArrayList;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +39,8 @@ public class DiaryController {
 
     private final DiaryService diaryService;
     private final UserService userService;
+    private final MessageService messageService;
+    private final KeywordService keywordService;
 
     @PostMapping("/")
     public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody DiaryEntityDTO diaryEntityDTO) {
@@ -53,6 +57,10 @@ public class DiaryController {
         }
     }
 
+
+
+
+
     @GetMapping("/{diaryId}")
     public ResponseEntity<?> getDiary(HttpServletRequest request, @PathVariable int diaryId) {
         try {
@@ -68,6 +76,65 @@ public class DiaryController {
             }
 
             return ResponseEntity.ok(diaryEntity);
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary 가져오는중 에러: " + e.getMessage());
+        }
+    }
+    @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
+    @PutMapping("/updatesummary")
+    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestParam("summary") String summary) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+            DiaryEntity diaryEntity;
+            if (diaryEntityList.size() == 0) {
+                logger.warn("Diary 없음. 새로 만든다.");
+                diaryEntity = new DiaryEntity();
+                diaryEntity.setUserEntity(userEntity);
+                diaryEntity.setSummary(summary);
+                diaryService.insert(diaryEntity);
+            } else {
+                diaryEntity = diaryEntityList.get(0);
+                diaryEntity.setSummary(summary);
+                diaryService.update(diaryEntity);
+            }
+            return ResponseEntity.ok("업데이트 완료");
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary Summary 편집중 에러: " + e.getMessage());
+        }
+    }
+
+
+
+    @GetMapping("/detail")
+    public ResponseEntity<?> getDiaryDetail(HttpServletRequest request,
+                                      @RequestParam(required = false) Integer diaryid) {
+        try {
+            DiaryEntity diaryEntity;
+            if (diaryid != null) {
+                Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryid);
+                if (optionalDiary.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Diary 없음");
+                }
+
+                diaryEntity = optionalDiary.get();
+            }else{
+                //없으면 오늘자로 검색
+                UserEntity userEntity = userService.findByRequest(request);
+                List<DiaryEntity> list = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+                diaryEntity = list.get(list.size() - 1);
+            }
+            List<MessageEntity> byDiaryEntityMessage = messageService.findByDiaryEntity(diaryEntity);
+            List<KeywordEntity> byDiaryEntityKeword = keywordService.findByDiaryEntity(diaryEntity);
+
+            DiaryDetailResponseDTO respon = new DiaryDetailResponseDTO(byDiaryEntityMessage, byDiaryEntityKeword);
+            return ResponseEntity.ok(respon);
         } catch (AccessDeniedException ade) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
         } catch (Exception e) {
@@ -96,33 +163,6 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Diary 가져오는중 에러: " + e.getMessage());
-        }
-    }
-
-    @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
-    @PutMapping("/updatesummary")
-    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestParam("summary") String summary) {
-        try {
-            UserEntity userEntity = userService.findByRequest(request);
-            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
-            DiaryEntity diaryEntity;
-            if (diaryEntityList.size() == 0) {
-                logger.warn("Diary 없음. 새로 만든다.");
-                diaryEntity = new DiaryEntity();
-                diaryEntity.setUserEntity(userEntity);
-                diaryEntity.setSummary(summary);
-                diaryService.insert(diaryEntity);
-            } else {
-                diaryEntity = diaryEntityList.get(0);
-                diaryEntity.setSummary(summary);
-                diaryService.update(diaryEntity);
-            }
-            return ResponseEntity.ok("업데이트 완료");
-        } catch (AccessDeniedException ade) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Diary Summary 편집중 에러: " + e.getMessage());
         }
     }
 
