@@ -97,8 +97,8 @@ const App = () => {
     <universeVariable.Provider
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'https://i11b204.p.ssafy.io',
-        // fastUrl: 'http://192.168.31.229:8000',
+        // fastUrl: 'https://i11b204.p.ssafy.io',
+        fastUrl: 'http://127.0.0.1:8000',
         isAuthenticated,
         setIsAuthenticated,
         toggleOverlay,
