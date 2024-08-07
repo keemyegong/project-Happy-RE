@@ -16,27 +16,27 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class UserMessageServiceImpl implements UserMessageService{
+public class UserMessageServiceImpl implements UserMessageService {
 
     private final UserMessageRepository userMessageRepository;
 
     private final KeywordService keywordService;
 
     @Override
-    public UserMessageEntity insertDTO(UserMessageDTO userMessageDTO, UserEntity userEntity){
+    public UserMessageEntity insertDTO(UserMessageDTO userMessageDTO, UserEntity userEntity) {
         UserMessageEntity toInsert = new UserMessageEntity();
         toInsert.setUserEntity(userEntity);
         toInsert.setContent(userMessageDTO.getContent());
         toInsert.setDate(Timestamp.valueOf(LocalDateTime.now()));
         toInsert.setUserMessageAttachedKeywordEntityList(
-            userMessageDTO.getKeywordEntityDTOList().stream().map(dto -> {
-                UserMessageAttachedKeywordEntity msgkwd = new UserMessageAttachedKeywordEntity();
-                msgkwd.setUserMessageEntity(toInsert);
-                msgkwd.setKeywordEntity(
-                        keywordService.findById(dto.getKeywordId()).orElseThrow(() -> new RuntimeException("KeywordEntityDTO 에 해당되는 KeywordEntity를 찾을 수 없음. KeywordEntityDTO: " + dto.toString()))
-                );
-                return msgkwd;
-            }).toList()
+                userMessageDTO.getKeywordEntityDTOList().stream().map(dto -> {
+                    UserMessageAttachedKeywordEntity msgkwd = new UserMessageAttachedKeywordEntity();
+                    msgkwd.setUserMessageEntity(toInsert);
+                    msgkwd.setKeywordEntity(
+                            keywordService.findById(dto.getKeywordId()).orElseThrow(() -> new RuntimeException("KeywordEntityDTO 에 해당되는 KeywordEntity를 찾을 수 없음. KeywordEntityDTO: " + dto.toString()))
+                    );
+                    return msgkwd;
+                }).toList()
         );
         toInsert.setUserMessageArchivedEntityList(new ArrayList<>());
         return userMessageRepository.save(toInsert);
@@ -53,7 +53,7 @@ public class UserMessageServiceImpl implements UserMessageService{
     }
 
     @Override
-    public List<UserMessageEntity> sample(Integer size){
-        return userMessageRepository.findRandomEntities(size);
+    public List<UserMessageEntity> sample(Integer size, UserEntity userEntity) {
+        return userMessageRepository.findRandomEntities(size, userEntity.getId());
     }
 }

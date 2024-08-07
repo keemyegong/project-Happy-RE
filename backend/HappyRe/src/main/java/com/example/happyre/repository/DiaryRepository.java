@@ -17,4 +17,8 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {
     List<DiaryEntity> findByUserEntity(UserEntity userEntity);
 
 
+    @Query("SELECT d FROM DiaryEntity d WHERE d.userEntity = :userEntity AND d.date > :startDate AND d.date <= :endDate")
+    List<DiaryEntity> findByUserEntityAndDateRange(@Param("userEntity") UserEntity userEntity, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+
 }

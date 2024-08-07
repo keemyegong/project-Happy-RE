@@ -1,7 +1,5 @@
 package com.example.happyre.repository;
 
-import com.example.happyre.entity.DiaryEntity;
-import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.entity.UserMessageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +12,6 @@ public interface UserMessageRepository extends JpaRepository<UserMessageEntity, 
     @Query("SELECT um FROM UserMessageArchivedEntity uma INNER JOIN uma.userMessageEntity um WHERE uma.userEntity = :userEntity")
     List<UserMessageEntity> findArchivedByUserEntity(@Param("userEntity") UserEntity userEntity);
 
-    @Query(value = "SELECT * FROM user_message ORDER BY RAND() LIMIT :size", nativeQuery = true)
-    List<UserMessageEntity> findRandomEntities(@Param("size") int size);
+    @Query(value = "SELECT * FROM user_message WHERE user_id != :userId ORDER BY RAND() LIMIT :size", nativeQuery = true)
+    List<UserMessageEntity> findRandomEntities(@Param("size") int size, @Param("userId") Integer userId);
 }

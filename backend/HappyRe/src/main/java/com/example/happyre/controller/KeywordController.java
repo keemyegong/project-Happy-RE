@@ -42,9 +42,9 @@ public class KeywordController {
             List<KeywordEntity> keywordEntityList = keywordService.getMyKeywords(userEntity);
             return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
 
-        }catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
