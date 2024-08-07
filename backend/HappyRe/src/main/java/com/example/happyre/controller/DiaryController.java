@@ -2,6 +2,7 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.UserService;
@@ -18,7 +19,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
+
+import java.util.ArrayList;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Diary")
@@ -71,10 +77,21 @@ public class DiaryController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> getMyDiaries(HttpServletRequest request) {
+    public ResponseEntity<?> getMyDiaries(HttpServletRequest request,
+                                          @RequestParam(required = false) Integer year ,
+                                          @RequestParam(required = false) Integer month,
+                                          @RequestParam(required = false) Integer day,
+                                          @RequestParam(required = false) Integer period ){
         try {
             UserEntity userEntity = userService.findByRequest(request);
-            List<DiaryEntity> diaries = diaryService.findByUserEntity(userEntity);
+            List<DiaryEntity> diaries;
+            if(year != null && month != null && day!= null){
+                Date date = Date.valueOf(LocalDate.of(year, month, day));
+                diaries = diaryService.searchForWeek(userEntity, date, period);
+            }else{
+                diaries = diaryService.findByUserEntity(userEntity);
+
+            }
             return ResponseEntity.ok(diaries);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = forwardRef((props, ref) => {
+const AudioEffect = () => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -9,22 +9,21 @@ const AudioEffect = forwardRef((props, ref) => {
   const bufferLengthRef = useRef(null);
 
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    analyserRef.current.fftSize = 2048;
-    bufferLengthRef.current = analyserRef.current.frequencyBinCount;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    bufferLengthRef.current = analyser.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
-      analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
+      analyser.getByteTimeDomainData(dataArrayRef.current);
 
-      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
       canvasCtx.beginPath();
@@ -50,14 +49,29 @@ const AudioEffect = forwardRef((props, ref) => {
     };
 
     drawWaveform();
+
+    // Capture all audio output from an audio element
+    const audioElement = new Audio();
+    audioElement.src = '';  // Empty source initially
+    audioElement.crossOrigin = "anonymous"; // Allow cross-origin audio
+    audioElement.play();
+
+    const source = audioContext.createMediaElementSource(audioElement);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    audioContextRef.current = audioContext;
+    analyserRef.current = analyser;
   }, []);
 
   useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
       const canvas = canvasRef.current;
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight / 5;
+      if (container) {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight / 5;
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -65,18 +79,13 @@ const AudioEffect = forwardRef((props, ref) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     };
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    addMediaElement: (element) => {
-      const source = audioContextRef.current.createMediaElementSource(element);
-      source.connect(analyserRef.current);
-      source.connect(audioContextRef.current.destination); // 연결된 오디오를 스피커로 출력
-    }
-  }));
-
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
-});
+};
 
 export default AudioEffect;
