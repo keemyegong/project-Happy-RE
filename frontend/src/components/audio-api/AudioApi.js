@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = () => {
+const AudioEffect = ({ audioRef }) => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -17,6 +17,7 @@ const AudioEffect = () => {
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
+
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
       analyser.getByteTimeDomainData(dataArrayRef.current);
@@ -50,19 +51,20 @@ const AudioEffect = () => {
 
     drawWaveform();
 
-    // Capture all audio output from an audio element
-    const audioElement = new Audio();
-    audioElement.src = '';  // Empty source initially
-    audioElement.crossOrigin = "anonymous"; // Allow cross-origin audio
-    audioElement.play();
-
-    const source = audioContext.createMediaElementSource(audioElement);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
+    if (audioRef.current) {
+      const source = audioContext.createMediaStreamSource(audioRef.current.srcObject);
+      source.connect(analyser);
+    }
 
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
-  }, []);
+
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, [audioRef]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,9 +81,6 @@ const AudioEffect = () => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
     };
   }, []);
 
