@@ -192,6 +192,7 @@ async def post_message_request(request:Request):
     
     '''
     print("--------------------------------------------------메세지 포스트 시작--------------------------------------------------------------")
+    print(f"{SPRING_MESSAGE_POST_URL}")
     
     header = request.headers
     token = header["authorization"].split(" ")[-1]
@@ -215,6 +216,7 @@ async def post_message_request(request:Request):
                 data["russelX"] = None
                 data["russelY"] = None
             message_item.append(data)
+        print("메세지 만들기 완료")
         try:
             new_headers = {
                 "authorization": header["authorization"],
@@ -226,7 +228,7 @@ async def post_message_request(request:Request):
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail=f"Error: {response.text}")
         except Exception as e:
-            print(f"Message Posting Error : {str(e)}")
+            print(f"Message Sending Error : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
         
         # try:
@@ -259,7 +261,7 @@ async def session_delete(request:Request):
     prompt = '지금까지의 대화에서 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 리스트 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
     
     response = chatbot_instance.generateResponse(prompt)
-    
+    print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")
     
     try:
         result = json.loads(response.strip())
