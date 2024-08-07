@@ -7,7 +7,6 @@ const AudioEffect = forwardRef((props, ref) => {
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const bufferLengthRef = useRef(null);
-  const streams = useRef({});
 
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -53,35 +52,6 @@ const AudioEffect = forwardRef((props, ref) => {
     drawWaveform();
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    addStream: (userId, stream) => {
-      if (!streams.current[userId]) {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-        streams.current[userId] = source;
-      }
-    },
-    removeStream: (userId) => {
-      if (streams.current[userId]) {
-        streams.current[userId].disconnect(analyserRef.current);
-        delete streams.current[userId];
-      }
-      if (Object.keys(streams.current).length === 0) {
-        // Reset the analyser if no streams are left
-        analyserRef.current.disconnect();
-        if (audioContextRef.current.state !== 'closed') {
-          audioContextRef.current.close().then(() => {
-            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-            analyserRef.current = audioContextRef.current.createAnalyser();
-            analyserRef.current.fftSize = 2048;
-            bufferLengthRef.current = analyserRef.current.frequencyBinCount;
-            dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
-          });
-        }
-      }
-    }
-  }));
-
   useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
@@ -97,6 +67,14 @@ const AudioEffect = forwardRef((props, ref) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    addMediaElement: (element) => {
+      const source = audioContextRef.current.createMediaElementSource(element);
+      source.connect(analyserRef.current);
+      source.connect(audioContextRef.current.destination); // 연결된 오디오를 스피커로 출력
+    }
+  }));
 
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
 });

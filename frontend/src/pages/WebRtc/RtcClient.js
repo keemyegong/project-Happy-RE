@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi';
+import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -22,7 +22,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
-  const audioEffectRef = useRef(null);
+  const audioEffectRef = useRef(null); // 추가된 부분
+  const mediaElementRef = useRef(new Audio()); // 오디오 엘리먼트 추가
 
   useEffect(() => {
     positionRef.current = position;
@@ -37,26 +38,20 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     window.addEventListener('beforeunload', () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
       client.close();
-      cleanupConnections();
     });
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      client.close();
     };
   }, []);
 
-  const cleanupConnections = () => {
-    Object.keys(peerConnections).forEach(userId => {
-      peerConnections[userId].peerConnection.close();
-      delete peerConnections[userId];
-      if (audioEffectRef.current) {
-        audioEffectRef.current.removeStream(userId);
-      }
-    });
-  };
+  useEffect(() => {
+    if (audioEffectRef.current && mediaElementRef.current) {
+      audioEffectRef.current.addMediaElement(mediaElementRef.current); // 미디어 엘리먼트를 AudioEffect에 추가
+    }
+  }, [audioEffectRef, mediaElementRef]);
 
   const movePosition = (dx, dy) => {
     const newPosition = { 
@@ -119,7 +114,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -146,7 +141,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
         })));
       }
     };
@@ -210,9 +205,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
-        if (audioEffectRef.current) {
-          audioEffectRef.current.removeStream(user.id);
-        }
         console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
@@ -254,13 +246,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-        // AudioEffect에 스트림 추가
-        if (audioEffectRef.current) {
-          audioEffectRef.current.addStream(userId, event.streams[0]);
-        }
+          localAudioRef.current.srcObject = event.streams[0];
+          // AudioEffect에 스트림 추가
+          if (audioEffectRef.current) {
+              audioEffectRef.current.addStream(userId, event.streams[0]);
+          }
       }
-    };
+  };
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
@@ -308,107 +300,107 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const handleOffer = async (offer, sender) => {
     if (!sender) {
-      console.error('No sender provided for offer');
-      return;
+        console.error('No sender provided for offer');
+        return;
     }
 
     if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection };
+        const peerConnection = createPeerConnection(sender);
+        peerConnections[sender] = { peerConnection };
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
 
     try {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
+        await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
 
-      client.send(JSON.stringify({
-        type: 'answer',
-        answer: answer.sdp,
-        sender: clientId,
-        recipient: sender
-      }));
+        client.send(JSON.stringify({
+            type: 'answer',
+            answer: answer.sdp,
+            sender: clientId,
+            recipient: sender
+        }));
 
-      if (peerConnection.signalingState === 'have-remote-offer') {
-        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
-      }
+        if (peerConnection.signalingState === 'have-remote-offer') {
+            console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+        }
 
     } catch (error) {
-      console.error('Error handling offer:', error);
+        console.error('Error handling offer:', error);
     }
-  };
+};
 
-  const handleAnswer = async (answer, sender) => {
-    if (!sender) {
+const handleAnswer = async (answer, sender) => {
+  if (!sender) {
       console.error('No sender provided for answer');
       return;
-    }
+  }
 
-    const connection = peerConnections[sender];
-    if (!connection) {
+  const connection = peerConnections[sender];
+  if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
-    }
-    const peerConnection = connection.peerConnection;
+  }
+  const peerConnection = connection.peerConnection;
 
-    if (peerConnection.signalingState !== 'have-local-offer') {
+  if (peerConnection.signalingState !== 'have-local-offer') {
       console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       return;
-    }
+  }
 
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+  await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
 
-    // Add pending ICE candidates if any
-    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
-    for (const candidate of pendingCandidates) {
+  // Add pending ICE candidates if any
+  const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+  for (const candidate of pendingCandidates) {
       await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-    }
-    peerConnections[sender].pendingCandidates = [];
-  };
+  }
+  peerConnections[sender].pendingCandidates = [];
+};
 
-  const handleCandidate = async (candidate, sender) => {
-    if (!sender) {
+const handleCandidate = async (candidate, sender) => {
+  if (!sender) {
       console.error('No sender provided for candidate');
       return;
-    }
+  }
 
-    const connection = peerConnections[sender];
-    if (!connection) {
+  const connection = peerConnections[sender];
+  if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
-    }
-    const peerConnection = connection.peerConnection;
+  }
+  const peerConnection = connection.peerConnection;
 
-    if (peerConnection.remoteDescription) {
+  if (peerConnection.remoteDescription) {
       try {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (error) {
-        console.error('Error adding ICE candidate:', error);
+          console.error('Error adding ICE candidate:', error);
       }
-    } else {
+  } else {
       // Save pending ICE candidates
       if (!peerConnections[sender].pendingCandidates) {
-        peerConnections[sender].pendingCandidates = [];
+          peerConnections[sender].pendingCandidates = [];
       }
       peerConnections[sender].pendingCandidates.push(candidate);
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
-    }
-  };
+  }
+};
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
-      peerConnections[userId].peerConnection.close();
-      delete peerConnections[userId];
-      setNearbyUsers(prev => prev.filter(user => user.id !== userId));
-      console.log(`WebRTC connection closed with user ${userId}`);
-      // AudioEffect에서도 제거
-      if (audioEffectRef.current) {
-        audioEffectRef.current.removeStream(userId);
-      }
+        peerConnections[userId].peerConnection.close();
+        delete peerConnections[userId];
+        setNearbyUsers(prev => prev.filter(user => user.id !== userId));
+        console.log(`WebRTC connection closed with user ${userId}`);
+        // AudioEffect에서도 제거
+        if (audioEffectRef.current) {
+            audioEffectRef.current.removeStream(userId);
+        }
     }
-  };
+};
 
   const handleScroll = (direction) => {
     if (direction === 'up') {
