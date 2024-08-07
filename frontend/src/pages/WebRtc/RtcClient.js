@@ -163,6 +163,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
+        // 그룹에 속한 유저들과 연결
+        newNearbyUsers.forEach(nearbyUser => {
+          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
+            const peerConnection = createPeerConnection(nearbyUser.id);
+            peerConnections[nearbyUser.id] = { peerConnection };
+            if (clientId < nearbyUser.id) {
+              attemptOffer(peerConnection, nearbyUser.id);
+            }
+          }
+        });
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
@@ -171,6 +181,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     });
     setNearbyUsers(newNearbyUsers);
   };
+  
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
