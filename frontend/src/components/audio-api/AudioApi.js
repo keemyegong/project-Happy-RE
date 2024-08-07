@@ -1,41 +1,47 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = ({ audioEffectRef }) => {
+const AudioApi = ({ stream }) => {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    analyserRef.current.fftSize = 256;
-    const bufferLength = analyserRef.current.frequencyBinCount;
-    dataArrayRef.current = new Uint8Array(bufferLength);
-  }, []);
+    if (stream) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 256;
 
-  useEffect(() => {
-    audioEffectRef.current = {
-      addStream: (stream) => {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-        draw();
-      },
-      removeStream: () => {
-        analyserRef.current.disconnect();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
+
+      draw();
+    }
+
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
-  }, []);
+  }, [stream]);
 
   const draw = () => {
-    const canvas = document.querySelector('.audio-visualizer');
+    if (!analyserRef.current || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
     const drawVisualizer = () => {
       requestAnimationFrame(drawVisualizer);
+
       analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+
       canvasCtx.fillStyle = 'rgb(0, 0, 0)';
       canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -44,9 +50,9 @@ const AudioEffect = ({ audioEffectRef }) => {
       let x = 0;
 
       for (let i = 0; i < dataArrayRef.current.length; i++) {
-        barHeight = dataArrayRef.current[i];
-        canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
-        canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+        barHeight = dataArrayRef.current[i] / 2;
+        canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
+        canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
         x += barWidth + 1;
       }
     };
@@ -55,8 +61,8 @@ const AudioEffect = ({ audioEffectRef }) => {
   };
 
   return (
-    <canvas className="audio-visualizer"></canvas>
+    <canvas ref={canvasRef} className="audio-visualizer"></canvas>
   );
 };
 
-export default AudioEffect;
+export default AudioApi;
