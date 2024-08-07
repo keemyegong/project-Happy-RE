@@ -1,8 +1,8 @@
 package com.example.happyre.controller;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
+import com.example.happyre.dto.diary.DiarySummaryDTO;
 import com.example.happyre.entity.DiaryEntity;
-import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.UserService;
@@ -19,12 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
-
-import java.util.ArrayList;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Diary")
@@ -99,9 +94,10 @@ public class DiaryController {
         }
     }
 
+
     @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
     @PutMapping("/updatesummary")
-    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestParam("summary") String summary) {
+    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestBody DiarySummaryDTO diarySummaryDTO) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
             List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
@@ -110,11 +106,11 @@ public class DiaryController {
                 logger.warn("Diary 없음. 새로 만든다.");
                 diaryEntity = new DiaryEntity();
                 diaryEntity.setUserEntity(userEntity);
-                diaryEntity.setSummary(summary);
+                diaryEntity.setSummary(diarySummaryDTO.getSummary());
                 diaryService.insert(diaryEntity);
             } else {
                 diaryEntity = diaryEntityList.get(0);
-                diaryEntity.setSummary(summary);
+                diaryEntity.setSummary(diarySummaryDTO.getSummary());
                 diaryService.update(diaryEntity);
             }
             return ResponseEntity.ok("업데이트 완료");
