@@ -13,7 +13,7 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const MAX_USERS_PER_ROOM = 6;
-let rooms = {};
+let rooms = {};  // 전역 변수로 rooms 정의
 
 const createNewRoom = () => {
   const roomId = uuidv4();
@@ -107,19 +107,23 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
-
-    rooms[roomId].forEach(user => {
-      const otherClientsData = rooms[roomId].map(u => ({
-        id: u.id,
-        position: u.position,
-        characterImage: u.characterImage,
-        hasMoved: u.hasMoved,
-        connectedAt: u.connectedAt
-      }));
-
-      user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
-    });
+    if (rooms[roomId]) {
+      rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+  
+      rooms[roomId].forEach(user => {
+        const otherClientsData = rooms[roomId]
+          .filter(u => u.id !== user.id)  // 현재 유저를 제외한 다른 유저들만 포함
+          .map(u => ({
+            id: u.id,
+            position: u.position,
+            characterImage: u.characterImage,
+            hasMoved: u.hasMoved,
+            connectedAt: u.connectedAt
+          }));
+  
+        user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+      });
+    }
   });
 });
 

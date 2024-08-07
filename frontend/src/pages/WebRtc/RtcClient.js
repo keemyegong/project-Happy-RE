@@ -64,7 +64,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition)
+    console.log(newPosition);
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
@@ -373,14 +373,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.remoteDescription) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -388,7 +388,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      // Save pending ICE candidates
       if (!peerConnections[sender].pendingCandidates) {
         peerConnections[sender].pendingCandidates = [];
       }
