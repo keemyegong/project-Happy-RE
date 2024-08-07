@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
+import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -16,7 +16,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
-  const streamRef = useRef(null);
+  const streamRef = useRef(new MediaStream());
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
@@ -238,12 +238,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     peerConnection.ontrack = (event) => {
       if (streamRef.current) {
-        const newStream = new MediaStream(event.streams[0].getTracks());
-        const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
-        currentTracks.forEach(track => newStream.addTrack(track));
-        streamRef.current.srcObject = newStream;
-      } else {
-        streamRef.current = new MediaStream(event.streams[0].getTracks());
+        const inboundStream = event.streams[0];
+        inboundStream.getTracks().forEach(track => streamRef.current.addTrack(track));
       }
     };
 
@@ -254,9 +250,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
         if (streamRef.current) {
-          const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
-          const newStream = new MediaStream(currentTracks.filter(track => track.readyState === 'live'));
-          streamRef.current.srcObject = newStream;
+          streamRef.current.srcObject = null;
         }
         // ICE 후보 초기화
         if (peerConnections[userId]) {
@@ -399,17 +393,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-        <div className='coordinates-graph-container'>
-          <CoordinatesGraph 
-            position={position} 
-            users={users} 
-            movePosition={movePosition} 
-            userImage={userImage} 
-          />
-        </div>
-        <div className='audio-effect-container'>
-          <AudioEffect stream={streamRef.current} />
-        </div>
+      <CoordinatesGraph 
+        position={position} 
+        users={users} 
+        movePosition={movePosition} 
+        userImage={userImage} 
+      />
+      <AudioEffect stream={streamRef.current} />
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 
