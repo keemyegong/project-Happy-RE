@@ -7,6 +7,9 @@ import axios from "axios";
 import ChatCam from '../../components/ai-chat/ChatCam';
 import ChatBox from '../../components/ai-chat/ChatBox';
 import ChatEvent from "../../components/ai-chat/ChatEvent";
+import DiaryReport from "../../components/diary-report/DiaryReport";
+import DiaryDetail from "../../components/diary-report/DiaryDetail";
+import { useNavigate } from "react-router-dom";
 
 const AIChat = () => {
   const [chatHistory, setChatHistory] = useState([]);
@@ -25,6 +28,16 @@ const AIChat = () => {
   const [isCamEnabled, setIsCamEnabled] = useState(true);
   const [userInputCount, setUserInputCount] = useState(0); // 유저 인풋 카운트 상태 추가
   const persona = localStorage.getItem("personaNumber");
+  const [showModal, setshowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const currDate = new Date();
+  const today = {
+    year:currDate.getFullYear(),
+    month:currDate.getMonth()+1,
+    date:currDate.getDate(),
+  };
+
 
   // 처음 인삿말 받아오기
   useEffect(() => {
@@ -64,9 +77,21 @@ const AIChat = () => {
     });
     
   }
+
+  const closeModal = ()=>{
+    setshowModal(false);
+    // navigate('/diary');
+
+  }
   const endChatSession = () => {
     // 1. 채팅 로그 스프링 저장 요청
-    
+    setshowModal(true);
+
+    // axios를 통해 값을 받아오면 setLoading(false)를 통해 리포트를 띄우는 방식
+    setTimeout(()=>{
+      setLoading(false);
+    },4000);
+
     axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`,
@@ -81,7 +106,7 @@ const AIChat = () => {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
           persona,
-        }
+        } 
       }).then((response) => {
         console.log("Audio file uploaded to S3:", response.data);
         // 2. 다이어리 요약 전송 및 세션 삭제 요청
@@ -93,6 +118,8 @@ const AIChat = () => {
           }
         }).then((response) => {
           console.log("Session ended and diary summary sent:", response.data);
+
+
         }).catch((error) => {
           console.error("Error ending session:", error);
         });
@@ -306,13 +333,14 @@ const AIChat = () => {
     }
     setActiveButton(mode); // 클릭된 버튼 상태 업데이트
   };
-
+  
   const toggleCam = () => {
     setIsCamEnabled(!isCamEnabled);
   };
-
+  
   return (
     <div className='AIChat'>
+      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} /> }
       <div className='container ai-chat-container'>
         <div className='row ai-chat-components'>
           <div className='col-6 ai-chat-cam'>

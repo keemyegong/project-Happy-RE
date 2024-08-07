@@ -89,8 +89,8 @@ const AppContent = (setHappyreNumber) => {
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [todayDone, setTodayDone] = useState(false);
 
-  const [happyreNumber, setHappyreNumber] = useState(1);
 
   return (
     <universeVariable.Provider
@@ -98,9 +98,11 @@ const App = () => {
         // defaultUrl: 'https://i11b204.p.ssafy.io',
         defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://192.168.31.229:8000',
+        // fastUrl: 'http://192.168.31.229:8000',
         isAuthenticated,
         setIsAuthenticated,
+        todayDone,
+        setTodayDone,
         
       }}
     >

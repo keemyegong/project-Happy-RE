@@ -9,6 +9,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  
 }
 
 .diary-detail-backdrop {
@@ -17,7 +18,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .diary-detail-modal {
@@ -25,7 +26,7 @@
   position: relative;
   background: white;
   z-index: 1001;
-  width: 80%;
+  /* width: 70%; */
   height: 90%;
   max-width: 1400px;
   max-height: 2000px;
@@ -88,6 +89,7 @@
 
 /* 임시 채팅 박스 컴포넌트 공간 */
 .diary-chat-box-container {
+  margin-right: 20px;
   width: 430px;
   height: 614px;
   background-color: black;
