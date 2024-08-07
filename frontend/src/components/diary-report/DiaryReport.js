@@ -4,7 +4,7 @@ import KeywordCard from './KeywordCard';
 import EmotionGraph from '../emotion-graph/EmotionGraph';
 import Test from '../emotion-graph/Test';
 
-const DiaryReport = ({ selectedDay }) => {
+const DiaryReport = ({ selectedDay,loading }) => {
   const [emotionData, setEmotionData] = useState([]); 
   if (!selectedDay) return null; // selectedDay가 없으면 아무것도 렌더링하지 않음
   const { year, month, date } = selectedDay;
@@ -56,7 +56,19 @@ const DiaryReport = ({ selectedDay }) => {
       <div className='diary-report-header'>
         {`${year}-${month}-${date} report`}
       </div>
-      <div className='diary-report-body'>
+      {loading &&
+      <div className='modal-loading-container'> 
+        <div className='spinner-border diary-modal-popup-spinner' role="status">
+          <span className='visually-hidden'>Loading...</span>
+        </div>
+        <p className='modal-loading-label'>
+          Loading...
+        </p>
+        <h5 className='modal-loading-text my-4 text-center'>해파리들이 당신의 소중한 오늘을<br></br> 열심히 정리하고 있어요.</h5>
+      </div>
+      }
+
+      {!loading && <div className='diary-report-body'>
         <div className='diary-report-keyword'>
           <p className='diary-report-keyword-header'>
             KEYWORD
@@ -94,7 +106,7 @@ const DiaryReport = ({ selectedDay }) => {
             <Test data={emotionData} />
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 };

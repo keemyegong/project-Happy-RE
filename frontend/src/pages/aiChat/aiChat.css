@@ -80,3 +80,10 @@
   color: #6B73A7;
   font-weight: 700;
 }
+
+.diary-report-modal-after-chat{
+  position: absolute !important;
+  top: 50px;
+  left: 0;
+  z-index: 10000;
+}
