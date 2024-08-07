@@ -14,6 +14,6 @@ public interface UserMessageRepository extends JpaRepository<UserMessageEntity, 
     @Query("SELECT um FROM UserMessageArchivedEntity uma INNER JOIN uma.userMessageEntity um WHERE uma.userEntity = :userEntity")
     List<UserMessageEntity> findArchivedByUserEntity(@Param("userEntity") UserEntity userEntity);
 
-    @Query(value = "SELECT * FROM user_message ORDER BY RAND() LIMIT :size", nativeQuery = true)
-    List<UserMessageEntity> findRandomEntities(@Param("size") int size);
+    @Query(value = "SELECT * FROM user_message WHERE user_id != :userId ORDER BY RAND() LIMIT :size", nativeQuery = true)
+    List<UserMessageEntity> findRandomEntities(@Param("size") int size, @Param("userId") Integer userId);
 }
