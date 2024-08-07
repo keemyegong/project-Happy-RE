@@ -12,63 +12,52 @@ const server = https.createServer({
 
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
-const MAX_USERS_PER_ROOM = 6;
-let rooms = {};
-
-const createNewRoom = () => {
-  const roomId = uuidv4();
-  rooms[roomId] = [];
-  return roomId;
-};
-
-const getRoomWithSpace = () => {
-  for (let roomId in rooms) {
-    if (rooms[roomId].length < MAX_USERS_PER_ROOM) {
-      return roomId;
-    }
-  }
-  return createNewRoom();
-};
+let users = {};
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
   const userInfo = { id: userId, connectedAt: Date.now() };
-
-  // Assign the user to a room
-  const roomId = getRoomWithSpace();
-  rooms[roomId].push({ ws, ...userInfo });
-
-  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
 
     switch (data.type) {
       case 'connect':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved } : user);
-        const allUsers = rooms[roomId].map(user => ({
-          id: user.id,
-          position: user.position,
-          characterImage: user.characterImage,
-          hasMoved: user.hasMoved,
-          connectedAt: user.connectedAt
+        users[userId] = {
+          ws,
+          position: data.position,
+          characterImage: data.characterImage,
+          hasMoved: data.hasMoved,
+          connectedAt: userInfo.connectedAt
+        };
+
+        const allUsers = Object.keys(users).map(id => ({
+          id,
+          position: users[id].position,
+          characterImage: users[id].characterImage,
+          hasMoved: users[id].hasMoved,
+          connectedAt: users[id].connectedAt
         }));
 
-        rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(u => u.id !== user.id) }));
+        Object.keys(users).forEach(id => {
+          users[id].ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(user => user.id !== id) }));
         });
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved } : user);
+        if (users[userId]) {
+          users[userId].position = data.position;
+          users[userId].hasMoved = data.hasMoved;
 
-        rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
-        });
+          Object.keys(users).forEach(id => {
+            users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
+          });
+        }
         break;
 
       case 'send_offer':
-        const recipientUser = rooms[roomId].find(user => user.id === data.recipient);
+        const recipientUser = users[data.recipient];
         if (recipientUser) {
           recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
         }
@@ -77,27 +66,26 @@ wss.on('connection', (ws) => {
       case 'offer':
       case 'answer':
       case 'candidate':
-        const recipient = rooms[roomId].find(user => user.id === data.recipient);
-        if (recipient) {
-          recipient.ws.send(JSON.stringify(data));
+        if (users[data.recipient]) {
+          users[data.recipient].ws.send(JSON.stringify(data));
         } else {
           console.error(`User ${data.recipient} does not exist`);
         }
         break;
 
       case 'disconnect':
-        rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+        delete users[userId];
 
-        rooms[roomId].forEach(user => {
-          const otherClientsData = rooms[roomId].map(u => ({
-            id: u.id,
-            position: u.position,
-            characterImage: u.characterImage,
-            hasMoved: u.hasMoved,
-            connectedAt: u.connectedAt
-          }));
+        Object.keys(users).forEach(id => {
+          const otherClientsData = Object.keys(users).map(cId => ({
+            id: cId,
+            position: users[cId].position,
+            characterImage: users[cId].characterImage,
+            hasMoved: users[cId].hasMoved,
+            connectedAt: users[cId].connectedAt
+          })).filter(user => user.id !== id);
 
-          user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+          users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
         });
         break;
 
@@ -121,6 +109,7 @@ wss.on('connection', (ws) => {
       user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
     });
   });
+
 });
 
 server.listen(5001, () => {
