@@ -12,20 +12,12 @@ const server = https.createServer({
 
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
-const MAX_USERS_PER_ROOM = 6;
-let rooms = {}; // 방을 관리하기 위한 객체
+let users = {};
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
-  let roomId = Object.keys(rooms).find(roomId => rooms[roomId].length < MAX_USERS_PER_ROOM);
-
-  if (!roomId) {
-    roomId = uuidv4();
-    rooms[roomId] = [];
-  }
-
-  rooms[roomId].push(userId);
-  ws.send(JSON.stringify({ type: 'assign_id', id: userId, roomId }));
+  const userInfo = { id: userId, connectedAt: Date.now() };
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
@@ -34,14 +26,13 @@ wss.on('connection', (ws) => {
       case 'connect':
         users[userId] = {
           ws,
-          roomId,
           position: data.position,
           characterImage: data.characterImage,
           hasMoved: data.hasMoved,
-          connectedAt: Date.now()
+          connectedAt: userInfo.connectedAt
         };
 
-        const roomUsers = rooms[roomId].map(id => ({
+        const allUsers = Object.keys(users).map(id => ({
           id,
           position: users[id].position,
           characterImage: users[id].characterImage,
@@ -49,8 +40,8 @@ wss.on('connection', (ws) => {
           connectedAt: users[id].connectedAt
         }));
 
-        roomUsers.forEach(user => {
-          users[user.id].ws.send(JSON.stringify({ type: 'all_users', users: roomUsers.filter(u => u.id !== user.id) }));
+        Object.keys(users).forEach(id => {
+          users[id].ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(user => user.id !== id) }));
         });
         break;
 
@@ -59,7 +50,7 @@ wss.on('connection', (ws) => {
           users[userId].position = data.position;
           users[userId].hasMoved = data.hasMoved;
 
-          rooms[roomId].forEach(id => {
+          Object.keys(users).forEach(id => {
             users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
           });
         }
@@ -83,24 +74,19 @@ wss.on('connection', (ws) => {
         break;
 
       case 'disconnect':
-        if (users[userId]) {
-          rooms[roomId] = rooms[roomId].filter(id => id !== userId);
-          delete users[userId];
+        delete users[userId];
 
-          rooms[roomId].forEach(id => {
-            users[id].ws.send(JSON.stringify({ type: 'update', clients: rooms[roomId].map(cId => ({
-              id: cId,
-              position: users[cId].position,
-              characterImage: users[cId].characterImage,
-              hasMoved: users[cId].hasMoved,
-              connectedAt: users[cId].connectedAt
-            })) }));
-          });
+        Object.keys(users).forEach(id => {
+          const otherClientsData = Object.keys(users).map(cId => ({
+            id: cId,
+            position: users[cId].position,
+            characterImage: users[cId].characterImage,
+            hasMoved: users[cId].hasMoved,
+            connectedAt: users[cId].connectedAt
+          })).filter(user => user.id !== id);
 
-          if (rooms[roomId].length === 0) {
-            delete rooms[roomId];
-          }
-        }
+          users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+        });
         break;
 
       default:
@@ -109,24 +95,19 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    if (users[userId]) {
-      rooms[roomId] = rooms[roomId].filter(id => id !== userId);
-      delete users[userId];
+    delete users[userId];
 
-      rooms[roomId].forEach(id => {
-        users[id].ws.send(JSON.stringify({ type: 'update', clients: rooms[roomId].map(cId => ({
-          id: cId,
-          position: users[cId].position,
-          characterImage: users[cId].characterImage,
-          hasMoved: users[cId].hasMoved,
-          connectedAt: users[cId].connectedAt
-        })) }));
-      });
+    Object.keys(users).forEach(id => {
+      const otherClientsData = Object.keys(users).map(cId => ({
+        id: cId,
+        position: users[cId].position,
+        characterImage: users[cId].characterImage,
+        hasMoved: users[cId].hasMoved,
+        connectedAt: users[cId].connectedAt
+      })).filter(user => user.id !== id);
 
-      if (rooms[roomId].length === 0) {
-        delete rooms[roomId];
-      }
-    }
+      users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+    });
   });
 });
 
