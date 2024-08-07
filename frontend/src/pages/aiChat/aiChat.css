@@ -1,13 +1,13 @@
 .ai-chat-container {
   display: flex;
   margin: auto;
-  margin-top: 150px;
+  margin-top: 120px;
   text-align: center;
   color: white;
 }
 
 .ai-chat-cam {
-  margin-top: 7%;
+  margin-top: 5%;
 }
 
 /* 미디어 쿼리 추가 */
@@ -38,4 +38,45 @@
     max-width: 90%;
     margin-left: 0; /* 가운데 정렬을 위해 margin-left 제거 */
   }
+}
+
+.aichat-button-bar {
+  display: flex;
+  margin: auto;
+  margin-top: 5%;
+  background-color: rgba(66, 66, 66, 0.50);
+  border-radius: 23px;
+  width: 330px;
+  height: 50px;
+}
+
+.aichat-button-bar p {
+  font-family: 'Pretendard-Regular';
+  font-size: 10px;
+  margin: auto;
+  flex: 1;
+  border-radius: 100px;
+  cursor: pointer;
+}
+
+.aichat-button-bar span {
+  padding-left: 7px;
+  font-size: 10px;
+}
+
+.aichat-button-bar > span {
+  padding-bottom: 3px;
+  margin: auto;
+  font-size: 15px;
+  opacity: 0.3;
+}
+
+
+.aichat-button-bar-type {
+  cursor: pointer;
+  padding: 10px;
+}
+.aichat-button-bar-type.active {
+  color: #6B73A7;
+  font-weight: 700;
 }
