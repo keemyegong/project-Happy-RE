@@ -12,52 +12,63 @@ const server = https.createServer({
 
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
-let users = {};
+const MAX_USERS_PER_ROOM = 6;
+let rooms = {};  // 전역 변수로 rooms 정의
+
+const createNewRoom = () => {
+  const roomId = uuidv4();
+  rooms[roomId] = [];
+  return roomId;
+};
+
+const getRoomWithSpace = () => {
+  for (let roomId in rooms) {
+    if (rooms[roomId].length < MAX_USERS_PER_ROOM) {
+      return roomId;
+    }
+  }
+  return createNewRoom();
+};
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
   const userInfo = { id: userId, connectedAt: Date.now() };
-  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo }));
+
+  // Assign the user to a room
+  const roomId = getRoomWithSpace();
+  rooms[roomId].push({ ws, ...userInfo });
+
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
 
   ws.on('message', async (message) => {
     const data = JSON.parse(message);
 
     switch (data.type) {
       case 'connect':
-        users[userId] = {
-          ws,
-          position: data.position,
-          characterImage: data.characterImage,
-          hasMoved: data.hasMoved,
-          connectedAt: userInfo.connectedAt
-        };
-
-        const allUsers = Object.keys(users).map(id => ({
-          id,
-          position: users[id].position,
-          characterImage: users[id].characterImage,
-          hasMoved: users[id].hasMoved,
-          connectedAt: users[id].connectedAt
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved } : user);
+        const allUsers = rooms[roomId].map(user => ({
+          id: user.id,
+          position: user.position,
+          characterImage: user.characterImage,
+          hasMoved: user.hasMoved,
+          connectedAt: user.connectedAt
         }));
 
-        Object.keys(users).forEach(id => {
-          users[id].ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(user => user.id !== id) }));
+        rooms[roomId].forEach(user => {
+          user.ws.send(JSON.stringify({ type: 'all_users', users: allUsers.filter(u => u.id !== user.id) }));
         });
         break;
 
       case 'move':
-        if (users[userId]) {
-          users[userId].position = data.position;
-          users[userId].hasMoved = data.hasMoved;
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved } : user);
 
-          Object.keys(users).forEach(id => {
-            users[id].ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
-          });
-        }
+        rooms[roomId].forEach(user => {
+          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
+        });
         break;
 
       case 'send_offer':
-        const recipientUser = users[data.recipient];
+        const recipientUser = rooms[roomId].find(user => user.id === data.recipient);
         if (recipientUser) {
           recipientUser.ws.send(JSON.stringify({ type: 'receive_offer', sender: userId }));
         }
@@ -66,26 +77,27 @@ wss.on('connection', (ws) => {
       case 'offer':
       case 'answer':
       case 'candidate':
-        if (users[data.recipient]) {
-          users[data.recipient].ws.send(JSON.stringify(data));
+        const recipient = rooms[roomId].find(user => user.id === data.recipient);
+        if (recipient) {
+          recipient.ws.send(JSON.stringify(data));
         } else {
           console.error(`User ${data.recipient} does not exist`);
         }
         break;
 
       case 'disconnect':
-        delete users[userId];
+        rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
 
-        Object.keys(users).forEach(id => {
-          const otherClientsData = Object.keys(users).map(cId => ({
-            id: cId,
-            position: users[cId].position,
-            characterImage: users[cId].characterImage,
-            hasMoved: users[cId].hasMoved,
-            connectedAt: users[cId].connectedAt
-          })).filter(user => user.id !== id);
+        rooms[roomId].forEach(user => {
+          const otherClientsData = rooms[roomId].map(u => ({
+            id: u.id,
+            position: u.position,
+            characterImage: u.characterImage,
+            hasMoved: u.hasMoved,
+            connectedAt: u.connectedAt
+          }));
 
-          users[id].ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+          user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
         });
         break;
 
@@ -95,21 +107,22 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+    if (rooms[roomId]) {
+      rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
 
-    rooms[roomId].forEach(user => {
-      const otherClientsData = rooms[roomId].map(u => ({
-        id: u.id,
-        position: u.position,
-        characterImage: u.characterImage,
-        hasMoved: u.hasMoved,
-        connectedAt: u.connectedAt
-      }));
+      rooms[roomId].forEach(user => {
+        const otherClientsData = rooms[roomId].map(u => ({
+          id: u.id,
+          position: u.position,
+          characterImage: u.characterImage,
+          hasMoved: u.hasMoved,
+          connectedAt: u.connectedAt
+        }));
 
-      user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
-    });
+        user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+      });
+    }
   });
-
 });
 
 server.listen(5001, () => {
