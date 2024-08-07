@@ -2,6 +2,7 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.UserService;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.Date;
 import java.time.LocalDate;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Tag(name = "Diary")
@@ -46,6 +49,34 @@ public class DiaryController {
                     .body("Diary 추가중 에러: " + e.getMessage());
         }
     }
+
+
+//    @PutMapping("updatesummary")
+//    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestBody Map<String, Object> map) {
+//        System.out.println("updatesummary summart: " + map.toString());
+//        try {
+//            UserEntity userEntity = userService.findByRequest(request);
+//            if (userEntity == null) {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+//            }
+//            System.out.println("user Entity : " + userEntity.toString());
+//            LocalDate today = LocalDate.now();
+//            List<DiaryEntity> todayDiarys = diaryService.findByUserAndDate(userEntity, java.sql.Date.valueOf(today));
+//            if (todayDiarys.isEmpty()) {
+//                //만들고 시작
+//                DiaryEntity diaryEntity = new DiaryEntity();
+//                diaryEntity.setUserEntity(userEntity);
+//                todayDiarys.add(diaryService.insert(diaryEntity));
+//            }
+//            DiaryEntity diaryEntity = todayDiarys.get(0);
+//            System.out.println("Diary Entity : " + diaryEntity.toString());
+//            ArrayList<MessageEntity> messageEntities = messageService.insertMessageDTOList(diaryEntity, messageEntityDTOs);
+//
+//            return ResponseEntity.ok("Successfully created message" + messageEntities);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 생성중 에러: " + e.getMessage());
+//        }
+//    }
 
 
 
