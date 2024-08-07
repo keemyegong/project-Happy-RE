@@ -53,6 +53,27 @@ async def JWTFilter(request: Request, call_next):
     # print(response)
     return response #최종 response
 
+# https 요청 필터링 테스트
+@app.middleware("https")
+async def JWTFilter(request: Request, call_next):
+    token = request.headers.get("Authorization")
+    # print(f"token : {token}")
+    # print(f"BASE_DIR : {BASE_DIR}")
+    if token and token.startswith("Bearer"):
+        token = token[len("Bearer "):]
+        try:
+            decode_jwt(token)
+            # print('decoding 성공')
+        except HTTPException as e:
+            print(e)
+            print("rejected")
+            raise HTTPException(status_code=401, detail="Could not validate credential")
+            
+    #postprocessing
+    response = await call_next(request)
+    # print(response)
+    return response #최종 response
+
 
 if __name__ == "__main__":
     import uvicorn
