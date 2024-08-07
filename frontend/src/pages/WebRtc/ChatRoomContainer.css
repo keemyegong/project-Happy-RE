@@ -3,6 +3,7 @@
   display: flex;
   height: 100vh;
   background-color: rgba(66, 78, 101, 0);
+  flex-direction: column;
 }
 
 .graph-chat-container {
@@ -20,8 +21,9 @@
 
 .audio-effect-container {
   background-color: rgba(240, 248, 255, 0);
+  align-content: center;
+  align-self: center;
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-left: 30%;
+  margin-right: 30%;
 }

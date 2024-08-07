@@ -1,3 +1,8 @@
+use happyre;
+
+DROP TABLE IF EXISTS `user_message_archived`;
+DROP TABLE IF EXISTS `user_message_attached_keyword`;
+DROP TABLE IF EXISTS `user_message`;
 DROP TABLE IF EXISTS `keyword_emotion`;
 DROP TABLE IF EXISTS `diary_emotion`;
 DROP TABLE IF EXISTS `emotion`;
@@ -40,6 +45,7 @@ CREATE TABLE `keyword` (
   `summary` text,
   `russell_x` double DEFAULT NULL,
   `russell_y` double DEFAULT NULL,
+  `archived` boolean DEFAULT false,
   PRIMARY KEY (`keyword_id`),
   KEY `diary_id` (`diary_id`),
   CONSTRAINT `keyword_ibfk_1` FOREIGN KEY (`diary_id`) REFERENCES `diary` (`diary_id`) ON DELETE CASCADE
@@ -56,6 +62,7 @@ CREATE TABLE `message` (
   `audio_key` varchar(255) DEFAULT NULL,
   `russell_x` double DEFAULT NULL,
   `russell_y` double DEFAULT NULL,
+  `archived` boolean DEFAULT false,
   PRIMARY KEY (`message_id`),
   UNIQUE KEY `audio_key` (`audio_key`),
   KEY `diary_id` (`diary_id`),
@@ -82,4 +89,28 @@ CREATE TABLE `diary_emotion` (
   PRIMARY KEY (`diary_emotion_id`),
   KEY `diary_id` (`diary_id`),
   CONSTRAINT `diary_emotion_ibfk_1` FOREIGN KEY (`diary_id`) REFERENCES `diary` (`diary_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `user_message` (
+	`user_message_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`user_id` int NOT NULL,
+	`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`content` text,
+	 CONSTRAINT `user_message_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `user_message_attached_keyword` (
+	`user_message_attached_keyword_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`user_message_id` int NOT NULL,
+	`keyword_id` int NOT NULL,
+	FOREIGN KEY (`user_message_id`) REFERENCES `user_message`(`user_message_id`) ON DELETE CASCADE,
+	FOREIGN KEY (`keyword_id`) REFERENCES `keyword`(`keyword_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `user_message_archived` (
+	`user_message_archived_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`user_id` int NOT NULL,
+	`user_message_id` int NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
+	FOREIGN KEY (`user_message_id`) REFERENCES `user_message`(`user_message_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

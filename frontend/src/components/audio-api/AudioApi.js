@@ -1,13 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = React.forwardRef((props, ref) => {
+const AudioEffect = forwardRef((props, ref) => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const bufferLengthRef = useRef(null);
-  const streams = useRef({});
 
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -25,7 +24,7 @@ const AudioEffect = React.forwardRef((props, ref) => {
       analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
 
       canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
       canvasCtx.beginPath();
@@ -53,22 +52,6 @@ const AudioEffect = React.forwardRef((props, ref) => {
     drawWaveform();
   }, []);
 
-  React.useImperativeHandle(ref, () => ({
-    addStream: (userId, stream) => {
-      if (!streams.current[userId]) {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-        streams.current[userId] = source;
-      }
-    },
-    removeStream: (userId) => {
-      if (streams.current[userId]) {
-        streams.current[userId].disconnect(analyserRef.current);
-        delete streams.current[userId];
-      }
-    }
-  }));
-
   useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
@@ -84,6 +67,14 @@ const AudioEffect = React.forwardRef((props, ref) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    addMediaElement: (element) => {
+      const source = audioContextRef.current.createMediaElementSource(element);
+      source.connect(analyserRef.current);
+      source.connect(audioContextRef.current.destination); // 연결된 오디오를 스피커로 출력
+    }
+  }));
 
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
 });
