@@ -234,6 +234,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
+        // AudioEffect에 스트림 추가
+        if (audioEffectRef.current) {
+          audioEffectRef.current.addStream(userId, event.streams[0]);
+        }
       }
     };
 
@@ -406,9 +410,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           />
         </div>
         <div className='audio-effect-container'>
-          <AudioEffect
-            stream={audioEffectRef}
-          />
+          <AudioEffect ref={audioEffectRef} />
         </div>
       </div>
       <CharacterList 
