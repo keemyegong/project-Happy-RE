@@ -102,7 +102,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public void updateArchive(int keywordId, boolean archive) {
-        Optional<KeywordEntity> keywordEntityOptional  = keywordRepository.findById(keywordId);
+        Optional<KeywordEntity> keywordEntityOptional = keywordRepository.findById(keywordId);
         if (keywordEntityOptional.isPresent()) {
             KeywordEntity keywordEntity = keywordEntityOptional.get();
             keywordEntity.setArchived(archive);

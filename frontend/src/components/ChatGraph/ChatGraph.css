@@ -39,13 +39,13 @@
   .x-tick {
     width: 2px;
     height: 10px;
-    top: calc(50% - 5px);
+    top: calc(50% - 4px);
   }
   
   .y-tick {
     height: 2px;
     width: 10px;
-    left: calc(50% - 5px);
+    left: calc(50% - 4px);
   }
   
   .radar-pulse, .radar-pulse-small {
