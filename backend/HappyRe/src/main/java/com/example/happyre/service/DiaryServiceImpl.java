@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +69,15 @@ public class DiaryServiceImpl implements DiaryService {
     public void delete(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).orElseThrow();
         diaryRepository.delete(matchingEntity);
+    }
+
+    @Override
+    public List<DiaryEntity> searchForWeek(UserEntity userEntity, Date date, Integer period) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_YEAR, period);
+        Date endDate = new Date(calendar.getTimeInMillis());
+        return diaryRepository.findByUserEntityAndDateRange(userEntity, date, endDate);
     }
 
 
