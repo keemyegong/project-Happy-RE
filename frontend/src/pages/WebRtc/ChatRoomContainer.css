@@ -19,6 +19,7 @@
 }
 
 .audio-effect-container {
+  background-color: rgba(240, 248, 255, 0);
   flex: 1;
   display: flex;
   justify-content: center;

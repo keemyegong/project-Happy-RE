@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioApi from '../../components/audio-api/AudioApi'; // Import AudioApi component
+import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -22,6 +22,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
+  const audioEffectRef = useRef(null); // 추가된 부분
 
   useEffect(() => {
     positionRef.current = position;
@@ -249,6 +250,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (peerConnections[userId]) {
           delete peerConnections[userId].pendingCandidates;
         }
+        // AudioEffect에서도 제거
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(userId);
+        }
       }
     };
 
@@ -373,6 +378,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       delete peerConnections[userId];
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
+      // AudioEffect에서도 제거
+      if (audioEffectRef.current) {
+        audioEffectRef.current.removeStream(userId);
+      }
     }
   };
 
@@ -387,14 +396,20 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   return (
     <div className="chat-room-container" ref={containerRef}>
       <div className="graph-chat-container">
-        <CoordinatesGraph 
-          position={position} 
-          users={users} 
-          movePosition={movePosition} 
-          localAudioRef={localAudioRef} 
-          userImage={userImage} 
-        />
-        <AudioApi stream={stream} />
+        <div className='coordinates-graph-container'>
+          <CoordinatesGraph 
+            position={position} 
+            users={users} 
+            movePosition={movePosition} 
+            localAudioRef={localAudioRef} 
+            userImage={userImage} 
+          />
+        </div>
+        <div className='audio-effect-container'>
+          <AudioEffect
+            stream={audioEffectRef}
+          />
+        </div>
       </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
