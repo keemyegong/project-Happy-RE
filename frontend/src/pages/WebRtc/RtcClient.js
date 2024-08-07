@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
+import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -106,7 +106,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -133,7 +133,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         })));
       }
     };
@@ -174,7 +174,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           }
         }
 
-        // 그룹에 속한 유저들과 연결
         newNearbyUsers.forEach(nearbyUser => {
           if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
             const peerConnection = createPeerConnection(nearbyUser.id);
@@ -185,7 +184,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           }
         });
 
-        // 그룹에 추가
         if (!newGroups[user.id]) {
           newGroups[user.id] = [];
         }
@@ -201,7 +199,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
     });
 
-    // 그룹 내 연결 처리
     Object.keys(newGroups).forEach(userId => {
       newGroups[userId].forEach(nearbyUserId => {
         if (!peerConnections[nearbyUserId]) {
@@ -251,7 +248,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
         }
-        // ICE 후보 초기화
         if (peerConnections[userId]) {
           delete peerConnections[userId].pendingCandidates;
         }
@@ -336,7 +332,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
 
-    // Add pending ICE candidates if any
     const pendingCandidates = peerConnections[sender].pendingCandidates || [];
     for (const candidate of pendingCandidates) {
       await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -364,7 +359,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      // Save pending ICE candidates
       if (!peerConnections[sender].pendingCandidates) {
         peerConnections[sender].pendingCandidates = [];
       }

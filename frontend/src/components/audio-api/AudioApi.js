@@ -9,20 +9,21 @@ const AudioEffect = () => {
   const bufferLengthRef = useRef(null);
 
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    analyserRef.current.fftSize = 2048;
-    bufferLengthRef.current = analyserRef.current.frequencyBinCount;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    bufferLengthRef.current = analyser.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
-
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
-      analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
+      analyser.getByteTimeDomainData(dataArrayRef.current);
 
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
       canvasCtx.beginPath();
@@ -49,10 +50,24 @@ const AudioEffect = () => {
 
     drawWaveform();
 
+    // Capture all audio output
+    const dest = audioContext.createMediaStreamDestination();
+    const source = audioContext.createMediaElementSource(new Audio());
+    source.connect(analyser);
+    analyser.connect(dest);
+
+    audioContextRef.current = audioContext;
+    analyserRef.current = analyser;
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight / 5;
+      const canvas = canvasRef.current;
+      if (container) {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight / 5;
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -60,19 +75,10 @@ const AudioEffect = () => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     };
-  }, []);
-
-  useEffect(() => {
-    const audioContext = audioContextRef.current;
-    const analyser = analyserRef.current;
-
-    const audioElement = document.querySelector('audio');
-    if (audioElement) {
-      const source = audioContext.createMediaElementSource(audioElement);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-    }
   }, []);
 
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
