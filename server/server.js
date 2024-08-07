@@ -109,16 +109,18 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     if (rooms[roomId]) {
       rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
-
+  
       rooms[roomId].forEach(user => {
-        const otherClientsData = rooms[roomId].map(u => ({
-          id: u.id,
-          position: u.position,
-          characterImage: u.characterImage,
-          hasMoved: u.hasMoved,
-          connectedAt: u.connectedAt
-        }));
-
+        const otherClientsData = rooms[roomId]
+          .filter(u => u.id !== user.id)  // 현재 유저를 제외한 다른 유저들만 포함
+          .map(u => ({
+            id: u.id,
+            position: u.position,
+            characterImage: u.characterImage,
+            hasMoved: u.hasMoved,
+            connectedAt: u.connectedAt
+          }));
+  
         user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
       });
     }
