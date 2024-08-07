@@ -8,6 +8,7 @@ import com.example.happyre.repository.UserMessageArchivedRepository;
 import com.example.happyre.service.UserMessageArchivedService;
 import com.example.happyre.service.UserMessageService;
 import com.example.happyre.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +41,11 @@ public class UserMessageController {
         }
     }
 
+    @Operation(summary = "유저 메세지 추출", description = "현재 로그인된 사용자가 작성하지 않은 유저 메세지들 중에서 몇 개를 추출하여 가져옵니다.")
     @GetMapping("/{size}")
-    public ResponseEntity<?> sample(@PathVariable Integer size){
+    public ResponseEntity<?> sample(HttpServletRequest request, @PathVariable Integer size){
         try{
-            return ResponseEntity.ok(userMessageService.sample(size));
+            return ResponseEntity.ok(userMessageService.sample(size, userService.findByRequest(request)));
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("UserMessage 샘플링중 에러: " + e.getMessage());
         }

@@ -15,5 +15,6 @@ public interface UserMessageService {
 
     List<UserMessageEntity> findArchivedByUserEntity(UserEntity userEntity);
 
-    List<UserMessageEntity> sample(Integer size);
+    //특정 유저가 생성하지 않은 UserMessage 랜덤으로 size 개 추출
+    List<UserMessageEntity> sample(Integer size, UserEntity userEntity);
 }

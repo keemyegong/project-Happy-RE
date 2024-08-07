@@ -53,7 +53,7 @@ public class UserMessageServiceImpl implements UserMessageService{
     }
 
     @Override
-    public List<UserMessageEntity> sample(Integer size){
-        return userMessageRepository.findRandomEntities(size);
+    public List<UserMessageEntity> sample(Integer size, UserEntity userEntity){
+        return userMessageRepository.findRandomEntities(size, userEntity.getId());
     }
 }
