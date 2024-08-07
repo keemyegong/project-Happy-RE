@@ -6,6 +6,7 @@ import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 
 import java.util.ArrayList;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,36 +52,6 @@ public class DiaryController {
                     .body("Diary 추가중 에러: " + e.getMessage());
         }
     }
-
-
-//    @PutMapping("updatesummary")
-//    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestBody Map<String, Object> map) {
-//        System.out.println("updatesummary summart: " + map.toString());
-//        try {
-//            UserEntity userEntity = userService.findByRequest(request);
-//            if (userEntity == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-//            }
-//            System.out.println("user Entity : " + userEntity.toString());
-//            LocalDate today = LocalDate.now();
-//            List<DiaryEntity> todayDiarys = diaryService.findByUserAndDate(userEntity, java.sql.Date.valueOf(today));
-//            if (todayDiarys.isEmpty()) {
-//                //만들고 시작
-//                DiaryEntity diaryEntity = new DiaryEntity();
-//                diaryEntity.setUserEntity(userEntity);
-//                todayDiarys.add(diaryService.insert(diaryEntity));
-//            }
-//            DiaryEntity diaryEntity = todayDiarys.get(0);
-//            System.out.println("Diary Entity : " + diaryEntity.toString());
-//            ArrayList<MessageEntity> messageEntities = messageService.insertMessageDTOList(diaryEntity, messageEntityDTOs);
-//
-//            return ResponseEntity.ok("Successfully created message" + messageEntities);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Message 생성중 에러: " + e.getMessage());
-//        }
-//    }
-
-
 
     @GetMapping("/{diaryId}")
     public ResponseEntity<?> getDiary(HttpServletRequest request, @PathVariable int diaryId) {
@@ -123,6 +96,33 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Diary 가져오는중 에러: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
+    @PutMapping("/updatesummary")
+    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestParam("summary") String summary) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+            DiaryEntity diaryEntity;
+            if (diaryEntityList.size() == 0) {
+                logger.warn("Diary 없음. 새로 만든다.");
+                diaryEntity = new DiaryEntity();
+                diaryEntity.setUserEntity(userEntity);
+                diaryEntity.setSummary(summary);
+                diaryService.insert(diaryEntity);
+            } else {
+                diaryEntity = diaryEntityList.get(0);
+                diaryEntity.setSummary(summary);
+                diaryService.update(diaryEntity);
+            }
+            return ResponseEntity.ok("업데이트 완료");
+        } catch (AccessDeniedException ade) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Diary Summary 편집중 에러: " + e.getMessage());
         }
     }
 
