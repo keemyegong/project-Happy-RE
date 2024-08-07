@@ -69,13 +69,15 @@ const AudioEffect = forwardRef((props, ref) => {
       if (Object.keys(streams.current).length === 0) {
         // Reset the analyser if no streams are left
         analyserRef.current.disconnect();
-        audioContextRef.current.close().then(() => {
-          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-          analyserRef.current = audioContextRef.current.createAnalyser();
-          analyserRef.current.fftSize = 2048;
-          bufferLengthRef.current = analyserRef.current.frequencyBinCount;
-          dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
-        });
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close().then(() => {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            analyserRef.current = audioContextRef.current.createAnalyser();
+            analyserRef.current.fftSize = 2048;
+            bufferLengthRef.current = analyserRef.current.frequencyBinCount;
+            dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
+          });
+        }
       }
     }
   }));
