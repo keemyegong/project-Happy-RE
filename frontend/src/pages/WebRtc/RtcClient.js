@@ -64,7 +64,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition)
+    console.log(newPosition);
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
@@ -345,42 +345,46 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for answer');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.signalingState !== 'have-local-offer') {
       console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       return;
     }
-
-    await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-
-    // Add pending ICE candidates if any
-    const pendingCandidates = peerConnections[sender].pendingCandidates || [];
-    for (const candidate of pendingCandidates) {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  
+    try {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
+      // Add pending ICE candidates if any
+      const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+      for (const candidate of pendingCandidates) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+      peerConnections[sender].pendingCandidates = [];
+    } catch (error) {
+      console.error('Error handling answer:', error);
     }
-    peerConnections[sender].pendingCandidates = [];
   };
+  
 
   const handleCandidate = async (candidate, sender) => {
     if (!sender) {
       console.error('No sender provided for candidate');
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.remoteDescription) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -388,7 +392,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      // Save pending ICE candidates
       if (!peerConnections[sender].pendingCandidates) {
         peerConnections[sender].pendingCandidates = [];
       }

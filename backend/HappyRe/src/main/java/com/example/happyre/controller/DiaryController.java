@@ -40,15 +40,13 @@ public class DiaryController {
     private final MessageService messageService;
     private final KeywordService keywordService;
 
+    @Operation(summary = "새 Diary 생성", description = "date를 null(빈 string 아님!) 로 설정하면 오늘 날짜로 생성을 시도합니다.\n date format은 yyyy-mm-dd hh:mm:ss 입니다.")
     @PostMapping("/")
     public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody DiaryEntityDTO diaryEntityDTO) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
-            DiaryEntity diaryEntity = new DiaryEntity();
-            diaryEntity.setUserEntity(userEntity);
-            diaryEntity.setSummary(diaryEntityDTO.getSummary());
-            DiaryEntity savedDiary = diaryService.insert(diaryEntity);
-            return ResponseEntity.ok(savedDiary);
+            diaryEntityDTO.setUserId(userEntity.getId());
+            return ResponseEntity.ok(diaryService.insertDTO(diaryEntityDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Diary 추가중 에러: " + e.getMessage());
