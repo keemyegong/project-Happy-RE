@@ -20,17 +20,16 @@ public class DiaryEntity {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    //TODO: Simplify: 사실상 DB에 아무것도 안 넣겠다는 말이라 좀 봐야함.
-    //    @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Column(nullable = false)
+
     private Timestamp date;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         if (date == null) {
             date = new Timestamp(System.currentTimeMillis());
         }
     }
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String summary;
 

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {
@@ -15,7 +16,6 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {
     List<DiaryEntity> findByUserEntityAndDate(@Param("userEntity") UserEntity userEntity, @Param("currentDate") Date currentDate);
 
     List<DiaryEntity> findByUserEntity(UserEntity userEntity);
-
 
     @Query("SELECT d FROM DiaryEntity d WHERE d.userEntity = :userEntity AND d.date > :startDate AND d.date <= :endDate")
     List<DiaryEntity> findByUserEntityAndDateRange(@Param("userEntity") UserEntity userEntity, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
