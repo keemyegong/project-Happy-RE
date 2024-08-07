@@ -405,7 +405,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <div className="graph-chat-container">
         <div className='coordinates-graph-container'>
           <CoordinatesGraph 
             position={position} 
@@ -418,7 +417,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         <div className='audio-effect-container'>
           <AudioEffect ref={audioEffectRef} />
         </div>
-      </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 
