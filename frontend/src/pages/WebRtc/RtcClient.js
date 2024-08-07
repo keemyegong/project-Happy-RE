@@ -13,6 +13,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
+  const [roomId, setRoomId] = useState(null); // Add roomId state
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
@@ -33,7 +34,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     window.addEventListener('beforeunload', () => {
-      client.send(JSON.stringify({ type: 'disconnect' }));
+      client.send(JSON.stringify({ type: 'disconnect', roomId })); // Include roomId in disconnect
       client.close();
     });
 
@@ -42,7 +43,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [roomId]);
 
   const movePosition = (dx, dy) => {
     const newPosition = { 
@@ -54,7 +55,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, roomId })); // Include roomId in move
     }
   };
 
@@ -96,11 +97,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       const dataFromServer = JSON.parse(message.data);
       if (dataFromServer.type === 'assign_id') {
         setClientId(dataFromServer.id);
+        setRoomId(dataFromServer.roomId); // Set roomId
         client.send(JSON.stringify({
           type: 'connect',
           position,
           characterImage: userImage,
-          hasMoved
+          hasMoved,
+          roomId: dataFromServer.roomId // Include roomId in connect
         }));
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
@@ -224,7 +227,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           type: 'candidate',
           candidate: event.candidate,
           sender: clientId,
-          recipient: userId
+          recipient: userId,
+          roomId // Include roomId in candidate
         }));
       }
     };
@@ -267,7 +271,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               type: 'offer',
               offer: offer.sdp,
               recipient: recipientId,
-              sender: clientId
+              sender: clientId,
+              roomId // Include roomId in offer
             }));
           })
           .catch(error => console.error('Error setting local description:', error));
@@ -297,7 +302,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         type: 'answer',
         answer: answer.sdp,
         sender: clientId,
-        recipient: sender
+        recipient: sender,
+        roomId // Include roomId in answer
       }));
 
       if (peerConnection.signalingState === 'have-remote-offer') {
