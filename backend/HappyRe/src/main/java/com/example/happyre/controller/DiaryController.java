@@ -112,7 +112,7 @@ public class DiaryController {
 
 
 
-    @GetMapping("/detail")
+    @GetMapping("/detail/")
     public ResponseEntity<?> getDiaryDetail(HttpServletRequest request,
                                       @RequestParam(required = false) Integer diaryid) {
         try {
