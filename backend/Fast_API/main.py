@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Body
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from packages.dependencies import decode_jwt
 
@@ -36,13 +36,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 @app.middleware("http")
 async def JWTFilter(request: Request, call_next):
     token = request.headers.get("Authorization")
-    # print(f"token : {token}")
-    # print(f"BASE_DIR : {BASE_DIR}")
     if token and token.startswith("Bearer"):
         token = token[len("Bearer "):]
         try:
             decode_jwt(token)
-            # print('decoding 성공')
+
         except HTTPException as e:
             print(e)
             print("rejected")
@@ -57,8 +55,7 @@ async def JWTFilter(request: Request, call_next):
 @app.middleware("https")
 async def JWTFilter(request: Request, call_next):
     token = request.headers.get("Authorization")
-    # print(f"token : {token}")
-    # print(f"BASE_DIR : {BASE_DIR}")
+
     if token and token.startswith("Bearer"):
         token = token[len("Bearer "):]
         try:
