@@ -16,11 +16,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
+  const streamRef = useRef(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(new Audio());
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -174,6 +174,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           }
         }
 
+        // 그룹에 속한 유저들과 연결
         newNearbyUsers.forEach(nearbyUser => {
           if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
             const peerConnection = createPeerConnection(nearbyUser.id);
@@ -184,6 +185,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           }
         });
 
+        // 그룹에 추가
         if (!newGroups[user.id]) {
           newGroups[user.id] = [];
         }
@@ -199,6 +201,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
     });
 
+    // 그룹 내 연결 처리
     Object.keys(newGroups).forEach(userId => {
       newGroups[userId].forEach(nearbyUserId => {
         if (!peerConnections[nearbyUserId]) {
@@ -234,9 +237,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-        localAudioRef.current.play();
+      if (streamRef.current) {
+        const newStream = new MediaStream(event.streams[0].getTracks());
+        const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+        currentTracks.forEach(track => newStream.addTrack(track));
+        streamRef.current.srcObject = newStream;
+      } else {
+        streamRef.current = new MediaStream(event.streams[0].getTracks());
       }
     };
 
@@ -246,9 +253,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
+        if (streamRef.current) {
+          const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+          const newStream = new MediaStream(currentTracks.filter(track => track.readyState === 'live'));
+          streamRef.current.srcObject = newStream;
         }
+        // ICE 후보 초기화
         if (peerConnections[userId]) {
           delete peerConnections[userId].pendingCandidates;
         }
@@ -333,6 +343,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
 
+    // Add pending ICE candidates if any
     const pendingCandidates = peerConnections[sender].pendingCandidates || [];
     for (const candidate of pendingCandidates) {
       await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -360,6 +371,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
+      // Save pending ICE candidates
       if (!peerConnections[sender].pendingCandidates) {
         peerConnections[sender].pendingCandidates = [];
       }
@@ -392,12 +404,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             position={position} 
             users={users} 
             movePosition={movePosition} 
-            localAudioRef={localAudioRef} 
             userImage={userImage} 
           />
         </div>
         <div className='audio-effect-container'>
-          <AudioEffect />
+          <AudioEffect stream={streamRef.current} />
         </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
