@@ -300,11 +300,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  const movePosition = (dx, dy, isKeyboard = false) => {
-    const newPosition = isKeyboard
-      ? { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId }
-      : { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId };
-    console.log(newPosition)
+  const movePosition = (dx, dy) => {
+    const newPosition = { 
+      x: Math.min(1, Math.max(-1, position.x + dx)), 
+      y: Math.min(1, Math.max(-1, position.y + dy)), 
+      id: clientId 
+    };
+    console.log(newPosition);
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
@@ -312,25 +314,25 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
   
-
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.025, true);
+        movePosition(0, 0.025);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.025, true);
+        movePosition(0, -0.025);
         break;
       case 'ArrowLeft':
-        movePosition(-0.025, 0, true);
+        movePosition(-0.025, 0);
         break;
       case 'ArrowRight':
-        movePosition(0.025, 0, true);
+        movePosition(0.025, 0);
         break;
       default:
         break;
     }
   };
+  
 
   const handleScroll = (direction) => {
     if (direction === 'up') {
