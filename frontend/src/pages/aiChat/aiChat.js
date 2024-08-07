@@ -24,11 +24,28 @@ const AIChat = () => {
   const [activeButton, setActiveButton] = useState('type');
   const [isCamEnabled, setIsCamEnabled] = useState(true);
   const [userInputCount, setUserInputCount] = useState(0); // 유저 인풋 카운트 상태 추가
+  const persona = localStorage.getItem("personaNumber");
 
   // 처음 인삿말 받아오기
   useEffect(() => {
     setIsButtonDisabled(true);
 
+    if (persona === null){
+      axios.get(`${universal.defaultUrl}/api/user/me`,
+        {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
+      ).then((Response)=>{
+        localStorage.setItem("personaNumber", Response.data.myfrog);
+
+      }).then((response)=>{
+        sendStart(localStorage.getItem("personaNumber"));
+      })
+    } else{
+      sendStart(localStorage.getItem("personaNumber"));
+    }
+
+  }, [universal.fastUrl]);
+
+  const sendStart = (persona)=>{
     axios.post(
       `${universal.fastUrl}/fastapi/chatbot/`,
       { user_input: '안녕하세요', audio: '', request: 'chatbot' },
@@ -36,7 +53,7 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
-          persona: 2,
+          persona,
         }
       }
     ).then((response) => {
@@ -45,47 +62,49 @@ const AIChat = () => {
     }).catch((error) => {
       console.error("Error fetching initial message: ", error);
     });
-  }, [universal.fastUrl]);
-
+    
+  }
   const endChatSession = () => {
     // 1. 채팅 로그 스프링 저장 요청
     axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`,
         withCredentials: true,
-        persona: 2,
+        persona,
       }
     }).then((response) => {
       console.log("Chat log saved:", response.data);
+      // 3. 로컬 오디오 파일 s3 업로드 요청
+      axios.post(`${universal.fastUrl}/fastapi/api/s3_upload`, {}, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+          persona,
+        }
+      }).then((response) => {
+        console.log("Audio file uploaded to S3:", response.data);
+        // 2. 다이어리 요약 전송 및 세션 삭제 요청
+        axios.delete(`${universal.fastUrl}/fastapi/chatbot/`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get('Authorization')}`,
+            withCredentials: true,
+            persona,
+          }
+        }).then((response) => {
+          console.log("Session ended and diary summary sent:", response.data);
+        }).catch((error) => {
+          console.error("Error ending session:", error);
+        });
+      }).catch((error) => {
+        console.error("Error uploading audio file to S3:", error);
+      });
     }).catch((error) => {
       console.error("Error saving chat log:", error);
     });
 
-    // 2. 다이어리 요약 전송 및 세션 삭제 요청
-    axios.delete(`${universal.fastUrl}/fastapi/chatbot/`, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get('Authorization')}`,
-        withCredentials: true,
-        persona: 2,
-      }
-    }).then((response) => {
-      console.log("Session ended and diary summary sent:", response.data);
-    }).catch((error) => {
-      console.error("Error ending session:", error);
-    });
 
-    // 3. 로컬 오디오 파일 s3 업로드 요청
-    axios.post(`${universal.fastUrl}/fastapi/api/s3_upload`, {}, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get('Authorization')}`,
-        withCredentials: true,
-        persona: 2,
-      }
-    }).then((response) => {
-      console.log("Audio file uploaded to S3:", response.data);
-    }).catch((error) => {
-      console.error("Error uploading audio file to S3:", error);
-    });
+
+
   };
 
   // 녹음 시작
@@ -118,7 +137,7 @@ const AIChat = () => {
             'Content-Type': 'audio/mpeg',
             Authorization: `Bearer ${Cookies.get('Authorization')}`,
             withCredentials: true,
-            persona: 2,
+            persona,
           }
         }
       ).then((response) => {
@@ -135,7 +154,7 @@ const AIChat = () => {
             headers: {
               Authorization: `Bearer ${Cookies.get('Authorization')}`,
               withCredentials: true,
-              persona: 2,
+              persona,
             }
           }
         ).then((response) => {
@@ -243,7 +262,7 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
-          persona: 2,
+          persona,
         }
       }
     ).then((response) => {
@@ -296,7 +315,7 @@ const AIChat = () => {
       <div className='container ai-chat-container'>
         <div className='row ai-chat-components'>
           <div className='col-6 ai-chat-cam'>
-            <ChatCam isCamEnabled={isCamEnabled} />
+            <ChatCam isCamEnabled={isCamEnabled} persona={persona} />
             <div className='aichat-button-bar'>
               <p className={`aichat-button-bar-type ${activeButton === 'type' ? 'active' : ''}`} onClick={() => toggleMic('type')}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-keyboard" viewBox="0 0 16 16">
@@ -351,6 +370,7 @@ const AIChat = () => {
               eventStoping={eventStoping}
               isButtonDisabled={isButtonDisabled}
               endChatSession={endChatSession} // 채팅 종료 함수 전달
+              persona={persona}
             />
 
           </div>
