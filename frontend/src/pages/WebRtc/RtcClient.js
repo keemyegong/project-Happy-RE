@@ -16,12 +16,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
-  const streamRef = useRef(new MediaStream());
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
+  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
+  const audioEffectRef = useRef(null);
 
   useEffect(() => {
     positionRef.current = position;
@@ -36,14 +37,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     window.addEventListener('beforeunload', () => {
       client.send(JSON.stringify({ type: 'disconnect' }));
       client.close();
+      cleanupConnections();
     });
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      client.close();
     };
   }, []);
+
+  const cleanupConnections = () => {
+    Object.keys(peerConnections).forEach(userId => {
+      peerConnections[userId].peerConnection.close();
+      delete peerConnections[userId];
+      if (audioEffectRef.current) {
+        audioEffectRef.current.removeStream(userId);
+      }
+    });
+  };
 
   const movePosition = (dx, dy) => {
     const newPosition = { 
@@ -106,7 +119,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -133,7 +146,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+          position: user.position || { x: 0, y: 0 }
         })));
       }
     };
@@ -197,6 +210,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(user.id);
+        }
         console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
@@ -237,16 +253,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (streamRef.current) {
-        const inboundStream = event.streams[0];
-        inboundStream.getTracks().forEach(track => {
-          if (track.kind === 'audio') {
-            streamRef.current.addTrack(track);
-          }
-        });
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
+        // AudioEffect에 스트림 추가
+        if (audioEffectRef.current) {
+          audioEffectRef.current.addStream(userId, event.streams[0]);
+        }
       }
     };
-    
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
@@ -254,12 +268,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (streamRef.current) {
-          streamRef.current.srcObject = null;
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
         }
         // ICE 후보 초기화
         if (peerConnections[userId]) {
           delete peerConnections[userId].pendingCandidates;
+        }
+        // AudioEffect에서도 제거
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(userId);
         }
       }
     };
@@ -385,6 +403,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       delete peerConnections[userId];
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
+      // AudioEffect에서도 제거
+      if (audioEffectRef.current) {
+        audioEffectRef.current.removeStream(userId);
+      }
     }
   };
 
@@ -398,13 +420,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <CoordinatesGraph 
-        position={position} 
-        users={users} 
-        movePosition={movePosition} 
-        userImage={userImage} 
-      />
-      <AudioEffect stream={streamRef.current} />
+        <div className='coordinates-graph-container'>
+          <CoordinatesGraph 
+            position={position} 
+            users={users} 
+            movePosition={movePosition} 
+            localAudioRef={localAudioRef} 
+            userImage={userImage} 
+          />
+        </div>
+        <div className='audio-effect-container'>
+          <AudioEffect ref={audioEffectRef} />
+        </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 

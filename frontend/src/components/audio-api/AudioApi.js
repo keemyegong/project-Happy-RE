@@ -1,35 +1,31 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import './AudioApi.css';
 
-const AudioEffect = ({ stream }) => {
+const AudioEffect = forwardRef((props, ref) => {
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const bufferLengthRef = useRef(null);
+  const streams = useRef({});
 
   useEffect(() => {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    bufferLengthRef.current = analyser.frequencyBinCount;
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    analyserRef.current = audioContextRef.current.createAnalyser();
+    analyserRef.current.fftSize = 2048;
+    bufferLengthRef.current = analyserRef.current.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
-
-    if (stream && stream.getAudioTracks().length > 0) {
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-    }
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
     const drawWaveform = () => {
       requestAnimationFrame(drawWaveform);
-      analyser.getByteTimeDomainData(dataArrayRef.current);
+      analyserRef.current.getByteTimeDomainData(dataArrayRef.current);
 
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
       canvasCtx.lineWidth = 2;
       canvasCtx.strokeStyle = 'white';
       canvasCtx.beginPath();
@@ -55,25 +51,43 @@ const AudioEffect = ({ stream }) => {
     };
 
     drawWaveform();
+  }, []);
 
-    audioContextRef.current = audioContext;
-    analyserRef.current = analyser;
-
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
+  useImperativeHandle(ref, () => ({
+    addStream: (userId, stream) => {
+      if (!streams.current[userId]) {
+        const source = audioContextRef.current.createMediaStreamSource(stream);
+        source.connect(analyserRef.current);
+        streams.current[userId] = source;
       }
-    };
-  }, [stream]);
+    },
+    removeStream: (userId) => {
+      if (streams.current[userId]) {
+        streams.current[userId].disconnect(analyserRef.current);
+        delete streams.current[userId];
+      }
+      if (Object.keys(streams.current).length === 0) {
+        // Reset the analyser if no streams are left
+        analyserRef.current.disconnect();
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close().then(() => {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            analyserRef.current = audioContextRef.current.createAnalyser();
+            analyserRef.current.fftSize = 2048;
+            bufferLengthRef.current = analyserRef.current.frequencyBinCount;
+            dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
+          });
+        }
+      }
+    }
+  }));
 
   useEffect(() => {
     const handleResize = () => {
       const container = document.querySelector('.coordinates-graph-container');
       const canvas = canvasRef.current;
-      if (container) {
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight / 5;
-      }
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight / 5;
     };
 
     window.addEventListener('resize', handleResize);
@@ -85,6 +99,6 @@ const AudioEffect = ({ stream }) => {
   }, []);
 
   return <canvas ref={canvasRef} className="audio-effect-canvas" />;
-};
+});
 
 export default AudioEffect;
