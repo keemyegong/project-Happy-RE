@@ -40,6 +40,7 @@ const AIChat = () => {
         }
       }
     ).then((response) => {
+      console.log(response)
       const initialMessage = response.data.content;
       setChatHistory([{ type: 'ai', content: initialMessage }]);
     }).catch((error) => {

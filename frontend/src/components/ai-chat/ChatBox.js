@@ -95,8 +95,9 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
           <input
               type="text"
               className={`chat-box-footer-input form-control ${!isMicMuted ? 'recording' : ''}`}
-              value={isMicMuted ? userInput : 'Recording now......'}
+              value={isMicMuted ? userInput : 'Enter를 누르거나 SEND 버튼을 누르면 음성이 전송돼요!'}
               onChange={(e) => setUserInput(e.target.value)}
+              onKeyPress={(e) => { if (e.key === 'Enter') onSendClick(); }}
               disabled={!isMicMuted}
               placeholder='음성 대화를 원하면 REC 버튼을 눌러 주세요!'
             />
