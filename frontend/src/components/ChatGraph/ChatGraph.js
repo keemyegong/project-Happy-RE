@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from 'react';
 import './ChatGraph.css';
 
-const ChatGraph = ({ position = { x: 0, y: 0 }, users, movePosition, localAudioRef, userImage }) => {
+const CoordinatesGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localAudioRef, userImage }) => {
   const coordinatesGraphRef = useRef(null);
 
   useEffect(() => {
