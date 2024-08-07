@@ -128,6 +128,9 @@ public class DiaryController {
                 //없으면 오늘자로 검색
                 UserEntity userEntity = userService.findByRequest(request);
                 List<DiaryEntity> list = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+                if(list.size() == 0){
+                    return ResponseEntity.ok("No Today Diary");
+                }
                 diaryEntity = list.get(list.size() - 1);
             }
             List<MessageEntity> byDiaryEntityMessage = messageService.findByDiaryEntity(diaryEntity);
