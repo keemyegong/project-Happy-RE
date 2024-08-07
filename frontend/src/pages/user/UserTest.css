@@ -1,6 +1,7 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 .styled-container {
+  font-family: Pretendard;
   margin-top: 60px;
   height: 90vh;
   background-color: #00000000;
@@ -13,7 +14,6 @@
 
 .question-container {
   height: 20vh;
-  font-family: Pretendard;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -24,6 +24,7 @@
 
 .question-container h4 {
   font-size: clamp(0.7rem, 1.5vw, 3rem);
+  padding-bottom: 5px;
 }
 
 .choices-container {
@@ -34,6 +35,7 @@
   gap: 10px;
   color: #fff;
   padding: 0px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 600px) {
@@ -50,8 +52,8 @@
   background-color: transparent;
   transition: color 0.3s ease;
   cursor: pointer;
-  padding: 5px;
-  font-size: clamp(0.8rem, 1.5vw, 3rem);
+  padding: 7px;
+  font-size: clamp(13px, 1.3vw, 18px);
 }
 
 .choice-button.selected {

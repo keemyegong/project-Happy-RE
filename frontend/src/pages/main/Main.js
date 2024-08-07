@@ -13,16 +13,12 @@ const Main = () => {
   const containerWrapRef = useRef(null);
   const canvasRef1 = useRef(null);
   const canvasRef2 = useRef(null);
-  const characterRefs = useRef([]);
   const jumpHeight = 50;
   const jumpDuration = 1000;
   const [showUpButton, setShowUpButton] = useState(false);
-const [showDownButton, setShowDownButton] = useState(true);
-
+  const [showDownButton, setShowDownButton] = useState(true);
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
-
-  const scrollIntervalRef = useRef(null);
 
   useEffect(() => {
     const containerWrap = containerWrapRef.current;
@@ -71,11 +67,6 @@ const [showDownButton, setShowDownButton] = useState(true);
         canvas.width = canvas.parentElement.clientWidth;
         canvas.height = canvas.parentElement.clientHeight;
 
-        characters.forEach((character, index) => {
-          character.x = initialPositions[index].x * canvas.width;
-          character.y = initialPositions[index].y * canvas.height;
-        });
-
         const drawCharacters = () => {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           characters.forEach(character => {
@@ -113,34 +104,31 @@ const [showDownButton, setShowDownButton] = useState(true);
             setInterval(() => jump(character, index * 500), 5000);
           };
         });
+
+        drawCharacters(); // Initial draw to avoid delay
       }
     };
 
     const initialPositions1 = [
-      { x: 0.6, y: 0.3 },
-      { x: 0.3, y: 0.4 },
+      { x: 1.5, y: 0.5 },
+      { x: 2.5, y: 0.5 },
     ];
 
     const initialPositions2 = [
-      { x: 0.3, y: 0.3 },
-      { x: 0.1, y: 0.4 },
-      { x: 0.5, y: 0.5 },
+      { x: 0.5, y: 2.5 },
+      { x: 1.5, y: 2.5 },
+      { x: 2.5, y: 2.5 },
     ];
 
-    const calculateCharacterSize = () => {
-      const screenWidth = window.innerWidth;
-      return Math.min(Math.max(screenWidth * 0.1, 50), 200); // 최소 50, 최대 200
-    };
-
-    const characterSize = calculateCharacterSize();
+    const characterSize = 150; // Fixed size for characters to maintain image quality
 
     const characters1 = characterImages.slice(0, 2).map((src, index) => {
       const img = new Image();
       img.src = src;
       return {
         img,
-        x: 0,
-        y: 0,
+        x: initialPositions1[index].x * characterSize,
+        y: initialPositions1[index].y * characterSize,
         width: characterSize,
         height: characterSize,
       };
@@ -151,14 +139,12 @@ const [showDownButton, setShowDownButton] = useState(true);
       img.src = src;
       return {
         img,
-        x: 0,
-        y: 0,
+        x: initialPositions2[index].x * characterSize,
+        y: initialPositions2[index].y * characterSize,
         width: characterSize,
         height: characterSize,
       };
     });
-
-    characterRefs.current = [...characters1, ...characters2];
 
     initializeCanvas(canvasRef1, characters1, initialPositions1);
     initializeCanvas(canvasRef2, characters2, initialPositions2);
@@ -195,43 +181,58 @@ const [showDownButton, setShowDownButton] = useState(true);
   }, []);
 
   const handleScroll = (direction) => {
-    const scrollAmount = direction === 'down' ? 700 : -700;
-    window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+    const container1 = document.getElementById('container-1');
+    const container2 = document.getElementById('container-2');
+    const container3 = document.getElementById('container-3');
+    let scrollAmount = 0;
+
+    if (direction === 'down') {
+      if (window.pageYOffset < container2.offsetTop) {
+        scrollAmount = container2.offsetTop;
+      } else if (window.pageYOffset < container3.offsetTop) {
+        scrollAmount = container3.offsetTop;
+      }
+    } else if (direction === 'up') {
+      if (window.pageYOffset >= container3.offsetTop) {
+        scrollAmount = container2.offsetTop;
+      } else if (window.pageYOffset >= container2.offsetTop) {
+        scrollAmount = container1.offsetTop;
+      }
+    }
+
+    window.scrollTo({ top: scrollAmount, behavior: 'smooth' });
   };
-  
 
   return (
     <div className="container-wrap" ref={containerWrapRef} data-bs-spy="scroll" data-bs-target="#navbar-example">
       {showUpButton && (
         <button className="scroll-button up" onClick={() => handleScroll('up')}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M1.553 9.224a.5.5 0 0 1 .67.223L8 6.56l5.776 2.888a.5.5 0 1 1-.448-.894l-6-3a.5.5 0 0 1-.448 0l-6 3a.5.5 0 0 1 .223.67"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
           </svg>
         </button>
       )}
       {showDownButton && (
         <button className="scroll-button down" onClick={() => handleScroll('down')}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
             <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
           </svg>
         </button>
       )}
       <div id="container-1" className="container-1">
-        <h1>Happy:Re</h1>
+        <p className='main-happyre-text'>Happy:Re</p>
         <div className='to-login'>
           <Link className='text-login' to='/signin'>Login</Link>
         </div>
       </div>
       <div id="container-2" className="container-2">
-        <div>
+        <div className='main-description1-text'>
           <p className="description-1">RE:CORD YOUR</p>
-        </div>
-        <div>
           <p className="description-2">DAILY MOOD</p>
         </div>
         <div className="character-box-1">
-          <div className="characters">
-            <canvas ref={canvasRef1} style={{ display: 'block', width: '100%', height: '100%' }} />
+          <div className="characters char-section-1">
+            <canvas ref={canvasRef1} style={{ display: 'block'}} />
           </div>
           <div className="information">
             <h2>record</h2>
@@ -248,10 +249,10 @@ const [showDownButton, setShowDownButton] = useState(true);
           <p>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</p>
           <p>우리 함께 감정에 대해 알아가 볼까요?</p>
           <Link className="go-login" to="/signin">
-            함께 할래요!
+            함께할래요!
           </Link>
         </div>
-        <div className="characters">
+        <div className="characters char-section-2">
           <canvas ref={canvasRef2} style={{ display: 'block', width: '100%', height: '100%' }} />
         </div>
       </div>

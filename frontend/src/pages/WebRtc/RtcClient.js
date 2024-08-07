@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
+import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -16,7 +16,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
-  const streamRef = useRef(null);
+  const streamRef = useRef(new MediaStream());
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
@@ -238,9 +238,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     peerConnection.ontrack = (event) => {
       if (streamRef.current) {
-        streamRef.current.srcObject = event.streams[0];
+        const inboundStream = event.streams[0];
+        inboundStream.getTracks().forEach(track => {
+          if (track.kind === 'audio') {
+            streamRef.current.addTrack(track);
+          }
+        });
       }
     };
+    
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
@@ -392,17 +398,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-        <div className='coordinates-graph-container'>
-          <CoordinatesGraph 
-            position={position} 
-            users={users} 
-            movePosition={movePosition} 
-            userImage={userImage} 
-          />
-        </div>
-        <div className='audio-effect-container'>
-          <AudioEffect stream={streamRef.current} />
-        </div>
+      <CoordinatesGraph 
+        position={position} 
+        users={users} 
+        movePosition={movePosition} 
+        userImage={userImage} 
+      />
+      <AudioEffect stream={streamRef.current} />
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 

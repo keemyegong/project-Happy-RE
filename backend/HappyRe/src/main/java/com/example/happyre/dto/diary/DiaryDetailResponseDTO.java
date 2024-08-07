@@ -8,10 +8,12 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Data
 public class DiaryDetailResponseDTO {
     private List<MessageEntityDTO> messageEntities;
     private List<KeywordEntityDTO> keywordEntities;
+
     public DiaryDetailResponseDTO(List<MessageEntity> messageEntities, List<KeywordEntity> keywordEntities) {
         this.messageEntities = new ArrayList<>();
         for (MessageEntity messageEntity : messageEntities) {

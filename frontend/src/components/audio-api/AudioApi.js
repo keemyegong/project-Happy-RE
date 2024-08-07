@@ -9,16 +9,17 @@ const AudioEffect = ({ stream }) => {
   const bufferLengthRef = useRef(null);
 
   useEffect(() => {
-    if (!stream) return;
-
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
     bufferLengthRef.current = analyser.frequencyBinCount;
     dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
-    const source = audioContext.createMediaStreamSource(stream);
-    source.connect(analyser);
+    if (stream && stream.getAudioTracks().length > 0) {
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+    }
 
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
@@ -59,7 +60,9 @@ const AudioEffect = ({ stream }) => {
     analyserRef.current = analyser;
 
     return () => {
-      audioContext.close();
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     };
   }, [stream]);
 

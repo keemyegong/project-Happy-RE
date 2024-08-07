@@ -24,6 +24,6 @@ public interface DiaryService {
 
     void delete(DiaryEntity diaryDTOEntity);
 
-    List<DiaryEntity> searchForWeek(UserEntity userEntity,Date date , Integer period);
+    List<DiaryEntity> searchForWeek(UserEntity userEntity, Date date, Integer period);
 
 }

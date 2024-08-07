@@ -13,7 +13,7 @@ const SignUp = () => {
 
   return (
   <div className='signup-agreement-container'>
-    <h1 className='text-white text-center'>Terms & Conditions</h1>
+    <p className='signup-agreement-title text-white text-center'>Terms & Conditions</p>
     <hr className='border-light border-1' />
     <div className='checkbox-container'>
       <input className='form-check-input custom-checkbox' type='checkbox' value='' id='login-save' checked={allAgree} onClick={()=>{
@@ -85,7 +85,7 @@ const SignUp = () => {
       </div>
     </div>
     <hr className='border-light border-1' />
-    <Button className='btn dark-btn big' content='Next' onClick={()=>{
+    <Button className='agree-next-btn btn dark-btn big ms-0' content='Next' onClick={()=>{
       if (allAgree){
         navigate('/signup');
       }else{
