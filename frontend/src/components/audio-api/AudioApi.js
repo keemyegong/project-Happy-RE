@@ -9,58 +9,54 @@ const AudioEffect = ({ stream }) => {
   const bufferLengthRef = useRef(null);
 
   useEffect(() => {
-    if (!stream) return;
+    if (stream) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      bufferLengthRef.current = analyser.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    bufferLengthRef.current = analyser.frequencyBinCount;
-    dataArrayRef.current = new Uint8Array(bufferLengthRef.current);
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
 
-    const source = audioContext.createMediaStreamSource(stream);
-    source.connect(analyser);
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
 
-    const canvas = canvasRef.current;
-    const canvasCtx = canvas.getContext('2d');
-    const drawWaveform = () => {
-      requestAnimationFrame(drawWaveform);
-      analyser.getByteTimeDomainData(dataArrayRef.current);
+      const canvas = canvasRef.current;
+      const canvasCtx = canvas.getContext('2d');
+      const drawWaveform = () => {
+        requestAnimationFrame(drawWaveform);
+        analyser.getByteTimeDomainData(dataArrayRef.current);
 
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'white';
-      canvasCtx.beginPath();
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = 'white';
+        canvasCtx.beginPath();
 
-      let sliceWidth = canvas.width * 1.0 / bufferLengthRef.current;
-      let x = 0;
+        let sliceWidth = canvas.width * 1.0 / bufferLengthRef.current;
+        let x = 0;
 
-      for (let i = 0; i < bufferLengthRef.current; i++) {
-        let v = dataArrayRef.current[i] / 128.0;
-        let y = v * canvas.height / 2;
+        for (let i = 0; i < bufferLengthRef.current; i++) {
+          let v = dataArrayRef.current[i] / 128.0;
+          let y = v * canvas.height / 2;
 
-        if (i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
+          if (i === 0) {
+            canvasCtx.moveTo(x, y);
+          } else {
+            canvasCtx.lineTo(x, y);
+          }
+
+          x += sliceWidth;
         }
 
-        x += sliceWidth;
-      }
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+      };
 
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
-    };
-
-    drawWaveform();
-
-    audioContextRef.current = audioContext;
-    analyserRef.current = analyser;
-
-    return () => {
-      audioContext.close();
-    };
+      drawWaveform();
+    }
   }, [stream]);
 
   useEffect(() => {
@@ -78,6 +74,9 @@ const AudioEffect = ({ stream }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     };
   }, []);
 

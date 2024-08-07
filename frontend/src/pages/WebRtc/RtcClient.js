@@ -238,7 +238,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     peerConnection.ontrack = (event) => {
       if (streamRef.current) {
-        streamRef.current.srcObject = event.streams[0];
+        const newStream = new MediaStream(event.streams[0].getTracks());
+        const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+        currentTracks.forEach(track => newStream.addTrack(track));
+        streamRef.current.srcObject = newStream;
+      } else {
+        streamRef.current = new MediaStream(event.streams[0].getTracks());
       }
     };
 
@@ -249,7 +254,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
         if (streamRef.current) {
-          streamRef.current.srcObject = null;
+          const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+          const newStream = new MediaStream(currentTracks.filter(track => track.readyState === 'live'));
+          streamRef.current.srcObject = newStream;
         }
         // ICE 후보 초기화
         if (peerConnections[userId]) {
