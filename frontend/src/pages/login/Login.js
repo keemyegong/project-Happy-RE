@@ -61,9 +61,9 @@ function Login() {
           <div className='login-title'>
             <img width='200px' src={loginTitle}/>
           </div>
-          <button className='btn google-login-btn'
+          <button className='btn google-login-btn ms-0'
           onClick={googleLogin}>Login With Google</button>
-                    <button className='btn google-login-btn'
+                    <button className='btn google-login-btn ms-0'
           onClick={naverLogin}>Login With Naver</button>
         </div>
         <hr className='border-light border-1' />
@@ -101,7 +101,7 @@ function Login() {
 
           </div>
 
-          <button className='btn login-btn' onClick={login}>Login</button>
+          <button className='btn login-btn ms-0' onClick={login}>Login</button>
           
         </div>
         <hr className='border-light border-1' />
