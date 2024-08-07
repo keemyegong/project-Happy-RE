@@ -24,7 +24,7 @@ api_key = os.environ.get('OPENAI_API_KEY')  # OPEN AI 키
 
 user_session = {}    # 유저 챗봇 세션
 
-user_emotion_russel = {}    # 유저 러셀 좌표 - {유저 : {문장 : 좌표}}
+user_emotion_russell = {}    # 유저 러셀 좌표 - {유저 : {문장 : 좌표}}
 
 user_message = {}    # 유저 메시지 저장  -  {유저 : [{문장 :"문장", "speaker":"user", "audioKey":"ddd.wav"}]}
 
@@ -43,6 +43,7 @@ BASE_DIR = os.path.abspath(os.path.join(current_dir, ".."))
 
 SPRING_MESSAGE_POST_URL=os.environ.get("SPRING_MESSAGE_POST_URL")
 SPRING_KEYWORD_SUMMARY_URL = os.environ.get("SPRING_KEYWORD_SUMMARY_URL")
+SPRING_DIARY_SUMMARY_URL = os.environ.get("SPRING_DIARY_SUMMARY_URL")
 
 
 personas = PERSONAS
@@ -51,13 +52,13 @@ personas = PERSONAS
 # -------------------------------사용자 정의 함수-------------------------------
 
 async def emotion_analysis(text : str):
-    return (kobert_x(text), kobert_y(text))
+    return (round(kobert_x(text),3), round(kobert_y(text),3))
 
 async def emotion_tagging(user_id: str, text: str):
     '''
-    user_emotion_russel 딕셔너리에 문장과 추출된 러셀 감정 좌표를 매칭
+    user_emotion_russell 딕셔너리에 문장과 추출된 러셀 감정 좌표를 매칭
     
-    - user_emotion_russel 구조
+    - user_emotion_russell 구조
     {
     "user_id": {
         "text": "(0,0)"
@@ -66,15 +67,15 @@ async def emotion_tagging(user_id: str, text: str):
     print("Emotion tagging start")
     trigger = False
     
-    russel_coord = await emotion_analysis(text)
+    russell_coord = await emotion_analysis(text)
     
-    if user_id not in user_emotion_russel:
-        user_emotion_russel[user_id] = {}
+    if user_id not in user_emotion_russell:
+        user_emotion_russell[user_id] = {}
         
-    if russel_coord[0] < -0.8:
+    if russell_coord[0] < -0.8:
         trigger = True
         
-    user_emotion_russel[user_id][text] = russel_coord
+    user_emotion_russell[user_id][text.strip()] = russell_coord
     print("Emotion tagging End")
     return trigger
 
@@ -87,7 +88,7 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     if user_id not in user_message:
         user_message[user_id] = []
     user_message[user_id].append({
-        "content":text,
+        "content":text.strip(),
         "speaker":speaker,
         "audioKey":audio
     })
@@ -121,10 +122,11 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     if request.request == "user":
         message_session_update(user_id, user_input, "user", audio)
     elif request.request == "chatbot":
-        message_session_update(user_id, user_input, "starter", audio)
-    
+        message_session_update(user_id, user_input, "starter", None)
     
     response = api_instance.generateResponse(user_input)
+    
+    message_session_update(user_id, response, "ai", None)
 
     trigger = False
     if request.request == "user":
@@ -160,22 +162,23 @@ async def post_message_request(request:Request):
     try:
         for idx, data in enumerate(user_message[user_id]):
             data = user_message[user_id][idx]
-            russel_coord = user_emotion_russel[user_id]
-            data["sequence"] = idx+1
+            russell_coord = user_emotion_russell[user_id]
+            data["sequence"] = idx
             if data["speaker"] == "starter":
                 continue
             elif data["speaker"] == "user":
-                if data["content"] in russel_coord:
-                    data["russelX"], data["russelY"] = russel_coord[data["content"]]
+                if data["content"] in russell_coord:
+                    data["russellX"], data["russellY"] = russell_coord[data["content"]]
                     
                 else:
-                    data["russelX"] = None
-                    data["russelY"] = None
+                    data["russellX"] = None
+                    data["russellY"] = None
             else:
-                data["russelX"] = None
-                data["russelY"] = None
+                data["russellX"] = None
+                data["russellY"] = None
             message_item.append(data)
         print("메세지 만들기 완료")
+        print(f"Message Item : \n {message_item}")
         try:
             new_headers = {
                 "authorization": header["authorization"],
@@ -209,44 +212,51 @@ async def session_delete(request:Request):
     }
     
     chatbot_instance = user_session[user_id]
-    prompt = '지금까지의 대화에서 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 리스트 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
+    prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. "diary_summary"는 전체 대화를 요약하는 문장을 값으로 가져. "summary_detail"은 리스트를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
     
     response = chatbot_instance.generateResponse(prompt)
     print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")
-    
+    print(f"Summary Response : \n {response}")
     try:
-        result = json.loads(response.strip())
+        # result = json.loads(response.strip())
         file = response.replace("`", "").strip()
         temp = file.replace("json","").strip()
         result = json.loads(temp)
         
+        diary_summary, summary_detail = result["diary_summary"], result["summary_detail"]
+        diary = {
+            "summary":diary_summary
+        }
+        
         summary_list = []
-        for idx, data in enumerate(result):
-            print(f"data : \n {data}")
-            print(f"user emotion russel : \n {user_emotion_russel[user_id]}")
-            if data["message"] not in user_emotion_russel[user_id]:
+        for idx, data in enumerate(summary_detail):
+            if data["message"] not in user_emotion_russell[user_id]:
                 continue
-            data["russelX"], data["russelY"] = user_emotion_russel[user_id][data["message"]]
+            print(f"data : \n {data}")
+            print(f"user emotion russell : \n {user_emotion_russell[user_id]}")
+            data["russellX"], data["russellY"] = user_emotion_russell[user_id][data["message"]]
             data["sequence"] = idx+1
-
             del data["message"]
             summary_list.append(data)
-            print(f"data after russel: \n {data}")
+            print(f"data after russell: \n {data}")
         print(f"Summary List : {summary_list}")
     except Exception as e:
             print(f"Error while summarize : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
-            print(f"returned response : {response}")
+            diary_summary_response = await client.put(SPRING_DIARY_SUMMARY_URL, json=diary, headers=new_header)
+            print(f"returned diary summary resposne : {diary_summary_response}")
+            
+            summary_detail_response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
+            print(f"returned summary detail response : {summary_detail_response}")
             
             if user_id in user_session:
                 del user_session[user_id]
                 print('User Session Deleted')
 
-            if user_id in user_emotion_russel:
-                del user_emotion_russel[user_id]
+            if user_id in user_emotion_russell:
+                del user_emotion_russell[user_id]
                 print('User Emotion Russel Deleted')
                 
             if user_id in user_message:
@@ -256,12 +266,14 @@ async def session_delete(request:Request):
                     삭제 확인
                     User Session : {user_session}
                     ----------------------------------------
-                    User Emotion Russel : {user_emotion_russel}
+                    User Emotion Russel : {user_emotion_russell}
                     ---------------------------------------
                     User Message : {user_message}
                 ''')
             print("------------------------------------------------ 섹션 삭제 완료 ----------------------------------------")
-            return {"content":response.status_code}
+            return response
     except Exception as e:
         print(f"Error While Summary Posting: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+    
