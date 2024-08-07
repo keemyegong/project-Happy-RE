@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@Tag(name = "Keywords")
+@Tag(name = "Keyword")
 @RestController
 @RequestMapping("/api/keyword")
 @RequiredArgsConstructor
