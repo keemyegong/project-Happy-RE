@@ -39,24 +39,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
-  const handleKeyDown = (event) => {
-    switch (event.key) {
-      case 'ArrowUp':
-        movePosition(0, 0.025, true);
-        break;
-      case 'ArrowDown':
-        movePosition(0, -0.025, true);
-        break;
-      case 'ArrowLeft':
-        movePosition(-0.025, 0, true);
-        break;
-      case 'ArrowRight':
-        movePosition(0.025, 0, true);
-        break;
-      default:
-        break;
-    }
-  };
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') return;
@@ -327,6 +309,25 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        movePosition(0, 0.025, true);
+        break;
+      case 'ArrowDown':
+        movePosition(0, -0.025, true);
+        break;
+      case 'ArrowLeft':
+        movePosition(-0.025, 0, true);
+        break;
+      case 'ArrowRight':
+        movePosition(0.025, 0, true);
+        break;
+      default:
+        break;
     }
   };
 
