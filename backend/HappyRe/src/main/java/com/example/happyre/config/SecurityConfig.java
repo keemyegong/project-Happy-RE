@@ -52,15 +52,15 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    @Order(1)
-    public SecurityFilterChain swaggerChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/v3/**", "/api/swagger-ui/**")
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
-    }
-
+//    @Bean
+//    @Order(1)
+//    public SecurityFilterChain swaggerChain(HttpSecurity http) throws Exception {
+//        http
+//                .securityMatcher("/v3/**", "/api/swagger-ui/**")
+//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+//        return http.build();
+//    }
+//
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // CORS 설정
