@@ -45,7 +45,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         System.out.println("Successfully OAuth2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1: " + email);
         response.addCookie(createCookie("Authorization", token));
         response.addHeader("Authorization", "Bearer " + token);
-        response.sendRedirect("https://i11b204.p.ssafy.io/profile");
+        if(user.getMyfrog() == null){
+            response.sendRedirect("https://i11b204.p.ssafy.io/usertest");
+        }else{
+            response.sendRedirect("https://i11b204.p.ssafy.io/profile");
+        }
+
     }
 
     private Cookie createCookie(String key, String value) {
