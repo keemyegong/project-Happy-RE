@@ -4,3 +4,23 @@
   height: 100vh;
   background-color: rgba(66, 78, 101, 0);
 }
+
+.graph-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.coordinates-graph-container {
+  flex: 4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.audio-effect-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
