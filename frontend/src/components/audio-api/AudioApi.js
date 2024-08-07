@@ -49,20 +49,31 @@ const AudioEffect = React.forwardRef((props, ref) => {
 
     canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
-    analyser.current.getByteFrequencyData(dataArray.current);
+    analyser.current.getByteTimeDomainData(dataArray.current);
 
-    const barWidth = (WIDTH / analyser.current.frequencyBinCount) * 2.5;
-    let barHeight;
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+    canvasCtx.beginPath();
+
+    const sliceWidth = WIDTH * 1.0 / analyser.current.fftSize;
     let x = 0;
 
-    for (let i = 0; i < analyser.current.frequencyBinCount; i++) {
-      barHeight = dataArray.current[i];
+    for (let i = 0; i < analyser.current.fftSize; i++) {
+      const v = dataArray.current[i] / 128.0;
+      const y = v * HEIGHT / 2;
 
-      canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
-      canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+      if (i === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
+      }
 
-      x += barWidth + 1;
+      x += sliceWidth;
     }
+
+    canvasCtx.lineTo(canvas.width, canvas.height / 2);
+    canvasCtx.stroke();
 
     animationFrameId.current = requestAnimationFrame(draw);
   };
