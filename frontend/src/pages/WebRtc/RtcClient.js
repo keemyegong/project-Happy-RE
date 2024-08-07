@@ -1,15 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { w3cwebsocket as W3CWebSocket } from "websocket";
-import defaultImg from '../../assets/characters/default.png';
-import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
-import CharacterList from '../../components/CharacterList/CharacterList';
-import './ChatRoomContainer.css';
-
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
-const peerConnections = {};
-
 const RtcClient = ({ initialPosition, characterImage }) => {
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
+  const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
@@ -20,6 +11,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -39,6 +34,38 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
+  const movePosition = (dx, dy) => {
+    const newPosition = { 
+      x: Math.min(1, Math.max(-1, positionRef.current.x + dx)), 
+      y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
+      id: clientId 
+    };
+    console.log(newPosition);
+    setPosition(newPosition);
+    setHasMoved(true);
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        movePosition(0, 0.025);
+        break;
+      case 'ArrowDown':
+        movePosition(0, -0.025);
+        break;
+      case 'ArrowLeft':
+        movePosition(-0.025, 0);
+        break;
+      case 'ArrowRight':
+        movePosition(0.025, 0);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') return;
@@ -306,14 +333,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       y: Math.min(1, Math.max(-1, position.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition);
+    console.log(newPosition)
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
-  
+
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
@@ -332,7 +359,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         break;
     }
   };
-  
 
   const handleScroll = (direction) => {
     if (direction === 'up') {
