@@ -50,11 +50,15 @@ const AudioEffect = () => {
 
     drawWaveform();
 
-    // Capture all audio output
-    const dest = audioContext.createMediaStreamDestination();
-    const source = audioContext.createMediaElementSource(new Audio());
+    // Capture all audio output from an audio element
+    const audioElement = new Audio();
+    audioElement.src = '';  // Empty source initially
+    audioElement.crossOrigin = "anonymous"; // Allow cross-origin audio
+    audioElement.play();
+
+    const source = audioContext.createMediaElementSource(audioElement);
     source.connect(analyser);
-    analyser.connect(dest);
+    analyser.connect(audioContext.destination);
 
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;

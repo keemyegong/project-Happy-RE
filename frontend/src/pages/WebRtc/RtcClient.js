@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
-import AudioEffect from '../../components/audio-api/AudioApi';
+import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -20,7 +20,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
+  const localAudioRef = useRef(new Audio());
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -133,7 +133,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
         })));
       }
     };
@@ -236,6 +236,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
+        localAudioRef.current.play();
       }
     };
 
