@@ -2,7 +2,7 @@
 
 .DiaryReport {
   width: 600px;
-  height: 1200px;
+  height: 1000px;
   background-color: black;
   padding: 10px;
 }
@@ -92,7 +92,35 @@
   margin: auto;
 }
 
-.doi
+.diary-modal-popup-spinner{
+
+  width: 200px;
+  height: 200px;
+  color: rgb(175, 175, 193);
+  border-width: 10px;
+}
+
+.modal-loading-container{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 150px;
+}
+
+.modal-loading-label{
+  color: white;
+  position: absolute;
+  top: 30%;
+  left: 45%;
+
+}
+
+.modal-loading-text{
+  color: white;
+  margin-top: 10px;
+}
 
 /* 미디어 쿼리: 화면 너비가 1350px 이하일 때 */
 @media (max-width: 1350px) {

@@ -3,6 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
+import AudioEffect from '../../components/audio-api/AudioApi'; // 추가된 부분
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -10,16 +11,21 @@ const peerConnections = {};
 
 const RtcClient = ({ initialPosition, characterImage }) => {
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
+  const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
+  const streamRef = useRef(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const localAudioRef = useRef(null);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -39,6 +45,38 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
+  const movePosition = (dx, dy) => {
+    const newPosition = { 
+      x: Math.min(1, Math.max(-1, positionRef.current.x + dx)), 
+      y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
+      id: clientId 
+    };
+    console.log(newPosition)
+    setPosition(newPosition);
+    setHasMoved(true);
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        movePosition(0, 0.025);
+        break;
+      case 'ArrowDown':
+        movePosition(0, -0.025);
+        break;
+      case 'ArrowLeft':
+        movePosition(-0.025, 0);
+        break;
+      case 'ArrowRight':
+        movePosition(0.025, 0);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') return;
@@ -66,14 +104,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           hasMoved
         }));
       } else if (dataFromServer.type === 'all_users') {
-        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId);
+        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
+          ...user,
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+        }));
         setUsers(filteredUsers.map(user => ({
           ...user,
           image: user.characterImage
         })));
         checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
-        const newUser = { ...dataFromServer, image: dataFromServer.characterImage };
+        const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 } };
         setUsers(prevUsers => [...prevUsers, newUser]);
         checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
@@ -90,7 +131,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
       } else if (dataFromServer.type === 'update') {
-        setUsers(dataFromServer.clients);
+        setUsers(dataFromServer.clients.map(user => ({
+          ...user,
+          position: user.position || { x: 0, y: 0 }  // 기본값을 제공
+        })));
       }
     };
 
@@ -114,11 +158,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
+    const newGroups = {};
+
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
+
         if (!peerConnections[user.id]) {
           const peerConnection = createPeerConnection(user.id);
           peerConnections[user.id] = { peerConnection };
@@ -126,12 +173,47 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
+
+        // 그룹에 속한 유저들과 연결
+        newNearbyUsers.forEach(nearbyUser => {
+          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
+            const peerConnection = createPeerConnection(nearbyUser.id);
+            peerConnections[nearbyUser.id] = { peerConnection };
+            if (clientId < nearbyUser.id) {
+              attemptOffer(peerConnection, nearbyUser.id);
+            }
+          }
+        });
+
+        // 그룹에 추가
+        if (!newGroups[user.id]) {
+          newGroups[user.id] = [];
+        }
+        newNearbyUsers.forEach(nearbyUser => {
+          if (nearbyUser.id !== user.id && !newGroups[user.id].includes(nearbyUser.id)) {
+            newGroups[user.id].push(nearbyUser.id);
+          }
+        });
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
         console.log(`WebRTC connection closed with user ${user.id}`);
       }
     });
+
+    // 그룹 내 연결 처리
+    Object.keys(newGroups).forEach(userId => {
+      newGroups[userId].forEach(nearbyUserId => {
+        if (!peerConnections[nearbyUserId]) {
+          const peerConnection = createPeerConnection(nearbyUserId);
+          peerConnections[nearbyUserId] = { peerConnection };
+          if (clientId < nearbyUserId) {
+            attemptOffer(peerConnection, nearbyUserId);
+          }
+        }
+      });
+    });
+
     setNearbyUsers(newNearbyUsers);
   };
 
@@ -155,8 +237,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
 
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
+      if (streamRef.current) {
+        const newStream = new MediaStream(event.streams[0].getTracks());
+        const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+        currentTracks.forEach(track => newStream.addTrack(track));
+        streamRef.current.srcObject = newStream;
+      } else {
+        streamRef.current = new MediaStream(event.streams[0].getTracks());
       }
     };
 
@@ -166,8 +253,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
+        if (streamRef.current) {
+          const currentTracks = streamRef.current.srcObject ? streamRef.current.srcObject.getTracks() : [];
+          const newStream = new MediaStream(currentTracks.filter(track => track.readyState === 'live'));
+          streamRef.current.srcObject = newStream;
         }
         // ICE 후보 초기화
         if (peerConnections[userId]) {
@@ -300,38 +389,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  const movePosition = (dx, dy, isKeyboard = false) => {
-    const newPosition = isKeyboard
-      ? { x: Math.min(1, Math.max(-1, position.x + dx)), y: Math.min(1, Math.max(-1, position.y + dy)), id: clientId }
-      : { x: Math.min(1, Math.max(-1, dx)), y: Math.min(1, Math.max(-1, dy)), id: clientId };
-    console.log(newPosition)
-    setPosition(newPosition);
-    setHasMoved(true);
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
-    }
-  };
-  
-
-  const handleKeyDown = (event) => {
-    switch (event.key) {
-      case 'ArrowUp':
-        movePosition(0, 0.025, true);
-        break;
-      case 'ArrowDown':
-        movePosition(0, -0.025, true);
-        break;
-      case 'ArrowLeft':
-        movePosition(-0.025, 0, true);
-        break;
-      case 'ArrowRight':
-        movePosition(0.025, 0, true);
-        break;
-      default:
-        break;
-    }
-  };
-
   const handleScroll = (direction) => {
     if (direction === 'up') {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
@@ -342,13 +399,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <CoordinatesGraph 
-        position={position} 
-        users={users} 
-        movePosition={movePosition} 
-        localAudioRef={localAudioRef} 
-        userImage={userImage} 
-      />
+        <div className='coordinates-graph-container'>
+          <CoordinatesGraph 
+            position={position} 
+            users={users} 
+            movePosition={movePosition} 
+            userImage={userImage} 
+          />
+        </div>
+        <div className='audio-effect-container'>
+          <AudioEffect stream={streamRef.current} />
+        </div>
       <CharacterList 
         nearbyUsers={nearbyUsers} 
         displayStartIndex={displayStartIndex} 

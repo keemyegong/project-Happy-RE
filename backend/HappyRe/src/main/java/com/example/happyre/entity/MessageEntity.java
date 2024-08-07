@@ -42,7 +42,6 @@ public class MessageEntity {
     @Column(name = "russell_y", nullable = true)
     private Integer russellY;
 
-
     @Column(name = "archived")
     private Boolean archived = false;
 

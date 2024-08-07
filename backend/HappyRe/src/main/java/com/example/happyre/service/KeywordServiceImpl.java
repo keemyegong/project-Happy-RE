@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -101,7 +102,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public void updateArchive(int keywordId, boolean archive) {
-        Optional<KeywordEntity> keywordEntityOptional  = keywordRepository.findById(keywordId);
+        Optional<KeywordEntity> keywordEntityOptional = keywordRepository.findById(keywordId);
         if (keywordEntityOptional.isPresent()) {
             KeywordEntity keywordEntity = keywordEntityOptional.get();
             keywordEntity.setArchived(archive);
@@ -110,5 +111,14 @@ public class KeywordServiceImpl implements KeywordService {
             throw new EntityNotFoundException("Keyword not found with id: " + keywordId);
         }
 
+    }
+
+    @Override
+    public List<KeywordEntity> getMyKeywords(UserEntity userEntity) {
+        List<DiaryEntity> diaryEntityList =  diaryService.findByUserEntity(userEntity);
+        List<KeywordEntity> keywordEntityList = keywordRepository.findByDiaryEntities(diaryEntityList);
+
+
+        return keywordEntityList;
     }
 }

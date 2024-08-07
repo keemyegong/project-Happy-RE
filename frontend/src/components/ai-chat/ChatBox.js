@@ -5,41 +5,42 @@ import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession }) => {
-  const ChatType = 1;
+const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession,persona }) => {
+  const ChatType = Number(persona);
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
 
   const getChatData = (type) => {
     switch (type) {
-      case 1:
+      case 0:
         return {
           imageSrc: require('../../assets/characters/default.png'),
           titleName: '해피리',
           titleType: '기본 해파리'
         };
-      case 2:
-        return {
-          imageSrc: require('../../assets/characters/art.png'),
-          titleName: '셰익스피어',
-          titleType: '셰익스피어 해파리'
-        };
-      case 3:
-        return {
-          imageSrc: require('../../assets/characters/butler.png'),
-          titleName: '집사',
-          titleType: '집사 해파리'
-        };
-      case 4:
+      case 1:
         return {
           imageSrc: require('../../assets/characters/soldier.png'),
           titleName: '장군',
           titleType: '장군 해파리'
         };
-      case 5:
+      case 2:
+        return {
+          imageSrc: require('../../assets/characters/butler.png'),
+          titleName: '집사',
+          titleType: '집사 해파리'
+        };
+      case 3:
         return {
           imageSrc: require('../../assets/characters/steel.png'),
           titleName: '철학자',
           titleType: '철학자 해파리'
+        };
+
+      case 4:
+        return {
+          imageSrc: require('../../assets/characters/art.png'),
+          titleName: '셰익스피어',
+          titleType: '셰익스피어 해파리'
         };
       default:
         return {};
