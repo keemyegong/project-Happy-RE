@@ -111,7 +111,7 @@ const UserProfile =  ()=>{
           console.log(keywordObject);
           const wordCloudData = Object.keys(keywordObject).map(keyword => ({
             text: keyword,
-            value: keywordObject[keyword]*2
+            value: keywordObject[keyword]*30
           }));
           setData(wordCloudData);
   
