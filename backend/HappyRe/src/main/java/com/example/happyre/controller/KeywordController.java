@@ -3,6 +3,7 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
 import com.example.happyre.service.KeywordService;
@@ -28,6 +29,26 @@ public class KeywordController {
     private final KeywordService keywordService;
     private final DiaryService diaryService;
     private final UserService userService;
+
+
+    @GetMapping()
+    public ResponseEntity<?> getMyKeywords(HttpServletRequest request) {
+        System.out.println(" Get My Keywords ");
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            if (userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            List<KeywordEntity> keywordEntityList = keywordService.getMyKeywords(userEntity);
+            return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
+
+        }catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
     @Operation(summary = "오늘자 Diary에 Keyword 생성하기", description = "참고: 오늘자 Diary가 없으면 생성합니다.")
     @PostMapping()
