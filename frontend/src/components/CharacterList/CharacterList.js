@@ -14,16 +14,18 @@ const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUs
     </div>
     <div className="character-list">
       {!coolTime && nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
-        <div 
-          key={user.id}
-          className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
-        >
-          <img 
-            src={user.image} 
-            alt="character"
-            className="character-image-small"
-          />
-        </div>
+        user.coolTime === false && (
+          <div 
+            key={user.id}
+            className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
+          >
+            <img 
+              src={user.image} 
+              alt="character"
+              className="character-image-small"
+            />
+          </div>
+        )
       ))}
     </div>
     <div className="scroll-buttons">

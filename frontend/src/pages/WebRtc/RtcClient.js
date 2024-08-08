@@ -53,9 +53,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
-    // useEffect(() => {
-  //   setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
-  // },[]);
+    useEffect(() => {
+    setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
+  },[]);
 
   const handleBeforeUnload = () => {
     client.send(JSON.stringify({ type: 'disconnect' }));
