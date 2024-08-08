@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import './Response.css';
 import backgroundImg from "../../assets/bounce_ball_wallpaper.png"
 import ballImg from "../../assets/bouncing_ball.png"
+import Timer from "../timer/Timer";
 
 const ChatEventWatching = ()=>{
     const [balls, setBalls] = useState([]);
-    const numberOfBall = Math.floor(Math.random() * 5) + 3
-    // const numberOfBall = 1
+    const [numberOfBall, setNumberOfBalls] = useState(Math.floor(Math.random() * 5) + 3);
+    // const numberOfBall = 5
 
 
     useEffect(() => {
@@ -14,8 +15,8 @@ const ChatEventWatching = ()=>{
         for (let i = 0; i<numberOfBall; i++){
             const x = Math.random() * 50 + 20;
             const y = Math.random() * 50 + 20;
-            const dx = (Math.random() * 2 - 1) * 0.0001;
-            const dy = (Math.random() * 2 - 1) * 0.0001;
+            const dx = (Math.random() < 0.5 ? -1 : 0.5) + (Math.random() * 0.5);
+            const dy = (Math.random() < 0.5 ? -1 : 0.5) + (Math.random() * 0.5);
             ballList.push({x, y, dx, dy});
         };
         setBalls(ballList);
@@ -30,19 +31,19 @@ const ChatEventWatching = ()=>{
                     x += dx;
                     y += dy;
 
-                    if (x <= 0 || x >= 100) {
+                    if (x <= 5 || x >= 90) {
                         dx = -dx;
-                        x = Math.max(10, Math.min(90, x));
+                        x = Math.max(5, Math.min(90, x));
                     }
-                    if (y <= 0 || y >= 100) {
+                    if (y <= 5 || y >= 90) {
                         dy = -dy;
-                        y = Math.max(10, Math.min(90, y));
+                        y = Math.max(5, Math.min(90, y));
                     }
 
                     return {x, y, dx, dy};
                 })
             );
-        }, 30);
+        }, 20);
 
         return () => clearInterval(interValid);
     }, []);
