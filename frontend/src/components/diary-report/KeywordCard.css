@@ -5,6 +5,7 @@
 }
 
 .KeywordCard {
+  min-width: 32%;
   padding: 5px;
   color: white;
   font-family: 'Pretendard-Regular';
