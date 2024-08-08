@@ -8,4 +8,6 @@ public class DiaryEntityDTO {
     private Integer userId;
     private String date;
     private String summary;
+    private Double russellAvgX;
+    private Double russellAvgY;
 }
