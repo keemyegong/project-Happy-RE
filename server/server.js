@@ -102,12 +102,20 @@ wss.on('connection', (ws) => {
         });
         break;
 
-      case 'coolTime':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
-        rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'coolTime', id: userId, coolTime: data.coolTime }));
-        });
-        break;
+        case 'coolTime':
+          rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
+          const updatedUsers = rooms[roomId].map(user => ({
+            id: user.id,
+            position: user.position,
+            characterImage: user.characterImage,
+            hasMoved: user.hasMoved,
+            connectedAt: user.connectedAt,
+            coolTime: user.coolTime
+          }));
+          rooms[roomId].forEach(user => {
+            user.ws.send(JSON.stringify({ type: 'update', clients: updatedUsers }));
+          });
+          break;
 
       default:
         console.error('Unrecognized message type:', data.type);

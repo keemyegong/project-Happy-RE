@@ -306,6 +306,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
+        checkAndSetCoolTime();
       }
     };
   
@@ -438,6 +439,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
+      checkAndSetCoolTime();
     }
   };
 
