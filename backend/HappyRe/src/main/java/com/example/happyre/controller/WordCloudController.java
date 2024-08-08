@@ -32,6 +32,7 @@ public class WordCloudController {
             if (userEntity == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
+            System.out.println(" GetUserWordFrequency ");
             List<UserWordFrequencyEntity> re = userWordFrequencyService.findUserWordFrequencyByUser(userEntity);
             System.out.println(" GetUserWordFrequency ");
             return new ResponseEntity<>(  re, HttpStatus.OK);

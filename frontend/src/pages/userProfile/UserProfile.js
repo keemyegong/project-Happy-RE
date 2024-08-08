@@ -89,8 +89,7 @@ const UserProfile =  ()=>{
 
       axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
         {headers:{
-            Authorization : `Bearer ${Cookies.get('Authorization')}`,
-           'Content-Type': 'application/json'
+            Authorization : `Bearer ${Cookies.get('Authorization')}`
         }}
         ).then((response)=>{
           const responseData = response.data; 
