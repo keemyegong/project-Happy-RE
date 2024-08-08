@@ -104,16 +104,17 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
               </p>
               <div className='diary-report-border my-2' />
               <p>
-                valance : {russellX}
+                valance : {russellX.toFixed(3)}
               </p>
               <p>
-                Arousel : {russellY}
+                Arousel : {russellY.toFixed(3)}
               </p>
               
 
             </div>
           </div>
         </div>
+        <div className='mt-5 text-center diary-report-explain-label'>*Arousel은 흥분도를, valance는 긍정도를 나타내요</div>
       </div>}
     </div>
   );

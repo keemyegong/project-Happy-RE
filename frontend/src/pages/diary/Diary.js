@@ -12,16 +12,13 @@ import Swal from 'sweetalert2'
 
 const Diary = () => {
   const universal = useContext(universeVariable);
-
-
-
-
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null); // 상태 추가
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
   const [showButton, setShowButton] = useState(false);
   const [keyword, setKeyword] = useState([])
   const [chatlog, setChatlog] = useState([])
+  const [possibleList, setPossibleList] = useState([]);
   const [daySummary, setDaySummary] = useState('');
   const hideplus = true;
 
@@ -29,8 +26,10 @@ const Diary = () => {
   const navigate = useNavigate();
 
   const startDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
+  let possibleDates = [];
 
   useEffect(()=>{
+    
     axios.get(
       `${universal.defaultUrl}/api/diary/detail/`,
       {
@@ -50,8 +49,15 @@ const Diary = () => {
               withCredentials: true,
             }
           }).then((response)=>{
+            response.data.forEach(element => {
+              possibleDates.push(element.date.substring(0,10));
+              
+            });
+            if (possibleDates.length !== possibleList.length){
+              setPossibleList(possibleDates);
+            }
             
-            // console.log(response.data)
+            console.log(possibleDates);
           }).catch((err)=>{
             console.log(err)
           })
@@ -59,7 +65,7 @@ const Diary = () => {
         // console.log(response.data);
 
       })
-  },[])
+  },[startDate])
   // 이전 주 이동
   const handlePreviousWeek = () => {
     setCurrentWeek(subWeeks(currentWeek, 1));
@@ -127,6 +133,9 @@ const Diary = () => {
       const year = format(day, 'yyyy');
       const month = format(day, 'MM');
       const date = format(day, 'dd');
+      const isPossible = possibleList.includes(`${year}-${month}-${date}`);
+      // const isPossible = true;
+
       days.push(
         <div
           className={`diary-day ${isCurrentDay ? 'diary-day-today' : ''}`}
@@ -155,15 +164,15 @@ const Diary = () => {
             }}
           >
             <div
-              className={`diary-day-dot ${isCurrentDay ? 'diary-day-dot-today' : ''}`}
+              className={`diary-day-dot ${isCurrentDay ? 'diary-day-dot-today' : ''} ${isPossible ? 'diary-day-possible-dot' : ''}` }
             ></div>
             <div
-              className={`diary-day-label ${isCurrentDay ? 'diary-day-label-today' : ''}`}
+              className={`diary-day-label ${isCurrentDay ? 'diary-day-label-today' : ''} ${isPossible ? 'diary-day-possible' : ''}`}
             >
               {dayLabel}
             </div>
             <div
-              className={`diary-day-number ${isCurrentDay ? 'diary-day-number-today' : ''}`}
+              className={`diary-day-number ${isCurrentDay ? 'diary-day-number-today' : ''} ${isPossible ? 'diary-day-possible' : ''}`}
             >
               {format(day, 'dd')}
             </div>

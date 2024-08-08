@@ -30,6 +30,7 @@ const AIChat = () => {
   const persona = localStorage.getItem("personaNumber");
   const [showModal, setshowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [daySummary, setDaySummary] = useState('');
   const navigate = useNavigate();
   const currDate = new Date();
   const today = {
@@ -119,16 +120,26 @@ const AIChat = () => {
         }).then((response) => {
           console.log("Session ended and diary summary sent:", response.data);
           axios.get(
-            `${universal.defaultUrl}/api/diary/detail/`,
+            `${universal.defaultUrl}/api/diary/?year=${today.year}&month=${today.month}&day=${today.date}&period=1`,
             {
               headers: {
                 Authorization: `Bearer ${Cookies.get('Authorization')}`,
                 withCredentials: true,
               }
             }).then((response)=>{
-              setKeyword(response.data.keywordEntities);
-            }).then((response)=>{
-              setLoading(false);
+              setDaySummary(response.data[0].summary);
+              axios.get(
+                `${universal.defaultUrl}/api/diary/detail/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                    withCredentials: true,
+                  }
+                }).then((response)=>{
+                  setKeyword(response.data.keywordEntities);
+                }).then((response)=>{
+                  setLoading(false);
+                })
             })
         }).catch((error) => {
           console.error("Error ending session:", error);
@@ -350,7 +361,7 @@ const AIChat = () => {
   
   return (
     <div className='AIChat'>
-      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} keyword={keyword} /> }
+      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} keyword={keyword} daySummary={daySummary}/> }
       <div className='container ai-chat-container'>
         <div className='row ai-chat-components'>
           <div className='col-6 ai-chat-cam'>

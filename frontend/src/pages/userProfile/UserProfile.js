@@ -87,13 +87,16 @@ const UserProfile =  ()=>{
 
       })
 
-      axios.get(`${universal.defaultUrl}/api/keyword`,
+      axios.get(
+        `${universal.defaultUrl}/api/wordcloud/mywords`,
+        // `${universal.defaultUrl}/api/keyword`,
         {headers:{
             Authorization : `Bearer ${Cookies.get('Authorization')}`,
            'Content-Type': 'application/json'
         }}
         ).then((response)=>{
           // 키워드 값과 카운트를 저장할 맵 객체 생성
+          console.log(response.data);
           const keywordMap = new Map();
 
           // 각 키워드 값의 카운트를 계산
