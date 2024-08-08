@@ -113,7 +113,9 @@ wss.on('connection', (ws) => {
             coolTime: user.coolTime
           }));
           rooms[roomId].forEach(user => {
-            user.ws.send(JSON.stringify({ type: 'update', clients: updatedUsers }));
+            if (user.id !== userId) { // Filter out the user who sent the coolTime update
+              user.ws.send(JSON.stringify({ type: 'update', clients: updatedUsers }));
+            }
           });
           break;
 
