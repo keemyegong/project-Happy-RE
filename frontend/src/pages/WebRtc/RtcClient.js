@@ -54,7 +54,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   }, []);
 
     useEffect(() => {
-    setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
+    setUserImage(happyRelist['1']);//localStorage.getItem("personaNumber")]);
   },[]);
 
   const handleBeforeUnload = () => {
