@@ -1,10 +1,12 @@
 package com.example.happyre.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Entity
@@ -32,5 +34,10 @@ public class DiaryEntity {
 
     @Column(columnDefinition = "TEXT", nullable = true)
     private String summary;
+
+    //Non_column_field
+    @JsonManagedReference//prevent looping json output
+    @OneToMany(mappedBy = "diaryEntity", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
+    private List<DiaryEmotionEntity> diaryEmotionEntityList;
 
 }

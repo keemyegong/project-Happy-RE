@@ -76,7 +76,7 @@ CREATE TABLE `emotion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `keyword_emotion` (
-    `keyword_emotion_id` int PRIMARY KEY,
+    `keyword_emotion_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `keyword_id` int NOT NULL,
     `emotion_id` int NOT NULL,
     FOREIGN KEY (`keyword_id`) REFERENCES `keyword`(`keyword_id`) ON DELETE CASCADE
