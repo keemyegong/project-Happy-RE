@@ -19,11 +19,13 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
     public void splitWord(ArrayList<String> sentence, int userid) {
         ArrayList<String> words = new ArrayList<>();
         sentence.forEach(s -> {
-            String[] splitWords = s.split("\\s+");  // 띄어쓰기로 문자열 분리
+            String[] splitWords = s.split(" ");  // 띄어쓰기로 문자열 분리
             for (String word : splitWords) {
+                System.out.println("++"+word+"++");
                 // 특수문자 제거
-                word = word.replaceAll("[^a-zA-Z0-9]", "");
+                word = word.replaceAll("[^a-zA-Z0-9가-힣]", "");
                 if (!word.isEmpty()) {
+                    System.out.println("ADDDDDDDDD");
                     words.add(word);
                 }
             }

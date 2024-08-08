@@ -132,6 +132,22 @@
   -webkit-animation: fadeout 3s; /* Safari and Chrome */
 }
 
+.bouncing-ball-container{
+  position:relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bouncing-ball-background{
+  width: 100%;
+  height: 100%;
+}
+
+.bouncing-ball {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+}
 
 @keyframes fadein {
   from {

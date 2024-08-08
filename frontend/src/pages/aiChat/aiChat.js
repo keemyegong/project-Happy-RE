@@ -42,6 +42,7 @@ const AIChat = () => {
   // 처음 인삿말 받아오기
   useEffect(() => {
     setIsButtonDisabled(true);
+    eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
@@ -226,7 +227,7 @@ const AIChat = () => {
 
   // 이벤트 허가에서 yes를 누른 경우 실행되는 함수
   const eventProceeding = () => {
-    const eventNumber = 1;
+    const eventNumber = 2;
 
     if (eventNumber === 0) {
       event1();
