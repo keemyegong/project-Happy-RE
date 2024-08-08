@@ -39,11 +39,27 @@ const AIChat = () => {
     date:currDate.getDate(),
   };
   const [keyword,setKeyword] = useState([]);
+  const eventStopComment = [
+    "그렇군요. 그럼 다시 이야기로 돌아가볼까요?",
+    "제 1사분면 이벤트 중단 코멘트",
+    "제 2사분면 이벤트 중단 코멘트",
+    "제 3사분면 이벤트 중단 코멘트",
+    "제 4사분면 이벤트 중단 코멘트",
+
+  ]
+  const eventEndComment = [
+    "기분 전환이 되셨을까요? 그럼 다시 얘기해봐요.",
+    "제 1사분면 이벤트 끝 코멘트",
+    "제 2사분면 이벤트 끝 코멘트",
+    "제 3사분면 이벤트 끝 코멘트",
+    "제 4사분면 이벤트 끝 코멘트",
+  ]
 
 
 
   // 처음 인삿말 받아오기
   useEffect(() => {
+    eventStart();
     setIsButtonDisabled(true);
 
     if (persona === null){
@@ -250,11 +266,12 @@ const AIChat = () => {
 
     if (eventNumber === 0) {
       event1();
-      setTimeout(() => {
-        eventEnd()
-      }, 90000);
+
     } else if (eventNumber === 1) {
       event2();
+      setTimeout(() => {
+        eventEnd()
+      }, 91000);
     } else if (eventNumber === 2) {
       event3();
     } else if (eventNumber === 3) {
@@ -264,7 +281,7 @@ const AIChat = () => {
 
   // 이벤트 허가에서 No를 누른 경우 실행되는 함수
   const eventStoping = () => {
-    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: '그렇군요. 그럼 다시 이야기를 해볼까요.' }]);
+    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: eventStopComment[localStorage.getItem("personaNumber")] }]);
   }
 
   // 이벤트 1번 스트레칭
@@ -289,7 +306,10 @@ const AIChat = () => {
 
   // 이벤트 끝나고 발생하는 함수
   const eventEnd = () => {
-    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: '기분전환이 좀 되셨을까요? 그럼 다시 이야기해봐요.' }]);
+    const tmp_chatlog = chatHistory;
+    tmp_chatlog.pop();
+    setChatHistory(tmp_chatlog);
+    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: eventEndComment[localStorage.getItem("personaNumber")] }]);
   }
 
   // 텍스트 전송
