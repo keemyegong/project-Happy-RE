@@ -105,7 +105,7 @@ const UserProfile = () => {
       
         const wordCloudData = Object.keys(keywordObject).map(keyword => ({
           text: keyword,
-          value: keywordObject[keyword] * 2 // frequency에 대한 가중치
+          value: keywordObject[keyword] * 3 // frequency에 대한 가중치
         }))
 
         setData(wordCloudData);

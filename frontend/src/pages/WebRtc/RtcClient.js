@@ -86,8 +86,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
     setPosition(newPosition);
     setHasMoved(true);
+    checkAndSetCoolTime();
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, coolTime : coolTime }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true}));
     }
   };
 
@@ -202,7 +203,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-    
+
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           peerConnections[user.id] = { peerConnection };
@@ -210,7 +211,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
-    
+
         // 그룹에 속한 유저들과 연결
         newNearbyUsers.forEach(nearbyUser => {
           if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id] && !coolTime) {
@@ -221,7 +222,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             }
           }
         });
-    
+
         // 그룹에 추가
         if (!newGroups[user.id]) {
           newGroups[user.id] = [];
@@ -231,8 +232,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             newGroups[user.id].push(nearbyUser.id);
           }
         });
-      } else if (distance > 0.25 && peerConnections[user.id]) {
-        // 연결 끊기 조건을 0.25로 조정
+      } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
         if (audioEffectRef.current) {
@@ -242,7 +242,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-    
 
     // 그룹 내 연결 처리
     Object.keys(newGroups).forEach(userId => {
