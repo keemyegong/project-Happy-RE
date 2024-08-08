@@ -23,7 +23,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
             for (String word : splitWords) {
                 System.out.println("++"+word+"++");
                 // 특수문자 제거
-                word = word.replaceAll("[^a-zA-Z0-9]", "");
+                word = word.replaceAll("[^a-zA-Z0-9가-힣]", "");
                 if (!word.isEmpty()) {
                     System.out.println("ADDDDDDDDD");
                     words.add(word);
