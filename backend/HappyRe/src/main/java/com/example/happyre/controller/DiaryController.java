@@ -3,7 +3,9 @@ package com.example.happyre.controller;
 import com.example.happyre.dto.diary.DiaryContentDTO;
 import com.example.happyre.dto.diary.DiaryDetailResponseDTO;
 import com.example.happyre.dto.diary.DiaryEntityDTO;
+import com.example.happyre.dto.diary.KeywordWithEmotionDTO;
 import com.example.happyre.dto.diaryemotion.DiaryEmotionDTO;
+import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.entity.*;
 import com.example.happyre.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,7 +99,25 @@ public class DiaryController {
             List<MessageEntity> byDiaryEntityMessage = messageService.findByDiaryEntity(diaryEntity);
             List<KeywordEntity> byDiaryEntityKeyword = keywordService.findByDiaryEntity(diaryEntity);
 
+
+
+
             DiaryDetailResponseDTO res = new DiaryDetailResponseDTO(byDiaryEntityMessage, byDiaryEntityKeyword);
+            for(int i = 0 ; i < res.getKeywordEntities().size() ; i ++ ){
+                System.out.println("---------------!!!!!!!!!!!!!!!!!!!!11------------------");
+                List<EmotionEntity> tmp = keywordService.findEmotionsByKeywordId(res.getKeywordEntities().get(i).getKeywordId());
+                System.out.println(tmp.toString());
+                res.getKeywordEntities().get(i).setEmotions(tmp);
+            }
+
+//            for(KeywordWithEmotionDTO keywordEmotionDTO :res.getKeywordEntities()){
+//                System.out.println("---------------!!!!!!!!!!!!!!!!!!!!11------------------");
+//                List<EmotionEntity> tmp = keywordService.findEmotionsByKeywordId(keywordEmotionDTO.getKeywordId());
+//                System.out.println(tmp.toString());
+//                keywordEmotionDTO.setEmotions(tmp);
+//            }
+
+            System.out.println(res.toString());
             return ResponseEntity.ok(res);
         } catch (AccessDeniedException ade) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
