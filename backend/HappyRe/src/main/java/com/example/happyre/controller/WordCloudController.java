@@ -1,6 +1,5 @@
 package com.example.happyre.controller;
 
-import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.entity.UserWordFrequencyEntity;
 import com.example.happyre.service.UserService;

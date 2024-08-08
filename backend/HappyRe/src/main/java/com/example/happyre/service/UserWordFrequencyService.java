@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface UserWordFrequencyService {
-    void splitWord(ArrayList<String> words,int userid);
+    void splitWord(ArrayList<String> words, int userid);
 
     List<UserWordFrequencyEntity> findUserWordFrequencyByUser(UserEntity userEntity);
 }
