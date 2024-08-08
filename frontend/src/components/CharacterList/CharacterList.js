@@ -2,6 +2,12 @@
 
 import React from 'react';
 import './CharacterList.css';
+import artist from '../../assets/characters/art.png';
+import butler from '../../assets/characters/butler.png';
+import defaultPersona from '../../assets/characters/default.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+
 
 const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUsers, coolTime }) => (
   <div className="right-panel">
