@@ -35,6 +35,12 @@ public class DiaryEntity {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String summary;
 
+    @Column(name = "russell_avg_x")
+    private Double russellAvgX;
+
+    @Column(name = "russell_avg_y")
+    private Double russellAvgY;
+
     //Non_column_field
     @JsonManagedReference//prevent looping json output
     @OneToMany(mappedBy = "diaryEntity", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
