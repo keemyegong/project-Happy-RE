@@ -243,14 +243,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const createPeerConnection = (userId) => {
     if (coolTime) return null;  // coolTime이 true일 때 연결 시도하지 않음
-
+  
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
     console.log('WebRTC 연결 완료');
-
+  
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -261,7 +261,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-
+  
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -271,7 +271,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-
+  
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -290,22 +290,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.removeStream(userId);
         }
         // 연결이 끊겼을 때 coolTime을 true로 설정
+        console.log(`Setting coolTime to true due to disconnection with user ${userId}`);
         setCoolTime(true);
-        console.log(`CoolTime set to true at ${new Date().toLocaleTimeString()}`);
         client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
-
+  
         setTimeout(() => {
+          console.log(`Setting coolTime to false after 10 seconds`);
           setCoolTime(false);
-          console.log(`CoolTime set to true at ${new Date().toLocaleTimeString()}`);
           client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
         }, 10000); // 10초 후에 coolTime을 false로 설정
       }
     };
-
+  
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-
+  
     return peerConnection;
   };
 
