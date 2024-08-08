@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Integer> {

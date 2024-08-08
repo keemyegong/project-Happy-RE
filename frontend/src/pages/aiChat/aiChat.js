@@ -30,6 +30,7 @@ const AIChat = () => {
   const persona = localStorage.getItem("personaNumber");
   const [showModal, setshowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [daySummary, setDaySummary] = useState('');
   const navigate = useNavigate();
   const currDate = new Date();
   const today = {
@@ -37,10 +38,28 @@ const AIChat = () => {
     month:currDate.getMonth()+1,
     date:currDate.getDate(),
   };
+  const [keyword,setKeyword] = useState([]);
+  const eventStopComment = [
+    "그렇군요. 그럼 다시 이야기로 돌아가볼까요?",
+    "제 1사분면 이벤트 중단 코멘트",
+    "제 2사분면 이벤트 중단 코멘트",
+    "제 3사분면 이벤트 중단 코멘트",
+    "제 4사분면 이벤트 중단 코멘트",
+
+  ]
+  const eventEndComment = [
+    "기분 전환이 되셨을까요? 그럼 다시 얘기해봐요.",
+    "제 1사분면 이벤트 끝 코멘트",
+    "제 2사분면 이벤트 끝 코멘트",
+    "제 3사분면 이벤트 끝 코멘트",
+    "제 4사분면 이벤트 끝 코멘트",
+  ]
+
 
 
   // 처음 인삿말 받아오기
   useEffect(() => {
+    eventStart();
     setIsButtonDisabled(true);
     eventStart();
 
@@ -82,7 +101,7 @@ const AIChat = () => {
 
   const closeModal = ()=>{
     setshowModal(false);
-    // navigate('/diary');
+    navigate('/diary');
 
   }
   const endChatSession = () => {
@@ -90,9 +109,6 @@ const AIChat = () => {
     setshowModal(true);
 
     // axios를 통해 값을 받아오면 setLoading(false)를 통해 리포트를 띄우는 방식
-    setTimeout(()=>{
-      setLoading(false);
-    },4000);
 
     axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
       headers: {
@@ -120,8 +136,28 @@ const AIChat = () => {
           }
         }).then((response) => {
           console.log("Session ended and diary summary sent:", response.data);
-
-
+          axios.get(
+            `${universal.defaultUrl}/api/diary/?year=${today.year}&month=${today.month}&day=${today.date}&period=1`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then((response)=>{
+              setDaySummary(response.data[0].summary);
+              axios.get(
+                `${universal.defaultUrl}/api/diary/detail/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                    withCredentials: true,
+                  }
+                }).then((response)=>{
+                  setKeyword(response.data.keywordEntities);
+                }).then((response)=>{
+                  setLoading(false);
+                })
+            })
         }).catch((error) => {
           console.error("Error ending session:", error);
         });
@@ -231,11 +267,12 @@ const AIChat = () => {
 
     if (eventNumber === 0) {
       event1();
-      setTimeout(() => {
-        eventEnd()
-      }, 90000);
+
     } else if (eventNumber === 1) {
       event2();
+      setTimeout(() => {
+        eventEnd()
+      }, 91000);
     } else if (eventNumber === 2) {
       event3();
     } else if (eventNumber === 3) {
@@ -245,7 +282,7 @@ const AIChat = () => {
 
   // 이벤트 허가에서 No를 누른 경우 실행되는 함수
   const eventStoping = () => {
-    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: '그렇군요. 그럼 다시 이야기를 해볼까요.' }]);
+    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: eventStopComment[localStorage.getItem("personaNumber")] }]);
   }
 
   // 이벤트 1번 스트레칭
@@ -270,7 +307,10 @@ const AIChat = () => {
 
   // 이벤트 끝나고 발생하는 함수
   const eventEnd = () => {
-    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: '기분전환이 좀 되셨을까요? 그럼 다시 이야기해봐요.' }]);
+    const tmp_chatlog = chatHistory;
+    tmp_chatlog.pop();
+    setChatHistory(tmp_chatlog);
+    setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: eventEndComment[localStorage.getItem("personaNumber")] }]);
   }
 
   // 텍스트 전송
@@ -342,7 +382,7 @@ const AIChat = () => {
   
   return (
     <div className='AIChat'>
-      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} /> }
+      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} keyword={keyword} daySummary={daySummary}/> }
       <div className='container ai-chat-container'>
         <div className='row ai-chat-components'>
           <div className='col-6 ai-chat-cam'>

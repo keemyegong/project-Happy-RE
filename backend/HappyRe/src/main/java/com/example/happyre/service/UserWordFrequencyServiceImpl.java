@@ -19,17 +19,19 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
     public void splitWord(ArrayList<String> sentence, int userid) {
         ArrayList<String> words = new ArrayList<>();
         sentence.forEach(s -> {
-            String[] splitWords = s.split("\\s+");  // 띄어쓰기로 문자열 분리
+            String[] splitWords = s.split(" ");  // 띄어쓰기로 문자열 분리
             for (String word : splitWords) {
+                System.out.println("++"+word+"++");
                 // 특수문자 제거
-                word = word.replaceAll("[^a-zA-Z0-9]", "");
+                word = word.replaceAll("[^a-zA-Z0-9가-힣]", "");
                 if (!word.isEmpty()) {
+                    System.out.println("ADDDDDDDDD");
                     words.add(word);
                 }
             }
         });
         for (String word : words) {
-            System.out.println("***"+word+"***");
+            System.out.println("***" + word + "***");
             userWordFrequencyRepository.upsertFrequency(userid, word, 1);
         }
 
@@ -41,7 +43,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
         List<UserWordFrequencyEntity> userWordFrequencyEntities = userWordFrequencyRepository.findByUserEntity(userEntity);
         System.out.println(userWordFrequencyEntities.toString());
         System.out.println("********IN UserWordFrequencyServiceImpl findUserWordFrequencyByUser*******");
-        return  userWordFrequencyEntities;
+        return userWordFrequencyEntities;
     }
 
 

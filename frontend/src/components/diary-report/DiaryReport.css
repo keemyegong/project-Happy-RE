@@ -2,9 +2,10 @@
 
 .DiaryReport {
   width: 600px;
-  height: 1000px;
+  height: 100%;
   background-color: black;
   padding: 10px;
+  padding-bottom: 20px;
 }
 
 .diary-report-header {
@@ -89,7 +90,48 @@
 }
 
 .diary-report-graph-body {
-  margin: auto;
+  padding-top: 30px;
+  display: flex;
+  margin-inline: 30px;
+  justify-content: space-between;
+  align-items: center;
+  height: 250px;
+}
+.diary-report-header{
+  text-align: left;
+  font-weight: bold;
+  margin: 0px;
+}
+
+.diary-report-border{
+  border-color: white !important;
+  border-bottom: 0.3px solid ;
+}
+
+.diary-report-graph-label{
+  padding-top: 50px;
+  color: white;
+  max-width: 200px;
+  font-size: 12px;
+
+
+}
+
+.diary-report-keyword-none{
+  margin: 0px;
+}
+
+.diary-report-keyword-none-header{
+  color: white;
+
+}
+
+.diary-report-keyword-none-label-positive{
+  color: #9DB6B9;
+}
+
+.diary-report-keyword-none-label-negative{
+  color: #B99D9D;
 }
 
 .diary-modal-popup-spinner{
@@ -98,6 +140,7 @@
   height: 200px;
   color: rgb(175, 175, 193);
   border-width: 10px;
+
 }
 
 .modal-loading-container{
@@ -122,6 +165,13 @@
   margin-top: 10px;
 }
 
+.diary-report-explain-label{
+  color: #696969;
+  padding: 0;
+  margin-top: 30px;
+  font-size: 13px;
+}
+
 /* 미디어 쿼리: 화면 너비가 1350px 이하일 때 */
 @media (max-width: 1350px) {
   .diary-report-container {
@@ -134,7 +184,13 @@
   .DiaryReport {
     margin: auto;
     width: 500px;
-    height: 1150px;
+
+  }
+  .diary-report-graph-body{
+    justify-content: center;
+  }
+  .diary-report-graph-label{
+    display: none;
   }
 }
 
@@ -143,7 +199,7 @@
   .DiaryReport {
     margin: auto;
     width: 470px;
-    height: 1250px;
+
   }
 }
 
@@ -152,6 +208,6 @@
   .DiaryReport {
     width: 300px;
     margin: auto;
-    height: 1500px;
+
   }
 }

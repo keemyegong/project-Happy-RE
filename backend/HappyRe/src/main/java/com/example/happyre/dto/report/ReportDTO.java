@@ -1,7 +1,6 @@
 package com.example.happyre.dto.report;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
-import com.example.happyre.dto.diaryemotion.DiaryEmotionEntityDTO;
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.dto.message.MessageEntityDTO;
 import lombok.Data;
