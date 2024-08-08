@@ -58,6 +58,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         audioEffectRef.current.removeStream(userId);
       }
     });
+    if (Object.keys(peerConnections).length === 0) {
+      setCoolTime(true);
+      console.log('All connections closed, setting CoolTime to true');
+      setTimeout(() => {
+        setCoolTime(false);
+        console.log('CoolTime reset to false after 10 seconds');
+      }, 10000);
+    }
   };
 
   const movePosition = (dx, dy) => {
