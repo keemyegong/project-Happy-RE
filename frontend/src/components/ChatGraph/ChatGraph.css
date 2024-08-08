@@ -3,7 +3,7 @@
     width: 50%;
     max-width: 500px;
     left: 50%;
-    top: 50%;
+    top: 48%;
     transform: translate(-50%, -50%);
     border: 0px solid #ccc;
   }
@@ -21,14 +21,16 @@
   
   .x-axis {
     width: 100%;
-    height: 2px;
+    height: 1px;
     top: 50%;
+    opacity: 0.9;
   }
   
   .y-axis {
     height: 100%;
-    width: 2px;
+    width: 1px;
     left: 50%;
+    opacity: 0.9;
   }
   
   .x-tick, .y-tick {
@@ -37,13 +39,13 @@
   }
   
   .x-tick {
-    width: 2px;
+    width: 0.5px;
     height: 10px;
     top: calc(50% - 4px);
   }
   
   .y-tick {
-    height: 2px;
+    height: 0.5px;
     width: 10px;
     left: calc(50% - 4px);
   }
@@ -116,32 +118,33 @@
     padding: 5px;
   }
   
-  .controls button {
+  .controls p {
     background-color: rgba(255, 255, 255, 0);
     border: 0px;
     color: white;
+    opacity: 0.5;
   }
   
   .controls-up {
-    top: -27px;
-    left: 50%;
+    top: -20px;
+    left: 24px;
     transform: translateX(-50%);
   }
   
   .controls-right {
-    top: 50%;
+    top: 32px;
     left: 35px;
     transform: translateY(-50%);
   }
   
   .controls-down {
-    bottom: -27px;
-    left: 50%;
+    bottom: -36px;
+    left: 25px;
     transform: translateX(-50%);
   }
   
   .controls-left {
-    top: 50%;
+    top: 32px;
     right: 35px;
     transform: translateY(-50%);
   }

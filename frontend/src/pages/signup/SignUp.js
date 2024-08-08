@@ -30,7 +30,7 @@ const SignUp = () => {
       <div className='signup-container'>
 				<div className='signup-title'>
 	      	<img src={signUpTitle} width={450} className='mb-3' />
-          <Button className='btn light-btn big' content='Sign Up with Google'
+          <Button className='ms-0 btn light-btn big' content='Sign Up with Google'
           onClick={googleSignIn}/>
 				</div>
 				<hr className='border-light border-1' />
@@ -43,7 +43,7 @@ const SignUp = () => {
            />
 				</div>
 				<hr className='border-light border-1' />
-				<Button className='btn dark-btn big' content='Sign Up' onClick={()=>{
+				<Button className='ms-0 btn dark-btn big' content='Sign Up' onClick={()=>{
           if (password !== password2){
             Swal.fire({
               title: '비밀번호가 다릅니다!',
