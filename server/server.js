@@ -61,11 +61,14 @@ wss.on('connection', (ws) => {
 
       case 'move':
         rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
-
+    
         rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime }));
+            if (user.id !== userId) { // 자기 자신에게는 데이터를 보내지 않도록 필터링
+                user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime }));
+            }
         });
         break;
+      
 
       case 'send_offer':
         const recipientUser = rooms[roomId].find(user => user.id === data.recipient);
@@ -117,7 +120,6 @@ wss.on('connection', (ws) => {
               user.ws.send(JSON.stringify({ type: 'update', clients: clientsToSend }));
           });
           break;
-
       default:
           console.error('Unrecognized message type:', data.type);
       }
