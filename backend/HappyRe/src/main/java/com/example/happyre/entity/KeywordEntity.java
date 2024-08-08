@@ -1,7 +1,10 @@
 package com.example.happyre.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -34,5 +37,11 @@ public class KeywordEntity {
 
     @Column(name = "archived")
     private Boolean archived = false;
+
+    //Non_column_field
+    @JsonManagedReference//prevent looping json output
+    @OneToMany(mappedBy = "keywordEntity", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
+    private List<KeywordEmotionEntity> keywordEmotionEntityList;
+
 
 }

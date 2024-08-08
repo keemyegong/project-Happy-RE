@@ -75,7 +75,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<KeywordEntity> findByKeywordAndUserEntity(String keyword, UserEntity userEntity) {
-        return keywordRepository.findByKeywordAndUserEntity(keyword, userEntity);
+        return keywordRepository.findByKeywordAndUserEntity(keyword.strip(), userEntity);
     }
 
     @Override
