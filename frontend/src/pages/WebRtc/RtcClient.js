@@ -67,7 +67,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition)
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
@@ -123,7 +122,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 },
+          coolTime: user.coolTime || false
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -150,7 +150,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'update') {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
-          position: user.position || { x: 0, y: 0 }
+          position: user.position || { x: 0, y: 0 },
+          coolTime: user.coolTime || false
         })));
       } else if (dataFromServer.type === 'coolTime') {
         setCoolTime(dataFromServer.coolTime);
@@ -185,7 +186,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
 
-        if (!peerConnections[user.id]) {
+        if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           peerConnections[user.id] = { peerConnection };
           if (clientId < user.id) {
@@ -195,7 +196,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
         // 그룹에 속한 유저들과 연결
         newNearbyUsers.forEach(nearbyUser => {
-          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id]) {
+          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id] && !coolTime) {
             const peerConnection = createPeerConnection(nearbyUser.id);
             peerConnections[nearbyUser.id] = { peerConnection };
             if (clientId < nearbyUser.id) {
@@ -226,7 +227,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     // 그룹 내 연결 처리
     Object.keys(newGroups).forEach(userId => {
       newGroups[userId].forEach(nearbyUserId => {
-        if (!peerConnections[nearbyUserId]) {
+        if (!peerConnections[nearbyUserId] && !coolTime) {
           const peerConnection = createPeerConnection(nearbyUserId);
           peerConnections[nearbyUserId] = { peerConnection };
           if (clientId < nearbyUserId) {
