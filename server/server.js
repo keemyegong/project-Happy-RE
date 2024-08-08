@@ -10,6 +10,14 @@ const server = https.createServer({
   key: fs.readFileSync('/etc/letsencrypt/live/i11b204.p.ssafy.io/privkey.pem')
 }, app);
 
+// 정적 파일 제공 등 express의 라우팅 설정
+app.use(express.static('public')); // 예시: public 폴더에 정적 파일을 제공
+
+// 특정 경로에 대한 접근 제어
+app.get('/webrtc', (req, res) => {
+  res.send('WebRTC path accessed');
+});
+
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const MAX_USERS_PER_ROOM = 6;
@@ -30,7 +38,12 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+  if (req.url !== '/webrtc') {
+    ws.close(4001, 'Unauthorized path');
+    return;
+  }
+
   const userId = uuidv4();
   const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false };
 
