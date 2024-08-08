@@ -36,27 +36,29 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
 
-    window.addEventListener('beforeunload', () => {
-      client.send(JSON.stringify({ type: 'disconnect' }));
-      client.close();
-      cleanupConnections();
-    });
-
+    window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       client.close();
     };
   }, []);
 
+  const handleBeforeUnload = () => {
+    client.send(JSON.stringify({ type: 'disconnect' }));
+    client.close();
+    cleanupConnections();
+  };
+
   const cleanupConnections = () => {
+    Object.values(peerConnections).forEach(({ peerConnection }) => {
+      peerConnection.close();
+    });
     Object.keys(peerConnections).forEach(userId => {
-      peerConnections[userId].peerConnection.close();
       delete peerConnections[userId];
-      if (audioEffectRef.current) {
-        audioEffectRef.current.removeStream(userId);
-      }
+      audioEffectRef.current?.removeStream(userId);
     });
     checkAndSetCoolTime();
   };
@@ -77,15 +79,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const movePosition = (dx, dy) => {
     if (coolTime) return;
 
-    const newPosition = { 
-      x: Math.min(1, Math.max(-1, positionRef.current.x + dx)), 
-      y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
-      id: clientId 
+    const newPosition = {
+      x: Math.min(1, Math.max(-1, positionRef.current.x + dx)),
+      y: Math.min(1, Math.max(-1, positionRef.current.y + dy)),
+      id: clientId
     };
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, coolTime }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
 
@@ -113,10 +115,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.onopen = () => {
       console.log('WebSocket Client Connected');
-      client.send(JSON.stringify({
-        type: 'coolTime',
-        coolTime: false
-      }));
     };
 
     client.onclose = () => {
@@ -308,18 +306,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
-        // 연결이 끊겼을 때 coolTime을 true로 설정
-        console.log(`Setting coolTime to true due to disconnection with user ${userId}`);
-        setCoolTime(true);
-        client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
-        console.log('CoolTime state after setting true:', true);
-  
-        setTimeout(() => {
-          console.log(`Setting coolTime to false after 10 seconds`);
-          setCoolTime(false);
-          client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
-          console.log('CoolTime state after setting false:', false);
-        }, 10000); // 10초 후에 coolTime을 false로 설정
+        checkAndSetCoolTime();
       }
     };
   

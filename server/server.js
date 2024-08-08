@@ -13,7 +13,7 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const MAX_USERS_PER_ROOM = 6;
-let rooms = {};
+let rooms = {};  // 전역 변수로 rooms 정의
 
 const createNewRoom = () => {
   const roomId = uuidv4();
@@ -134,6 +134,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(5001, () => {
-  console.log('Server is running on port 5001');
+server.listen(5000, () => {
+  console.log('Server is running on port 5000');
 });
