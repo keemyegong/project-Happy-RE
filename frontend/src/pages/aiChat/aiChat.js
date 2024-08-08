@@ -275,6 +275,9 @@ const AIChat = () => {
       }, 91000);
     } else if (eventNumber === 2) {
       event3();
+      setTimeout(() => {
+        eventEnd()
+      }, 91000)
     } else if (eventNumber === 3) {
       event4();
     }

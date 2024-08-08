@@ -149,6 +149,32 @@
   height: 30px;
 }
 
+.bouncing-ball-fade-in {
+  position: absolute;
+  top:10%;
+  left: 50%;
+  text-align: center;
+  width: 100%;
+  transform: translate(-50%,-50%);
+  font-size: 20px;
+  animation: fadein 3s;
+  -moz-animation: fadein 3s; /* Firefox */
+  -webkit-animation: fadein 3s; /* Safari and Chrome */
+}
+
+.bouncing-ball-fade-out {
+  position: absolute;
+  top:10%;
+  left: 50%;
+  text-align: center;
+  width: 100%;
+  transform: translate(-50%,-50%);
+  font-size: 20px;
+  animation: fadeout 3s;
+  -moz-animation: fadeout 3s; /* Firefox */
+  -webkit-animation: fadeout 3s; /* Safari and Chrome */
+}
+
 @keyframes fadein {
   from {
       opacity: 0;
