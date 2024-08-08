@@ -29,6 +29,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
             }
         });
         for (String word : words) {
+            System.out.println("***"+word+"***");
             userWordFrequencyRepository.upsertFrequency(userid, word, 1);
         }
 

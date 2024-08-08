@@ -145,7 +145,7 @@ public class MessageServiceImpl implements MessageService {
                 messageEntity.setRussellX(messageEntityDTO.getRussellX());
                 messageEntity.setRussellY(messageEntityDTO.getRussellY());
                 messageRepository.save(messageEntity);
-                if("user".equals(messageEntity.getSpeaker().toString())){
+                if(messageEntity.getSpeaker() == MessageEntity.Speaker.user){
                     userWords.add(messageEntityDTO.getContent());
                 }
                 messageEntities.add(messageEntity);
