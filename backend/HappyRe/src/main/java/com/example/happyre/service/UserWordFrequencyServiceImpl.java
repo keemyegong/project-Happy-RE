@@ -3,15 +3,17 @@ package com.example.happyre.service;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.entity.UserWordFrequencyEntity;
 import com.example.happyre.repository.UserWordFrequencyRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
 
-    private UserWordFrequencyRepository userWordFrequencyRepository;
+    private final UserWordFrequencyRepository userWordFrequencyRepository;
 
     @Override
     public void splitWord(ArrayList<String> sentence, int userid) {
