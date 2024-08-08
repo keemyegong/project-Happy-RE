@@ -238,6 +238,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.removeStream(user.id);
         }
         console.log(`WebRTC connection closed with user ${user.id}`);
+        checkAndSetCoolTime();
       }
     });
 
@@ -305,6 +306,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
+        checkAndSetCoolTime();
       }
     };
   
@@ -437,6 +439,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
+      checkAndSetCoolTime();
     }
   };
 
