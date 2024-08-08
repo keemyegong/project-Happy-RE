@@ -1,5 +1,6 @@
 package com.example.happyre.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,10 +15,11 @@ public class DiaryEmotionEntity {
     private Integer diaryEmotionId;
 
     @ManyToOne
-    @JoinColumn(name = "diary_id")
-    private DiaryEntity diaryEntity;
-
-    @ManyToOne
     @JoinColumn(name = "emotion_id")
     private EmotionEntity emotionEntity;
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "diary_id")
+    private DiaryEntity diaryEntity;
 }

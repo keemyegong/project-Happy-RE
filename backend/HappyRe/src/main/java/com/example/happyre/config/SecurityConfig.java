@@ -60,7 +60,7 @@ public class SecurityConfig {
 //                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 //        return http.build();
 //    }
-//
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // CORS 설정
