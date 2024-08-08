@@ -60,7 +60,7 @@ wss.on('connection', (ws) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved } : user);
         
         const updatedUsers2 = rooms[roomId].map(user => ({
             id: user.id,
