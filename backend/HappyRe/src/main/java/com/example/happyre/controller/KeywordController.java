@@ -54,6 +54,23 @@ public class KeywordController {
 
     }
 
+    @GetMapping("/keywordName/{keyword}")
+    public ResponseEntity<?> findByKeywordName(HttpServletRequest request, @PathVariable String keyword) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            if (userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            List<KeywordEntity> keywordEntityList = keywordService.findByKeywordAndUserEntity(keyword.strip(), userEntity);
+            return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(e.getStackTrace(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getStackTrace(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
     @GetMapping("/cloud")
     public ResponseEntity<?> getMyWordCloud(HttpServletRequest request) {
         System.out.println(" GetMyWordCloud ");
