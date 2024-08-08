@@ -65,9 +65,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     if (Object.keys(peerConnections).length === 0) {
       setCoolTime(true);
       console.log('All connections closed, setting CoolTime to true');
+      client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
       setTimeout(() => {
         setCoolTime(false);
         console.log('CoolTime reset to false after 10 seconds');
+        client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
       }, 10000);
     }
   };
@@ -90,16 +92,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.025);
+        movePosition(0, 0.005);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.025);
+        movePosition(0, -0.005);
         break;
       case 'ArrowLeft':
-        movePosition(-0.025, 0);
+        movePosition(-0.005, 0);
         break;
       case 'ArrowRight':
-        movePosition(0.025, 0);
+        movePosition(0.005, 0);
         break;
       default:
         break;
@@ -168,6 +170,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         })));
       } else if (dataFromServer.type === 'coolTime') {
         setCoolTime(dataFromServer.coolTime);
+        console.log(`CoolTime updated from server: ${dataFromServer.coolTime}`);
       }
     };
 
