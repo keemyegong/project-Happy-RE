@@ -3,7 +3,7 @@
 import React from 'react';
 import './CharacterList.css';
 
-const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUsers }) => (
+const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUsers, coolTime }) => (
   <div className="right-panel">
     <div className="scroll-buttons">
       <button onClick={() => handleScroll('up')}>
@@ -13,7 +13,7 @@ const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUs
       </button>
     </div>
     <div className="character-list">
-      {nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
+      {!coolTime && nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
         <div 
           key={user.id}
           className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
