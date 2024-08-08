@@ -1,9 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import './ChatGraph.css';
+import artist from '../../assets/characters/art.png';
+import butler from '../../assets/characters/butler.png';
+import defaultPersona from '../../assets/characters/default.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+
 
 const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localAudioRef, userImage, coolTime }) => {
   const coordinatesGraphRef = useRef(null);
-
+  const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   useEffect(() => {
     const coordinatesGraph = coordinatesGraphRef.current;
 
