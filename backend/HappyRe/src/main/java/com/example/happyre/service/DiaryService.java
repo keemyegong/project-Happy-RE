@@ -2,6 +2,7 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.entity.UserEntity;
 
 import java.sql.Date;
@@ -25,5 +26,7 @@ public interface DiaryService {
     void delete(DiaryEntity diaryDTOEntity);
 
     List<DiaryEntity> searchForWeek(UserEntity userEntity, Date date, Integer period);
+
+
 
 }
