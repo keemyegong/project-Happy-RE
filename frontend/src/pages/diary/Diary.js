@@ -7,6 +7,8 @@ import DiaryDetail from '../../components/diary-report/DiaryDetail';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { universeVariable } from '../../App';
+import Swal from 'sweetalert2'
+
 
 const Diary = () => {
   const universal = useContext(universeVariable);
@@ -18,6 +20,12 @@ const Diary = () => {
   const [selectedDay, setSelectedDay] = useState(null); // 상태 추가
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
   const [showButton, setShowButton] = useState(false);
+  const [keyword, setKeyword] = useState([])
+  const [chatlog, setChatlog] = useState([])
+  const [daySummary, setDaySummary] = useState('');
+  const hideplus = true;
+
+
   const navigate = useNavigate();
 
   const startDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -43,12 +51,13 @@ const Diary = () => {
             }
           }).then((response)=>{
             
-            console.log(response.data)
+            // console.log(response.data)
           }).catch((err)=>{
             console.log(err)
           })
         }
-        console.log(response.data.keywordEntities);
+        // console.log(response.data);
+
       })
   },[])
   // 이전 주 이동
@@ -66,6 +75,48 @@ const Diary = () => {
     navigate('/with-happyre');
   };
 
+  // 해당날짜의 diary받기
+  const getDiary = (year, month, date)=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${year}&month=${month}&day=${date}&period=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+
+        if (response.data[0] != undefined){
+          // console.log(response.data);
+          setDaySummary(response.data[0].summary);
+          axios.get(
+            `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then((response)=>{
+              // console.log(response.data)
+              setKeyword(response.data.keywordEntities);
+              setChatlog(response.data.messageEntities);
+
+              setShowModal(true);
+            })
+          } else {
+            Swal.fire({
+              title: '다이어리가 없습니다!',
+              text: '해파리가 열심히 찾아봤지만, 안타깝게도 해당 날짜에는 하루를 기록한 흔적이 없는 것 같아요.',
+              icon: "question",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            });
+            
+          }
+      })
+  }
   // 날짜 렌더
   const renderDaysOfWeek = () => {
     const days = [];
@@ -99,7 +150,8 @@ const Diary = () => {
                 date,
                 dayLabel
               }); // 날짜 객체 설정
-              setShowModal(true); // 모달 열기
+
+              getDiary(year,month,date);
             }}
           >
             <div
@@ -170,8 +222,12 @@ const Diary = () => {
       <div className='modal-container'>
         {showModal && (
           <DiaryDetail 
+            daySummary={daySummary}
+            chatlog={chatlog}
+            keyword={keyword}
             selectedDay={selectedDay} // 전체 날짜 정보 전달
             onClose={() => setShowModal(false)}
+            hideplus={hideplus}
           />
         )}
       </div>

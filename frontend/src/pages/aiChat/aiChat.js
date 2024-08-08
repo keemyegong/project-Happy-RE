@@ -37,6 +37,8 @@ const AIChat = () => {
     month:currDate.getMonth()+1,
     date:currDate.getDate(),
   };
+  const [keyword,setKeyword] = useState([]);
+
 
 
   // 처음 인삿말 받아오기
@@ -81,7 +83,7 @@ const AIChat = () => {
 
   const closeModal = ()=>{
     setshowModal(false);
-    // navigate('/diary');
+    navigate('/diary');
 
   }
   const endChatSession = () => {
@@ -89,9 +91,6 @@ const AIChat = () => {
     setshowModal(true);
 
     // axios를 통해 값을 받아오면 setLoading(false)를 통해 리포트를 띄우는 방식
-    setTimeout(()=>{
-      setLoading(false);
-    },4000);
 
     axios.post(`${universal.fastUrl}/fastapi/chatbot/post_message`, {}, {
       headers: {
@@ -119,8 +118,18 @@ const AIChat = () => {
           }
         }).then((response) => {
           console.log("Session ended and diary summary sent:", response.data);
-
-
+          axios.get(
+            `${universal.defaultUrl}/api/diary/detail/`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then((response)=>{
+              setKeyword(response.data.keywordEntities);
+            }).then((response)=>{
+              setLoading(false);
+            })
         }).catch((error) => {
           console.error("Error ending session:", error);
         });
@@ -341,7 +350,7 @@ const AIChat = () => {
   
   return (
     <div className='AIChat'>
-      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} /> }
+      {showModal && <DiaryDetail className='diary-report-modal-after-chat' selectedDay={today} dropChat={true} loading={loading} onClose={closeModal} keyword={keyword} /> }
       <div className='container ai-chat-container'>
         <div className='row ai-chat-components'>
           <div className='col-6 ai-chat-cam'>
