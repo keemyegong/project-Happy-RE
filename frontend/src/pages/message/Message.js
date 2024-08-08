@@ -126,10 +126,10 @@ const Message = () => {
         </div>
       </div>
       <Button
-              className="toggle-btn btn dark-btn small"
-              content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
-              onClick={toggleContainer}
-            />
+        className="toggle-btn btn dark-btn small"
+        content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
+        onClick={toggleContainer}
+      />
     </main>
   );
 };
