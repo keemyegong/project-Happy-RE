@@ -28,6 +28,7 @@ public class DiaryDetailResponseDTO {
             messageEntityDTO.setRussellX(messageEntity.getRussellX());
             messageEntityDTO.setRussellY(messageEntity.getRussellY());
             messageEntityDTO.setArchived(messageEntity.getArchived());
+            messageEntityDTO.setAudioKey(messageEntity.getAudioKey());
 
             this.messageEntities.add(messageEntityDTO);
         }
