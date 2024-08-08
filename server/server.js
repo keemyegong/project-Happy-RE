@@ -61,11 +61,19 @@ wss.on('connection', (ws) => {
 
       case 'move':
         rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
+        
+        const updatedUsers2 = rooms[roomId].map(user => ({
+            id: user.id,
+            position: user.position,
+            characterImage: user.characterImage,
+            hasMoved: user.hasMoved,
+            connectedAt: user.connectedAt,
+            coolTime: user.coolTime
+        }));
     
         rooms[roomId].forEach(user => {
-            if (user.id !== userId) { // 자기 자신에게는 데이터를 보내지 않도록 필터링
-                user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime }));
-            }
+            const clientsToSend = updatedUsers2.filter(u => u.id !== user.id); // Filter out the user's own data
+            user.ws.send(JSON.stringify({ type: 'update', clients: clientsToSend }));
         });
         break;
       
