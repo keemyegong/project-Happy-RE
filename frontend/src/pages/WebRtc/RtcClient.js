@@ -20,6 +20,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
+  const [coolTime, setCoolTime] = useState(false);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
@@ -59,12 +60,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const movePosition = (dx, dy) => {
+    if (coolTime) return;
+
     const newPosition = { 
       x: Math.min(1, Math.max(-1, positionRef.current.x + dx)), 
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)), 
       id: clientId 
     };
-    console.log(newPosition);
+    console.log(newPosition)
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
@@ -75,16 +78,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.005);
+        movePosition(0, 0.025);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.005);
+        movePosition(0, -0.025);
         break;
       case 'ArrowLeft':
-        movePosition(-0.005, 0);
+        movePosition(-0.025, 0);
         break;
       case 'ArrowRight':
-        movePosition(0.005, 0);
+        movePosition(0.025, 0);
         break;
       default:
         break;
@@ -114,7 +117,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           type: 'connect',
           position,
           characterImage: userImage,
-          hasMoved
+          hasMoved,
+          coolTime
         }));
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
@@ -131,7 +135,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setUsers(prevUsers => [...prevUsers, newUser]);
         checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
-        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved } : user));
+        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime } : user));
         checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
@@ -148,6 +152,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           position: user.position || { x: 0, y: 0 }
         })));
+      } else if (dataFromServer.type === 'coolTime') {
+        setCoolTime(dataFromServer.coolTime);
       }
     };
 
@@ -161,7 +167,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } else {
       console.error('getUserMedia is not supported in this browser.');
     }
-  }, [position, userImage, hasMoved]);
+  }, [position, userImage, hasMoved, coolTime]);
 
   useEffect(() => {
     if (clientId) {
@@ -279,6 +285,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
+        // 연결이 끊겼을 때 coolTime을 true로 설정
+        setCoolTime(true);
+        client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
+
+        setTimeout(() => {
+          setCoolTime(false);
+          client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
+        }, 10000); // 10초 후에 coolTime을 false로 설정
       }
     };
 
@@ -290,6 +304,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const attemptOffer = (peerConnection, recipientId) => {
+    if (coolTime) return;
+
     peerConnection.createOffer()
       .then(offer => {
         peerConnection.setLocalDescription(offer)
@@ -307,8 +323,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleOffer = async (offer, sender) => {
-    if (!sender) {
-      console.error('No sender provided for offer');
+    if (coolTime || !sender) {
+      console.error('No sender provided for offer or in coolTime');
       return;
     }
 
@@ -370,7 +386,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('Error handling answer:', error);
     }
   };
-  
 
   const handleCandidate = async (candidate, sender) => {
     if (!sender) {
@@ -430,6 +445,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             movePosition={movePosition} 
             localAudioRef={localAudioRef} 
             userImage={userImage} 
+            coolTime={coolTime} // 추가된 부분
           />
         </div>
         <div className='audio-effect-container'>

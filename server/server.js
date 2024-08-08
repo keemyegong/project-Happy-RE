@@ -32,7 +32,7 @@ const getRoomWithSpace = () => {
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
-  const userInfo = { id: userId, connectedAt: Date.now() };
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false };
 
   // Assign the user to a room
   const roomId = getRoomWithSpace();
@@ -51,7 +51,8 @@ wss.on('connection', (ws) => {
           position: user.position,
           characterImage: user.characterImage,
           hasMoved: user.hasMoved,
-          connectedAt: user.connectedAt
+          connectedAt: user.connectedAt,
+          coolTime: user.coolTime
         }));
 
         rooms[roomId].forEach(user => {
@@ -94,10 +95,19 @@ wss.on('connection', (ws) => {
             position: u.position,
             characterImage: u.characterImage,
             hasMoved: u.hasMoved,
-            connectedAt: u.connectedAt
+            connectedAt: u.connectedAt,
+            coolTime: u.coolTime
           }));
 
           user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+        });
+        break;
+
+      case 'coolTime':
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
+
+        rooms[roomId].forEach(user => {
+          user.ws.send(JSON.stringify({ type: 'coolTime', id: userId, coolTime: data.coolTime }));
         });
         break;
 
@@ -111,15 +121,14 @@ wss.on('connection', (ws) => {
       rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
   
       rooms[roomId].forEach(user => {
-        const otherClientsData = rooms[roomId]
-          .filter(u => u.id !== user.id)  // 현재 유저를 제외한 다른 유저들만 포함
-          .map(u => ({
-            id: u.id,
-            position: u.position,
-            characterImage: u.characterImage,
-            hasMoved: u.hasMoved,
-            connectedAt: u.connectedAt
-          }));
+        const otherClientsData = rooms[roomId].map(u => ({
+          id: u.id,
+          position: u.position,
+          characterImage: u.characterImage,
+          hasMoved: u.hasMoved,
+          coolTime: u.coolTime,
+          connectedAt: u.connectedAt
+        }));
   
         user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
       });

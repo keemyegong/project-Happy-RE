@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from 'react';
 import './ChatGraph.css';
 
-const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localAudioRef, userImage }) => {
+const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localAudioRef, userImage, coolTime }) => {
   const coordinatesGraphRef = useRef(null);
 
   useEffect(() => {
@@ -49,7 +49,8 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
             className="radar-pulse-small"
             style={{
               left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
-              top: `calc(${((1 - user.position.y) / 2) * 100}%)`
+              top: `calc(${((1 - user.position.y) / 2) * 100}%)`,
+              borderColor: user.coolTime ? 'red' : 'white'
             }}
           />
         ))}
@@ -57,7 +58,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
             left: `calc(${((position.x + 1) / 2) * 100}%)`,
             top: `calc(${((1 - position.y) / 2) * 100}%)`
           }}>
-          <div className="radar-pulse" />
+          <div className="radar-pulse" style={{ borderColor: coolTime ? 'red' : 'white' }} />
           <img
             src={userImage}
             alt="your character"
