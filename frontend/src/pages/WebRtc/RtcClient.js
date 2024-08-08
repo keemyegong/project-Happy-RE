@@ -240,6 +240,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const createPeerConnection = (userId) => {
+    if (coolTime) return null;  // coolTime이 true일 때 연결 시도하지 않음
+
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
@@ -304,7 +306,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const attemptOffer = (peerConnection, recipientId) => {
-    if (coolTime) return;
+    if (coolTime || !peerConnection) return;
 
     peerConnection.createOffer()
       .then(offer => {

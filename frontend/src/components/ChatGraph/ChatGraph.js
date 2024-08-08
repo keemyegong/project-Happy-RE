@@ -50,7 +50,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
             style={{
               left: `calc(${((user.position.x + 1) / 2) * 100}%)`,
               top: `calc(${((1 - user.position.y) / 2) * 100}%)`,
-              borderColor: user.coolTime ? 'red' : 'white'
+              border: user.coolTime ? '#a70202' : 'white'
             }}
           />
         ))}
@@ -58,7 +58,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
             left: `calc(${((position.x + 1) / 2) * 100}%)`,
             top: `calc(${((1 - position.y) / 2) * 100}%)`
           }}>
-          <div className="radar-pulse" style={{ borderColor: coolTime ? 'red' : 'white' }} />
+          <div className="radar-pulse" style={{ border: coolTime ? '#a70202' : 'white' }} />
           <img
             src={userImage}
             alt="your character"
