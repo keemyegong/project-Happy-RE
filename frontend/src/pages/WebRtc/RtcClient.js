@@ -4,6 +4,12 @@ import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
 import AudioEffect from '../../components/audio-api/AudioApi';
+import artist from '../../assets/characters/art.png';
+import butler from '../../assets/characters/butler.png';
+import defaultPersona from '../../assets/characters/default.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
@@ -46,6 +52,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       client.close();
     };
   }, []);
+
+    // useEffect(() => {
+  //   setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
+  // },[]);
 
   const handleBeforeUnload = () => {
     client.send(JSON.stringify({ type: 'disconnect' }));
