@@ -29,7 +29,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
             }
         });
         for (String word : words) {
-            System.out.println("***"+word+"***");
+            System.out.println("***" + word + "***");
             userWordFrequencyRepository.upsertFrequency(userid, word, 1);
         }
 
@@ -41,7 +41,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
         List<UserWordFrequencyEntity> userWordFrequencyEntities = userWordFrequencyRepository.findByUserEntity(userEntity);
         System.out.println(userWordFrequencyEntities.toString());
         System.out.println("********IN UserWordFrequencyServiceImpl findUserWordFrequencyByUser*******");
-        return  userWordFrequencyEntities;
+        return userWordFrequencyEntities;
     }
 
 

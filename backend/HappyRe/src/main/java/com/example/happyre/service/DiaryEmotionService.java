@@ -1,7 +1,6 @@
 package com.example.happyre.service;
 
 import com.example.happyre.dto.diaryemotion.DiaryEmotionDTO;
-import com.example.happyre.dto.diaryemotion.DiaryEmotionEntityDTO;
 import com.example.happyre.entity.DiaryEmotionEntity;
 import com.example.happyre.entity.DiaryEntity;
 

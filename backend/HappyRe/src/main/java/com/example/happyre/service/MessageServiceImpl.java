@@ -5,7 +5,6 @@ import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.MessageRepository;
-import com.example.happyre.repository.UserWordFrequencyRepository;
 import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -145,13 +144,13 @@ public class MessageServiceImpl implements MessageService {
                 messageEntity.setRussellX(messageEntityDTO.getRussellX());
                 messageEntity.setRussellY(messageEntityDTO.getRussellY());
                 messageRepository.save(messageEntity);
-                if(messageEntity.getSpeaker() == MessageEntity.Speaker.user){
+                if (messageEntity.getSpeaker() == MessageEntity.Speaker.user) {
                     userWords.add(messageEntityDTO.getContent());
                 }
                 messageEntities.add(messageEntity);
             }
 
-            userWordFrequencyService.splitWord(userWords,diaryEntity.getUserEntity().getId());
+            userWordFrequencyService.splitWord(userWords, diaryEntity.getUserEntity().getId());
             return messageEntities;
         } catch (Exception e) {
             System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");

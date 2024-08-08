@@ -44,7 +44,7 @@ public class KeywordServiceImpl implements KeywordService {
                 keywordEntity.getDiaryEntity().getUserEntity().getId(),
                 keywordEntity.getKeyword(),
                 1
-                );
+        );
 
         return keywordRepository.save(keywordEntity);
     }

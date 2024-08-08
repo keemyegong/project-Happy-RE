@@ -1,10 +1,9 @@
 package com.example.happyre.controller;
 
+import com.example.happyre.dto.diary.DiaryContentDTO;
 import com.example.happyre.dto.diary.DiaryDetailResponseDTO;
 import com.example.happyre.dto.diary.DiaryEntityDTO;
-import com.example.happyre.dto.diary.DiaryContentDTO;
 import com.example.happyre.dto.diaryemotion.DiaryEmotionDTO;
-import com.example.happyre.dto.keywordemotion.KeywordEmotionDTO;
 import com.example.happyre.entity.*;
 import com.example.happyre.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,7 +88,7 @@ public class DiaryController {
                 //없으면 오늘자로 검색
                 UserEntity userEntity = userService.findByRequest(request);
                 List<DiaryEntity> list = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
-                if(list.size() == 0){
+                if (list.size() == 0) {
                     return ResponseEntity.ok("No Today Diary");
                 }
                 diaryEntity = list.get(list.size() - 1);
@@ -217,11 +216,12 @@ public class DiaryController {
     //Emotion
     @Operation(summary = "Diary에 Emotion 생성")
     @PostMapping("/emotion")
-    public ResponseEntity<?> createEmotion(HttpServletRequest request, @RequestBody DiaryEmotionDTO diaryEmotionDTO){
-        try{
+    public ResponseEntity<?> createEmotion(HttpServletRequest request, @RequestBody DiaryEmotionDTO diaryEmotionDTO) {
+        try {
             if (null == diaryEmotionDTO.getDiaryId()) throw new AssertionError();
             DiaryEntity diaryEntity = diaryService.findById(diaryEmotionDTO.getDiaryId()).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 Diary 객체 없음 "));
-            if(diaryEntity.getUserEntity().getId() != userService.findByRequest(request).getId()) throw new RuntimeException("권한 없음");
+            if (diaryEntity.getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
             diaryEmotionService.insertDTO(diaryEmotionDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -231,10 +231,11 @@ public class DiaryController {
 
     @Operation(summary = "DiaryId 로 Emotion 조회")
     @GetMapping("/emotion/diary/{id}")
-    public ResponseEntity<?> findEmotionByDiary(HttpServletRequest request, @PathVariable Integer id){
-        try{
+    public ResponseEntity<?> findEmotionByDiary(HttpServletRequest request, @PathVariable Integer id) {
+        try {
             DiaryEntity diaryEntity = diaryService.findById(id).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 Diary 객체 없음 "));
-            if(diaryEntity.getUserEntity().getId() != userService.findByRequest(request).getId()) throw new RuntimeException("권한 없음");
+            if (diaryEntity.getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
             return ResponseEntity.ok(diaryEntity.getDiaryEmotionEntityList());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Diary로 Emotion 조회중 에러 : " + e.getMessage());
@@ -242,10 +243,11 @@ public class DiaryController {
     }
 
     @DeleteMapping("/emotion/{id}")
-    public ResponseEntity<?> deleteDiaryEmotion(HttpServletRequest request, @PathVariable Integer id){
-        try{
+    public ResponseEntity<?> deleteDiaryEmotion(HttpServletRequest request, @PathVariable Integer id) {
+        try {
             DiaryEmotionEntity diaryEmotionEntity = diaryEmotionService.findById(id).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 DiaryEmotion 없음"));
-            if(diaryEmotionEntity.getDiaryEntity().getUserEntity().getId() != userService.findByRequest(request).getId()) throw new RuntimeException("권한 없음");
+            if (diaryEmotionEntity.getDiaryEntity().getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
             diaryEmotionService.delete(diaryEmotionEntity);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
