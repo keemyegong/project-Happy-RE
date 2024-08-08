@@ -50,6 +50,25 @@ public class KeywordController {
 
     }
 
+    @GetMapping("/cloud")
+    public ResponseEntity<?> getMyWordCloud(HttpServletRequest request) {
+        System.out.println(" GetMyWordCloud ");
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            if (userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            List<KeywordEntity> keywordEntityList = keywordService.getMyKeywords(userEntity);
+            return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
+
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
     @Operation(summary = "오늘자 Diary에 Keyword 생성하기", description = "참고: 오늘자 Diary가 없으면 생성합니다.")
     @PostMapping()
     public ResponseEntity<?> createKeyword(HttpServletRequest request, @RequestBody List<KeywordEntityDTO> KeywordEntityDTO) {
