@@ -13,7 +13,7 @@ const server = https.createServer({
 const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const MAX_USERS_PER_ROOM = 6;
-let rooms = {};  // 전역 변수로 rooms 정의
+let rooms = {};
 
 const createNewRoom = () => {
   const roomId = uuidv4();
@@ -34,7 +34,6 @@ wss.on('connection', (ws) => {
   const userId = uuidv4();
   const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false };
 
-  // Assign the user to a room
   const roomId = getRoomWithSpace();
   rooms[roomId].push({ ws, ...userInfo });
 
@@ -45,7 +44,7 @@ wss.on('connection', (ws) => {
 
     switch (data.type) {
       case 'connect':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
         const allUsers = rooms[roomId].map(user => ({
           id: user.id,
           position: user.position,
@@ -61,10 +60,10 @@ wss.on('connection', (ws) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
 
         rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
+          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime }));
         });
         break;
 
@@ -105,7 +104,6 @@ wss.on('connection', (ws) => {
 
       case 'coolTime':
         rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
-
         rooms[roomId].forEach(user => {
           user.ws.send(JSON.stringify({ type: 'coolTime', id: userId, coolTime: data.coolTime }));
         });
