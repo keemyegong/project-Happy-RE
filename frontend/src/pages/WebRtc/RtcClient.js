@@ -87,7 +87,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, coolTime :  }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, coolTime : coolTime}));
     }
   };
 
