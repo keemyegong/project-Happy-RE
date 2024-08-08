@@ -34,7 +34,11 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
 
     @Override
     public List<UserWordFrequencyEntity> findUserWordFrequencyByUser(UserEntity userEntity) {
-        return  userWordFrequencyRepository.findByUserEntity(userEntity);
+        System.out.println("********IN UserWordFrequencyServiceImpl findUserWordFrequencyByUser*******");
+        List<UserWordFrequencyEntity> userWordFrequencyEntities = userWordFrequencyRepository.findByUserEntity(userEntity);
+        System.out.println(userWordFrequencyEntities.toString());
+        System.out.println("********IN UserWordFrequencyServiceImpl findUserWordFrequencyByUser*******");
+        return  userWordFrequencyEntities;
     }
 
 

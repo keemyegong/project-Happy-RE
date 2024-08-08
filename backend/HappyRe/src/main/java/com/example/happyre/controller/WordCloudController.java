@@ -35,7 +35,7 @@ public class WordCloudController {
             System.out.println(" GetUserWordFrequency ");
             List<UserWordFrequencyEntity> re = userWordFrequencyService.findUserWordFrequencyByUser(userEntity);
             System.out.println(" GetUserWordFrequency ");
-            return new ResponseEntity<>(  re, HttpStatus.OK);
+            return new ResponseEntity<>(re, HttpStatus.OK);
 
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
