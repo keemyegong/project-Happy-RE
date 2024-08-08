@@ -16,7 +16,6 @@
   overflow-y: scroll;
   background-color: rgba(105, 105, 105, 0.3);
   padding: 10px;
-
 }
 
 .agrement-text-content{
@@ -27,6 +26,21 @@
   font-weight: 100;
   letter-spacing: 1px;
   line-height: 20px;
+}
+
+.agreement-text::-webkit-scrollbar {
+  width: 10px;  /* 스크롤바의 너비 */
+}
+
+.agreement-text::-webkit-scrollbar-thumb {
+  height: 30%; /* 스크롤바의 길이 */
+  background: #898B98; /* 스크롤바의 색상 */
+  border-radius: 10px;
+}
+
+.agreement-text::-webkit-scrollbar-track {
+  background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  border-radius: 10px;
 }
 
 .signup-agreement-container{

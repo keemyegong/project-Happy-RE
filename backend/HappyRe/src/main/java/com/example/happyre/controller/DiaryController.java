@@ -2,7 +2,7 @@ package com.example.happyre.controller;
 
 import com.example.happyre.dto.diary.DiaryDetailResponseDTO;
 import com.example.happyre.dto.diary.DiaryEntityDTO;
-import com.example.happyre.dto.diary.DiarySummaryDTO;
+import com.example.happyre.dto.diary.DiaryContentDTO;
 import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
@@ -40,15 +40,13 @@ public class DiaryController {
     private final MessageService messageService;
     private final KeywordService keywordService;
 
+    @Operation(summary = "새 Diary 생성", description = "date를 null(빈 string 아님!) 로 설정하면 오늘 날짜로 생성을 시도합니다.\n date format은 yyyy-mm-dd hh:mm:ss 입니다.")
     @PostMapping("/")
     public ResponseEntity<?> addDiary(HttpServletRequest request, @RequestBody DiaryEntityDTO diaryEntityDTO) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
-            DiaryEntity diaryEntity = new DiaryEntity();
-            diaryEntity.setUserEntity(userEntity);
-            diaryEntity.setSummary(diaryEntityDTO.getSummary());
-            DiaryEntity savedDiary = diaryService.insert(diaryEntity);
-            return ResponseEntity.ok(savedDiary);
+            diaryEntityDTO.setUserId(userEntity.getId());
+            return ResponseEntity.ok(diaryService.insertDTO(diaryEntityDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Diary 추가중 에러: " + e.getMessage());
@@ -135,9 +133,9 @@ public class DiaryController {
         }
     }
 
-    @Operation(summary = "Diary 요약 수정", description = "오늘 자 Diary의 요약 수정.")
-    @PutMapping("/updatesummary")
-    public ResponseEntity<?> updateSummary(HttpServletRequest request, @RequestBody DiarySummaryDTO diarySummaryDTO) {
+    @Operation(summary = "오늘 자 Diary의 내용 수정.", description = "오늘 자 Diary의 내용 수정.")
+    @PutMapping("/updatetoday")
+    public ResponseEntity<?> updateContent(HttpServletRequest request, @RequestBody DiaryContentDTO diaryContentDTO) {
         try {
             UserEntity userEntity = userService.findByRequest(request);
             List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
@@ -146,11 +144,16 @@ public class DiaryController {
                 logger.warn("Diary 없음. 새로 만든다.");
                 diaryEntity = new DiaryEntity();
                 diaryEntity.setUserEntity(userEntity);
-                diaryEntity.setSummary(diarySummaryDTO.getSummary());
+                diaryEntity.setSummary(diaryContentDTO.getSummary());
                 diaryService.insert(diaryEntity);
             } else {
                 diaryEntity = diaryEntityList.get(0);
-                diaryEntity.setSummary(diarySummaryDTO.getSummary());
+                if (!userEntity.getId().equals(diaryEntity.getUserEntity().getId())) {
+                    throw new AccessDeniedException("권한 없음(유저 불일치)");
+                }
+                diaryEntity.setSummary(diaryContentDTO.getSummary());
+                diaryEntity.setRussellAvgX(diaryContentDTO.getRussellAvgX());
+                diaryEntity.setRussellAvgY(diaryContentDTO.getRussellAvgY());
                 diaryService.update(diaryEntity);
             }
             return ResponseEntity.ok("업데이트 완료");
@@ -158,12 +161,13 @@ public class DiaryController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ade.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Diary Summary 편집중 에러: " + e.getMessage());
+                    .body("Diary Content 편집중 에러: " + e.getMessage());
         }
     }
 
+    @Operation(description = "임의 Id의 Diary 내용 수정(권한 필요). null값 주의.")
     @PutMapping("/{diaryId}")
-    public ResponseEntity<?> editDiary(HttpServletRequest request, @PathVariable int diaryId, @RequestBody DiaryEntityDTO diaryEntityDTO) {
+    public ResponseEntity<?> editDiary(HttpServletRequest request, @PathVariable int diaryId, @RequestBody DiaryContentDTO diaryContentDTO) {
         try {
             Optional<DiaryEntity> optionalDiary = diaryService.findById(diaryId);
             if (optionalDiary.isEmpty()) {
@@ -176,7 +180,9 @@ public class DiaryController {
                 throw new AccessDeniedException("권한 없음(유저 불일치)");
             }
 
-            diaryEntity.setSummary(diaryEntityDTO.getSummary());
+            diaryEntity.setSummary(diaryContentDTO.getSummary());
+            diaryEntity.setRussellAvgX(diaryContentDTO.getRussellAvgX());
+            diaryEntity.setRussellAvgY(diaryContentDTO.getRussellAvgY());
             DiaryEntity updatedDiary = diaryService.update(diaryEntity);
             return ResponseEntity.ok(updatedDiary);
         } catch (AccessDeniedException ade) {

@@ -16,7 +16,7 @@ const SignUp = () => {
     <p className='signup-agreement-title text-white text-center'>Terms & Conditions</p>
     <hr className='border-light border-1' />
     <div className='checkbox-container'>
-      <input className='form-check-input custom-checkbox' type='checkbox' value='' id='login-save' checked={allAgree} onClick={()=>{
+      <input className='form-check-input m-0 custom-checkbox' type='checkbox' value='' id='login-save' checked={allAgree} onClick={()=>{
         if (allAgree){
           setAllAgree(false);
           setAgree1(false);
@@ -41,7 +41,7 @@ const SignUp = () => {
         </pre>
       </div>
       <div className='checkbox-container-agreement'>
-        <input className='form-check-input custom-checkbox' type='checkbox' value='' id='login-save' checked={agree1} onClick={()=>{
+        <input className='form-check-input m-0 custom-checkbox' type='checkbox' value='' id='login-save' checked={agree1} onClick={()=>{
           if (agree1){
             setAgree1(false);
             setAllAgree(false);
@@ -67,7 +67,7 @@ const SignUp = () => {
         </pre>
       </div>
       <div className='checkbox-container-agreement'>
-        <input className='form-check-input custom-checkbox' type='checkbox' value='' id='login-save' checked={agree2} onClick={()=>{
+        <input className='form-check-input m-0 custom-checkbox' type='checkbox' value='' id='login-save' checked={agree2} onClick={()=>{
           if (agree2){
             setAgree2(false);
             setAllAgree(false);
