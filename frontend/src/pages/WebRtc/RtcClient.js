@@ -292,11 +292,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // 연결이 끊겼을 때 coolTime을 true로 설정
         console.log(`Setting coolTime to true due to disconnection with user ${userId}`);
         setCoolTime(true);
+        console.log('CoolTime state after setting true:', true);
         client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
   
         setTimeout(() => {
           console.log(`Setting coolTime to false after 10 seconds`);
           setCoolTime(false);
+          console.log('CoolTime state after setting false:', false);
           client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
         }, 10000); // 10초 후에 coolTime을 false로 설정
       }
