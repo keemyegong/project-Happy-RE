@@ -64,12 +64,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const checkAndSetCoolTime = () => {
     if (Object.keys(peerConnections).length === 0) {
       setCoolTime(true);
-      console.log('All connections closed, setting CoolTime to true');
       client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
+      console.log('All connections closed, setting CoolTime to true');
       setTimeout(() => {
         setCoolTime(false);
-        console.log('CoolTime reset to false after 10 seconds');
         client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
+        console.log('CoolTime reset to false after 10 seconds');
       }, 10000);
     }
   };
@@ -85,23 +85,23 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true, coolTime }));
     }
   };
 
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.005);
+        movePosition(0, 0.025);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.005);
+        movePosition(0, -0.025);
         break;
       case 'ArrowLeft':
-        movePosition(-0.005, 0);
+        movePosition(-0.025, 0);
         break;
       case 'ArrowRight':
-        movePosition(0.005, 0);
+        movePosition(0.025, 0);
         break;
       default:
         break;
@@ -113,6 +113,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.onopen = () => {
       console.log('WebSocket Client Connected');
+      client.send(JSON.stringify({
+        type: 'coolTime',
+        coolTime: false
+      }));
     };
 
     client.onclose = () => {
@@ -170,7 +174,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         })));
       } else if (dataFromServer.type === 'coolTime') {
         setCoolTime(dataFromServer.coolTime);
-        console.log(`CoolTime updated from server: ${dataFromServer.coolTime}`);
       }
     };
 
@@ -308,14 +311,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // 연결이 끊겼을 때 coolTime을 true로 설정
         console.log(`Setting coolTime to true due to disconnection with user ${userId}`);
         setCoolTime(true);
-        console.log('CoolTime state after setting true:', true);
         client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
+        console.log('CoolTime state after setting true:', true);
   
         setTimeout(() => {
           console.log(`Setting coolTime to false after 10 seconds`);
           setCoolTime(false);
-          console.log('CoolTime state after setting false:', false);
           client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
+          console.log('CoolTime state after setting false:', false);
         }, 10000); // 10초 후에 coolTime을 false로 설정
       }
     };
