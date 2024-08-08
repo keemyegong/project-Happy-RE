@@ -40,7 +40,7 @@ const Diary = () => {
       }).then((response)=>{
         if (response.data.keywordEntities == null){
           setShowButton(true);
-        }else{
+        }
           axios.get(
           `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth()+1}&day=${startDate.getDate()}&period=7`,
           {
@@ -61,7 +61,7 @@ const Diary = () => {
           }).catch((err)=>{
             console.log(err)
           })
-        }
+        
         // console.log(response.data);
 
       })
@@ -93,8 +93,9 @@ const Diary = () => {
       }).then((response)=>{
 
         if (response.data[0] != undefined){
-          // console.log(response.data);
+          console.log(response.data);
           setDaySummary(response.data[0].summary);
+        
           axios.get(
             `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
             {
