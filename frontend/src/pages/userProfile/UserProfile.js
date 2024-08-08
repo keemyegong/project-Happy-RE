@@ -87,49 +87,51 @@ const UserProfile =  ()=>{
 
       })
 
-      axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
-        {headers:{
-            Authorization : `Bearer ${Cookies.get('Authorization')}`
-        }}
-        ).then((response)=>{
-          const responseData = response.data; 
-          console.log(responseData)
-
-          const keywordMap = new Map();
-        
-          responseData.forEach(item => {
-            const { word, frequency } = item;
-            keywordMap.set(word, frequency);
-          });
-        
-          const keywordObject = Object.fromEntries(keywordMap);
-          console.log(keywordObject);
-        
-          const wordCloudData = Object.keys(keywordObject).map(keyword => ({
-            text: keyword,
-            value: keywordObject[keyword] * 2 // frequency에 대한 가중치
-          }))
-
-          setData(wordCloudData);
-        }).catch(error => {
-          // 에러가 발생했을 때 실행할 코드
-          if (error.response) {
-              // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
-              console.error('Error status:', error.response.status);
-              console.error('Error data:', error.response.data);
-          } else if (error.request) {
-              // 요청이 만들어졌으나 서버로부터 응답이 없을 때
-              console.error('No response received:', error.request);
-          } else {
-              // 요청을 설정하는 중에 에러가 발생했을 때
-              console.error('Error setting up request:', error.message);
-          }
-        })
-
 
     }).catch(()=>{
       console.log('서버와통신불가')
     })
+
+
+    
+    axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
+      {headers:{
+          Authorization : `Bearer ${Cookies.get('Authorization')}`
+      }}
+      ).then((response)=>{
+        const responseData = response.data; 
+        console.log(responseData)
+
+        const keywordMap = new Map();
+      
+        responseData.forEach(item => {
+          const { word, frequency } = item;
+          keywordMap.set(word, frequency);
+        });
+      
+        const keywordObject = Object.fromEntries(keywordMap);
+        console.log(keywordObject);
+      
+        const wordCloudData = Object.keys(keywordObject).map(keyword => ({
+          text: keyword,
+          value: keywordObject[keyword] * 2 // frequency에 대한 가중치
+        }))
+
+        setData(wordCloudData);
+      }).catch(error => {
+        // 에러가 발생했을 때 실행할 코드
+        if (error.response) {
+            // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
+            console.error('Error status:', error.response.status);
+            console.error('Error data:', error.response.data);
+        } else if (error.request) {
+            // 요청이 만들어졌으나 서버로부터 응답이 없을 때
+            console.error('No response received:', error.request);
+        } else {
+            // 요청을 설정하는 중에 에러가 발생했을 때
+            console.error('Error setting up request:', error.message);
+        }
+      })
   },[])
 
   const showModal = ()=>{
