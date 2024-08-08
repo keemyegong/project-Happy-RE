@@ -1,5 +1,3 @@
-// src/components/ChatGraph.js
-
 import React, { useRef, useEffect } from 'react';
 import './ChatGraph.css';
 
@@ -23,6 +21,12 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
       window.removeEventListener('resize', setHeights);
     };
   }, []);
+
+  useEffect(() => {
+    users.forEach(user => {
+      console.log(`User ${user.id} coolTime: ${user.coolTime}`);
+    });
+  }, [users]);
 
   return (
     <div className="coordinates-graph" ref={coordinatesGraphRef}>
@@ -67,7 +71,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
           <audio ref={localAudioRef} autoPlay />
           <div className="controls controls-up">
             <p onClick={() => movePosition(0, 0.025)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-compact-up" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
             </svg>
             </p>
@@ -89,7 +93,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
           <div className="controls controls-left">
             <p onClick={() => movePosition(-0.025, 0)}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-compact-left" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
+              <path fill-rule="evenodd" d="M9.224 1.553a.5.5 0 0 1 .223.67L6.56 8l2.888 5.776a.5.5 0 1 1-.894-.448l-3-6a.5.5 0 0 1 0-.448l3-6a.5.5 0 0 1 .67-.223"/>
             </svg>
             </p>
           </div>
