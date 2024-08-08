@@ -26,7 +26,7 @@ const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUs
             className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
           >
             <img 
-              src={user.image} 
+              src={user.characterImage} 
               alt="character"
               className="character-image-small"
             />
