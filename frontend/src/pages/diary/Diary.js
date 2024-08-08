@@ -1,18 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { format, addWeeks, subWeeks, startOfWeek, addDays, isToday, isSameWeek, isBefore, isAfter } from 'date-fns';
 import './Diary.css';
 import Button from '../../components/Button/Button';
 import { useNavigate } from 'react-router-dom';
 import DiaryDetail from '../../components/diary-report/DiaryDetail';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { universeVariable } from '../../App';
 
 const Diary = () => {
+  const universal = useContext(universeVariable);
+
+
+
+
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null); // 상태 추가
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
+  const [showButton, setShowButton] = useState(false);
   const navigate = useNavigate();
 
   const startDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
 
+  useEffect(()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/detail/`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        if (response.data.keywordEntities == null){
+          setShowButton(true);
+        }else{
+          axios.get(
+          `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth()+1}&day=${startDate.getDate()}&period=7`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get('Authorization')}`,
+              withCredentials: true,
+            }
+          }).then((response)=>{
+            
+            console.log(response.data)
+          }).catch((err)=>{
+            console.log(err)
+          })
+        }
+        console.log(response.data.keywordEntities);
+      })
+  },[])
   // 이전 주 이동
   const handlePreviousWeek = () => {
     setCurrentWeek(subWeeks(currentWeek, 1));
@@ -45,11 +83,11 @@ const Diary = () => {
         >
           {isCurrentDay && (
             <div className='diary-add-btn'>
-              <Button
+            { showButton && <Button
                 className='btn light-btn'
                 content='Add'
                 onClick={handleAddButtonClick}
-              />
+              />}
             </div>
           )}
           <div
