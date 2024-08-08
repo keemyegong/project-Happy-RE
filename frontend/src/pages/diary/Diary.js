@@ -95,7 +95,8 @@ const Diary = () => {
         if (response.data[0] != undefined){
           console.log(response.data);
           setDaySummary(response.data[0].summary);
-        
+          const example = response.data[0].diaryId;
+
           axios.get(
             `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
             {
@@ -104,7 +105,8 @@ const Diary = () => {
                 withCredentials: true,
               }
             }).then((response)=>{
-              // console.log(response.data)
+              
+              console.log(response.data.keywordEntities)
               setKeyword(response.data.keywordEntities);
               setChatlog(response.data.messageEntities);
 
@@ -237,7 +239,7 @@ const Diary = () => {
             keyword={keyword}
             selectedDay={selectedDay} // 전체 날짜 정보 전달
             onClose={() => setShowModal(false)}
-            hideplus={hideplus}
+            hideplus={false}
           />
         )}
       </div>
