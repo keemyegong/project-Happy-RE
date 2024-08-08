@@ -87,7 +87,7 @@ const UserProfile =  ()=>{
 
       })
 
-      axios.get(`${universal.defaultUrl}/api/wordcloud`,
+      axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
         {headers:{
             Authorization : `Bearer ${Cookies.get('Authorization')}`,
            'Content-Type': 'application/json'
