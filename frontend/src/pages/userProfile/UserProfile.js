@@ -87,34 +87,31 @@ const UserProfile =  ()=>{
 
       })
 
-      axios.get(`${universal.defaultUrl}/api/keyword`,
+      axios.get(`${universal.defaultUrl}/api/wordcloud`,
         {headers:{
             Authorization : `Bearer ${Cookies.get('Authorization')}`,
            'Content-Type': 'application/json'
         }}
         ).then((response)=>{
-          // 키워드 값과 카운트를 저장할 맵 객체 생성
-          const keywordMap = new Map();
+          const responseData = response.data; 
+          console.log(responseData)
 
-          // 각 키워드 값의 카운트를 계산
-          response.data.forEach(keywordEntity => {
-            const keyword = keywordEntity.keyword;
-            if (keywordMap.has(keyword)) {
-              keywordMap.set(keyword, keywordMap.get(keyword) + 1);
-            } else {
-              keywordMap.set(keyword, 1);
-            }
+          const keywordMap = new Map();
+        
+          responseData.forEach(item => {
+            const { word, frequency } = item;
+            keywordMap.set(word, frequency);
           });
-          
-          // 키워드 맵을 객체로 변환하여 출력
+        
           const keywordObject = Object.fromEntries(keywordMap);
           console.log(keywordObject);
+        
           const wordCloudData = Object.keys(keywordObject).map(keyword => ({
             text: keyword,
-            value: keywordObject[keyword]*30
-          }));
+            value: keywordObject[keyword] * 2 // frequency에 대한 가중치
+          }))
+
           setData(wordCloudData);
-  
         }).catch(error => {
           // 에러가 발생했을 때 실행할 코드
           if (error.response) {
