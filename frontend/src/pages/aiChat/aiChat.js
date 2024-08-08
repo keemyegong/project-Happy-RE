@@ -61,7 +61,6 @@ const AIChat = () => {
   useEffect(() => {
     eventStart();
     setIsButtonDisabled(true);
-    eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
