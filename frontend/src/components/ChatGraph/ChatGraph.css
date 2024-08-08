@@ -53,7 +53,7 @@
   .radar-pulse, .radar-pulse-small {
     position: absolute;
     background-color: rgba(0, 128, 0, 0);
-    border: solid 1px white;
+    border: solid 1px #ffffff;
     border-radius: 50%;
     animation: radar-pulse 2s infinite;
     z-index: 0;
