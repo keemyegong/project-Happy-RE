@@ -5,6 +5,7 @@ import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.KeywordRepository;
+import com.example.happyre.repository.UserWordFrequencyRepository;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     private final KeywordRepository keywordRepository;
     private final DiaryService diaryService;
+    private final UserWordFrequencyRepository userWordFrequencyRepository;
 
     private static KeywordEntity getKeywordEntity(KeywordEntityDTO keywordEntityDTO, DiaryEntity diaryEntity) {
         KeywordEntity newOne = new KeywordEntity();
@@ -38,6 +40,12 @@ public class KeywordServiceImpl implements KeywordService {
     @Override
     public KeywordEntity insert(KeywordEntity keywordEntity) {
         Assert.notNull(keywordEntity.getDiaryEntity(), "keywordEntity.diaryEntity must not be null");
+        userWordFrequencyRepository.upsertFrequency(
+                keywordEntity.getDiaryEntity().getUserEntity().getId(),
+                keywordEntity.getKeyword(),
+                1
+                );
+
         return keywordRepository.save(keywordEntity);
     }
 
