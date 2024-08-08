@@ -40,7 +40,7 @@ const getRoomWithSpace = () => {
 
 wss.on('connection', (ws, req) => {
   if (req.url !== '/webrtc') {
-    ws.close(4001, 'Unauthorized path');
+    ws.close(1008, 'Unauthorized path');
     return;
   }
 
