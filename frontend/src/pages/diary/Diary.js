@@ -239,7 +239,7 @@ const Diary = () => {
             keyword={keyword}
             selectedDay={selectedDay} // 전체 날짜 정보 전달
             onClose={() => setShowModal(false)}
-            hideplus={false}
+            hideplus={hideplus}
           />
         )}
       </div>

@@ -4,18 +4,71 @@ import Button from '../Button/Button';
 import Cookies from 'js-cookie';
 import { universeVariable } from '../../App';
 import axios from 'axios';
-
+import Swal from 'sweetalert2'
 
 const AddEmotionTag = ({ props, setEmotionTagsRender, emotionTagsRender }) => {
   const universal = useContext(universeVariable);
   const { keyword, summary, keywordId } = props;
   const emotionTags = ['아아'];
   const [newTag, setNewTag] = useState('');
+  const [isFormValid, setIsFormValid] = useState(true);
+
   const [showModal, setShowModal] = useState(false);
 
   const handleInputChange = (e) => {
-    setNewTag(e.target.value);
+    if (e.target.value.length<=10){
+      setNewTag(e.target.value);
+    } else{
+      setIsFormValid(false);
+    }
+
   };
+
+  const confirmClick = ()=>{
+
+    if (newTag.length>0){
+      Swal.fire({
+        title: '키워드에 감정을 추가할까요?',
+        text: '한 번 추가한 감정은 삭제할 수 없어요! 신중하게 고민해보셨나요?',
+        icon: "info",
+        iconColor: "#4B4E6D",
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+        showCancelButton: true,
+        cancelButtonColor: "#333758",
+        confirmButtonText: "네! 추가할래요!",
+        cancelButtonText: "조금만 더 생각할래요!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: '성공적으로 감정을 추가했어요!',
+            text: '소중한 감정을 해파리가 힘내서 기록할게요!',
+            icon: "success",
+            iconColor: "#4B4E6D",
+            color: 'white',
+            background: '#292929',
+            confirmButtonColor: '#4B4E6D',
+          }).then((result)=>{
+            handleSendClick();
+            return true
+          }).then((response)=>{
+            setShowModal(false);
+          });
+        }
+      });
+    } else{
+      Swal.fire({
+        title: '감정이 비어있어요!',
+        text: '키워드를 보고 어떤 생각이 떠오르셨나요? 자유롭게 적어봐요!',
+        icon: "question",
+        iconColor: "#4B4E6D",
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+      });
+    }
+  }
 
   const handleSendClick = () => {
     // 백엔드로 요청 보내기
@@ -76,18 +129,18 @@ const AddEmotionTag = ({ props, setEmotionTagsRender, emotionTagsRender }) => {
               <div className='add-emotion-tag-input-container'>
                 <input
                   type='text'
-                  className='add-emotion-tag-input'
+                  className={`add-emotion-tag-input`}
                   value={newTag}
                   onChange={handleInputChange}
-                  placeholder='새로운 감정 태그를 추가할까요?'
+                  placeholder='최대 10자까지 입력할 수 있어요!'
                 />
                 <Button
                   className='btn light-btn'
                   content='Add'
-                  onClick={handleSendClick}
+                  onClick={confirmClick}
                 />
               </div>
-              <p className='add-emotion-tag-guide'>잘못 입력했을 때 태그를 클릭하면 태그를 삭제할 수 있어요!</p>
+              <p className='add-emotion-tag-guide'>한 번 입력한 감정은 삭제할 수 없으니 신중하게 생각해봐요!</p>
             </div>
           </div>
         </div>

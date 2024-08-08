@@ -14,7 +14,7 @@ const KeywordCard = ({ props, plusButton }) => {
       {emotionTags!= null || plusButton != false && <p className='keyword-line'></p>}
       <span className='emotion-tags'>
           {emotionTags!=null && emotionTags.map((tag, index) => (
-            <span key={index} className='emotion-tag'>{tag}</span>
+            <span key={index} className='emotion-tag'># {tag}</span>
           ))}
           {emotionTagsRender.length === 0 && plusButton==true && '# 감정을_추가해봐요'}
           {emotionTagsRender !== null && plusButton == true && 
