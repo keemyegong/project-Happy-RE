@@ -6,7 +6,7 @@ import CharacterList from '../../components/CharacterList/CharacterList';
 import AudioEffect from '../../components/audio-api/AudioApi';
 import './ChatRoomContainer.css';
 
-const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
+const client = new WebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
 const peerConnections = {};
 
 const RtcClient = ({ initialPosition, characterImage }) => {
