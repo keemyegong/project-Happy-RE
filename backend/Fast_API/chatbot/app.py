@@ -212,7 +212,7 @@ async def session_delete(request:Request):
     }
     
     chatbot_instance = user_session[user_id]
-    prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과 전체적인 대화에서 느껴지는 감정과 긍정적인 감정이 느껴지는 키워드 0~3개와 부정적인 키워드가 느껴지는 키워드 0~3개를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. "diary_summary"는 전체 대화를 요약하는 문장을 값으로 가져. "summary_detail"은 리스트를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
+    prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과  긍정적인 감정이 느껴지는 3개 이하의 키워드와 부정적인 감정이 느껴지는 3개 이하의 키워드를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. "diary_summary"는 전체 대화를 짧게 요약하는 문장을 값으로 가져. "summary_detail"은 리스트를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
     
     response = chatbot_instance.generateResponse(prompt)
     print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")
@@ -229,6 +229,10 @@ async def session_delete(request:Request):
         }
         
         summary_list = []
+        total_russell_x = 0
+        total_russell_y = 0
+        user_message_count = len(list(filter(lambda x: x["speaker"]=="user", user_message[user_id])))
+
         for idx, data in enumerate(summary_detail):
             if data["message"] not in user_emotion_russell[user_id]:
                 continue
@@ -236,10 +240,21 @@ async def session_delete(request:Request):
             print(f"user emotion russell : \n {user_emotion_russell[user_id]}")
             data["russellX"], data["russellY"] = user_emotion_russell[user_id][data["message"]]
             data["sequence"] = idx+1
+            if data["russellX"]:
+                total_russell_x += data["russellX"]
+            if data["russellY"]:
+                total_russell_y += data["russellY"]
             del data["message"]
             summary_list.append(data)
             print(f"data after russell: \n {data}")
+        if user_message_count != 0:
+            diary["russellAvgX"] = round(total_russell_x/user_message_count, 3)
+            diary["russellAvgY"] = round(total_russell_y/user_message_count, 3)
+        else:
+            diary["russellAvgX"] = 0
+            diary["russellAvgY"] = 0
         print(f"Summary List : {summary_list}")
+        print(f"Diary : \n {diary}")
     except Exception as e:
             print(f"Error while summarize : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
