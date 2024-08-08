@@ -97,7 +97,7 @@ const App = () => {
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
         // fastUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://127.0.0.1:8000',
+        // fastUrl: 'http://127.0.0.1:8000',
         isAuthenticated,
         setIsAuthenticated,
         todayDone,

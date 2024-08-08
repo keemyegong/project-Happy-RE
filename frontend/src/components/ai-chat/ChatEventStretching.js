@@ -3,7 +3,7 @@ import './Response.css';
 
 const ChatEventStretching = ()=>{
     return(
-        <div>스트레칭</div>
+        <div>스트레</div>
     );
 
 }
