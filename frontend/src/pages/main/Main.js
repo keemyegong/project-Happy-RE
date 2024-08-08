@@ -235,7 +235,7 @@ const Main = () => {
             <canvas ref={canvasRef1} style={{ display: 'block'}} />
           </div>
           <div className="information">
-            <h2>record</h2>
+            <h2 className='highlight-blue'>record</h2>
             <p>바쁜 일상 속에서 놓치기 쉬운 나의 감정,</p>
             <p>이제 해피리와 함께 기록해보세요.</p>
           </div>
@@ -243,14 +243,14 @@ const Main = () => {
       </div>
       <div id="container-3" className="container-3">
         <div className="information">
-          <h2>mood</h2>
+          <h2 className='highlight-blue'>mood</h2>
           <p>해피리는 당신과 함께 감정을 공유하며 기록하고,</p>
           <p>하루에 대한 레포트를 제공합니다.</p>
           <p>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</p>
           <p>우리 함께 감정에 대해 알아가 볼까요?</p>
-          <Link className="go-login" to="/signin">
+          <a className="go-login" href="/signin">
             함께할래요!
-          </Link>
+          </a>
         </div>
         <div className="characters char-section-2">
           <canvas ref={canvasRef2} style={{ display: 'block', width: '100%', height: '100%' }} />

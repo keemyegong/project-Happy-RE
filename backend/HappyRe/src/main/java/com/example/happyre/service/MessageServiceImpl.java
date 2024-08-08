@@ -5,6 +5,7 @@ import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.MessageEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.repository.MessageRepository;
+import com.example.happyre.repository.UserWordFrequencyRepository;
 import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final DiaryService diaryService;
+    private final UserWordFrequencyService userWordFrequencyService;
 
     private static MessageEntity getMessageEntity(MessageEntityDTO messageEntityDTO, DiaryEntity diaryEntity) {
         MessageEntity newOne = new MessageEntity();
@@ -129,6 +131,7 @@ public class MessageServiceImpl implements MessageService {
     public ArrayList<MessageEntity> insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList) {
         int cnt = 0;
         ArrayList<MessageEntity> messageEntities = new ArrayList<>();
+        ArrayList<String> userWords = new ArrayList<>();
         try {
             for (MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
                 MessageEntity messageEntity = new MessageEntity();
@@ -142,8 +145,13 @@ public class MessageServiceImpl implements MessageService {
                 messageEntity.setRussellX(messageEntityDTO.getRussellX());
                 messageEntity.setRussellY(messageEntityDTO.getRussellY());
                 messageRepository.save(messageEntity);
+                if("user".equals(messageEntity.getSpeaker().toString())){
+                    userWords.add(messageEntityDTO.getContent());
+                }
                 messageEntities.add(messageEntity);
             }
+
+            userWordFrequencyService.splitWord(userWords,diaryEntity.getUserEntity().getId());
             return messageEntities;
         } catch (Exception e) {
             System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
