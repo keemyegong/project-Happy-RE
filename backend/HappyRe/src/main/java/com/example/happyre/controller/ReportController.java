@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Report")
+@Deprecated
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/report")
