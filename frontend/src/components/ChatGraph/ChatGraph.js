@@ -23,6 +23,7 @@ const ChatGraph = ({ position = { x: 0, y: 0 }, users = [], movePosition, localA
   }, []);
 
   useEffect(() => {
+    console.log(users)
     users.forEach(user => {
       console.log(`User ${user.id} coolTime: ${user.coolTime}`);
     });
