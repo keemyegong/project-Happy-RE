@@ -38,6 +38,8 @@ public class DiaryServiceImpl implements DiaryService {
         DiaryEntity diaryEntity = new DiaryEntity();
         diaryEntity.setUserEntity(userEntity);
         diaryEntity.setSummary(diaryEntityDTO.getSummary());
+        diaryEntity.setRussellAvgX(diaryEntityDTO.getRussellAvgX());
+        diaryEntity.setRussellAvgY(diaryEntityDTO.getRussellAvgY());
         if(diaryEntityDTO.getDate() != null){
             diaryEntity.setDate(Timestamp.valueOf(diaryEntityDTO.getDate()));
         }
@@ -59,11 +61,12 @@ public class DiaryServiceImpl implements DiaryService {
         return diaryRepository.findByUserEntity(userEntity);
     }
 
-    // 오직 Summary만 바꿀 수 있다.
     @Override
     public DiaryEntity update(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).orElseThrow();
         matchingEntity.setSummary(diaryDTOEntity.getSummary());
+        matchingEntity.setRussellAvgX(diaryDTOEntity.getRussellAvgX());
+        matchingEntity.setRussellAvgY(diaryDTOEntity.getRussellAvgY());
         return diaryRepository.save(matchingEntity);
     }
 
