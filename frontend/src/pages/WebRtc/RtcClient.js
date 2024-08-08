@@ -27,7 +27,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   useEffect(() => {
     positionRef.current = position;
-  }, [position]);
+    console.log(`CoolTime state: ${coolTime}`);
+  }, [position, coolTime]);
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -290,10 +291,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
         // 연결이 끊겼을 때 coolTime을 true로 설정
         setCoolTime(true);
+        console.log(`CoolTime set to true at ${new Date().toLocaleTimeString()}`);
         client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
 
         setTimeout(() => {
           setCoolTime(false);
+          console.log(`CoolTime set to true at ${new Date().toLocaleTimeString()}`);
           client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
         }, 10000); // 10초 후에 coolTime을 false로 설정
       }
