@@ -478,6 +478,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         displayStartIndex={displayStartIndex} 
         handleScroll={handleScroll} 
         talkingUsers={talkingUsers} 
+        coolTime={coolTime}
       />
     </div>
   );
