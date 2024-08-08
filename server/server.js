@@ -32,9 +32,8 @@ const getRoomWithSpace = () => {
 
 wss.on('connection', (ws) => {
   const userId = uuidv4();
-  const userInfo = { id: userId, connectedAt: Date.now() };
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false };
 
-  // Assign the user to a room
   const roomId = getRoomWithSpace();
   rooms[roomId].push({ ws, ...userInfo });
 
@@ -45,13 +44,14 @@ wss.on('connection', (ws) => {
 
     switch (data.type) {
       case 'connect':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, characterImage: data.characterImage, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
         const allUsers = rooms[roomId].map(user => ({
           id: user.id,
           position: user.position,
           characterImage: user.characterImage,
           hasMoved: user.hasMoved,
-          connectedAt: user.connectedAt
+          connectedAt: user.connectedAt,
+          coolTime: user.coolTime
         }));
 
         rooms[roomId].forEach(user => {
@@ -60,10 +60,10 @@ wss.on('connection', (ws) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime } : user);
 
         rooms[roomId].forEach(user => {
-          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved }));
+          user.ws.send(JSON.stringify({ type: 'move', id: userId, position: data.position, hasMoved: data.hasMoved, coolTime: data.coolTime }));
         });
         break;
 
@@ -94,10 +94,18 @@ wss.on('connection', (ws) => {
             position: u.position,
             characterImage: u.characterImage,
             hasMoved: u.hasMoved,
-            connectedAt: u.connectedAt
+            connectedAt: u.connectedAt,
+            coolTime: u.coolTime
           }));
 
           user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+        });
+        break;
+
+      case 'coolTime':
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
+        rooms[roomId].forEach(user => {
+          user.ws.send(JSON.stringify({ type: 'coolTime', id: userId, coolTime: data.coolTime }));
         });
         break;
 
@@ -107,19 +115,22 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
-
-    rooms[roomId].forEach(user => {
-      const otherClientsData = rooms[roomId].map(u => ({
-        id: u.id,
-        position: u.position,
-        characterImage: u.characterImage,
-        hasMoved: u.hasMoved,
-        connectedAt: u.connectedAt
-      }));
-
-      user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
-    });
+    if (rooms[roomId]) {
+      rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+  
+      rooms[roomId].forEach(user => {
+        const otherClientsData = rooms[roomId].map(u => ({
+          id: u.id,
+          position: u.position,
+          characterImage: u.characterImage,
+          hasMoved: u.hasMoved,
+          coolTime: u.coolTime,
+          connectedAt: u.connectedAt
+        }));
+  
+        user.ws.send(JSON.stringify({ type: 'update', clients: otherClientsData }));
+      });
+    }
   });
 });
 
