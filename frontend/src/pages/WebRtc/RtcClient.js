@@ -13,9 +13,9 @@ import steel from '../../assets/characters/steel.png';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
-const peerConnections = {};
 
 const RtcClient = ({ initialPosition, characterImage }) => {
+  const [peerConnections, setPeerConnections] = useState({});
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
   const positionRef = useRef(position);
@@ -53,7 +53,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
   },[]);
 
@@ -67,8 +67,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     Object.values(peerConnections).forEach(({ peerConnection }) => {
       peerConnection.close();
     });
+    setPeerConnections({});
     Object.keys(peerConnections).forEach(userId => {
-      delete peerConnections[userId];
       audioEffectRef.current?.removeStream(userId);
     });
     checkAndSetCoolTime();
@@ -98,7 +98,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true}));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
 
@@ -215,14 +215,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection };
+          setPeerConnections(prevConnections => ({
+            ...prevConnections,
+            [user.id]: { peerConnection }
+          }));
           if (clientId < user.id) {
             attemptOffer(peerConnection, user.id);
           }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
-        delete peerConnections[user.id];
+        const { [user.id]: removedConnection, ...restConnections } = peerConnections;
+        setPeerConnections(restConnections);
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(user.id);
         }
@@ -275,14 +279,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           localAudioRef.current.srcObject = null;
         }
         // ICE 후보 초기화
-        if (peerConnections[userId]) {
-          delete peerConnections[userId].pendingCandidates;
-        }
+        setPeerConnections(prevConnections => {
+          const { [userId]: removedConnection, ...restConnections } = prevConnections;
+          return restConnections;
+        });
         // AudioEffect에서도 제거
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
-        //checkAndSetCoolTime();
       }
     };
   
@@ -320,7 +324,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     if (!peerConnections[sender]) {
       const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection };
+      setPeerConnections(prevConnections => ({
+        ...prevConnections,
+        [sender]: { peerConnection }
+      }));
     }
 
     const peerConnection = peerConnections[sender].peerConnection;
@@ -371,7 +378,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       for (const candidate of pendingCandidates) {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       }
-      peerConnections[sender].pendingCandidates = [];
+      setPeerConnections(prevConnections => ({
+        ...prevConnections,
+        [sender]: {
+          ...prevConnections[sender],
+          pendingCandidates: []
+        }
+      }));
     } catch (error) {
       console.error('Error handling answer:', error);
     }
@@ -397,10 +410,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      if (!peerConnections[sender].pendingCandidates) {
-        peerConnections[sender].pendingCandidates = [];
-      }
-      peerConnections[sender].pendingCandidates.push(candidate);
+      setPeerConnections(prevConnections => {
+        const newPendingCandidates = (prevConnections[sender]?.pendingCandidates || []).concat(candidate);
+        return {
+          ...prevConnections,
+          [sender]: {
+            ...prevConnections[sender],
+            pendingCandidates: newPendingCandidates
+          }
+        };
+      });
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
@@ -408,7 +427,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
-      delete peerConnections[userId];
+      const { [userId]: removedConnection, ...restConnections } = peerConnections;
+      setPeerConnections(restConnections);
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
       // AudioEffect에서도 제거
