@@ -114,8 +114,10 @@
 }
 
 .archive-message-content {
+  padding-right: 20px;
   max-height: 75vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .archive-message-content::-webkit-scrollbar {
