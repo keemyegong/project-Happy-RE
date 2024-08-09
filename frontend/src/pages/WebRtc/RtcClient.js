@@ -26,15 +26,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
   const [talkingUsers, setTalkingUsers] = useState([]);
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [coolTime, setCoolTime] = useState(false);
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
 
   useEffect(() => {
     positionRef.current = position;
-    console.log(`CoolTime state: ${coolTime}`);
-  }, [position, coolTime]);
+  }, [position]);
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -122,7 +120,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
-      console.log("Received message from server:", dataFromServer); // 추가된 로그
+      console.log("Received message from server:", dataFromServer);
       if (dataFromServer.type === 'assign_id') {
         setClientId(dataFromServer.id);
         client.send(JSON.stringify({
@@ -130,11 +128,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           position,
           characterImage: userImage
         }));
-      } else if (dataFromServer.type === 'all_users') {
-        const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
+      } else if (dataFromServer.type === 'update') {
+        const filteredUsers = dataFromServer.clients.map(user => ({
           ...user,
           position: user.position || { x: 0, y: 0 },
-          coolTime: user.coolTime || false,
           connectedAt: user.connectedAt || 0
         }));
         setUsers(filteredUsers.map(user => ({
@@ -142,13 +139,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           image: user.characterImage
         })));
         setNearbyUsers(filteredUsers);
-      } else if (dataFromServer.type === 'new_user') {
-        const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 }, connectedAt: dataFromServer.connectedAt || 0 };
-        setUsers(prevUsers => [...prevUsers, newUser]);
-        setNearbyUsers(prevUsers => [...prevUsers, newUser]);
-      } else if (dataFromServer.type === 'move') {
-        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime, connectedAt: dataFromServer.connectedAt || 0 } : user));
-        setNearbyUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime, connectedAt: dataFromServer.connectedAt || 0 } : user));
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -159,15 +149,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         handleRtcDisconnect(dataFromServer.targetId);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
-      } else if (dataFromServer.type === 'update') {
-        setUsers(dataFromServer.clients.map(user => ({
-          ...user,
-          position: user.position || { x: 0, y: 0 },
-          coolTime: user.coolTime || false,
-          connectedAt: user.connectedAt || 0
-        })));
-      } else if (dataFromServer.type === 'coolTime') {
-        setCoolTime(dataFromServer.coolTime);
       } else if (dataFromServer.type === 'start_webrtc') {
         if (dataFromServer.role === 'offer') {
           const peerConnection = createPeerConnection(dataFromServer.targetId);
@@ -255,7 +236,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const attemptOffer = (peerConnection, recipientId) => {
-    if (coolTime || !peerConnection) return;
+    if (!peerConnection) return;
 
     peerConnection.createOffer()
       .then(offer => {
@@ -267,7 +248,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               recipient: recipientId,
               sender: clientId
             }));
-            console.log(`Offer sent to ${recipientId}`); // 추가된 로그
+            console.log(`Offer sent to ${recipientId}`);
           })
           .catch(error => console.error('Error setting local description:', error));
       })
@@ -382,64 +363,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-  const resetPeerConnection = (userId) => {
-    if (peerConnections[userId]) {
-      peerConnections[userId].peerConnection.close();
-    }
-
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
-      ]
-    });
-
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        client.send(JSON.stringify({
-          type: 'candidate',
-          candidate: event.candidate,
-          sender: clientId,
-          recipient: userId
-        }));
-      }
-    };
-
-    peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-        if (audioEffectRef.current) {
-          audioEffectRef.current.addStream(userId, event.streams[0]);
-        }
-      }
-    };
-
-    peerConnection.onconnectionstatechange = () => {
-      if (peerConnection.connectionState === 'connected') {
-        console.log(`WebRTC connection established with user ${userId}`);
-      }
-      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
-        console.log('WebRTC 연결이 끊어졌습니다.');
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
-        }
-        if (audioEffectRef.current) {
-          audioEffectRef.current.removeStream(userId);
-        }
-      }
-    };
-
-    setPeerConnections(prevConnections => ({
-      ...prevConnections,
-      [userId]: { peerConnection, pendingCandidates: [] }
-    }));
-
-    if (stream) {
-      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-    }
-
-    return peerConnection;
-  };
-
   const handleScroll = (direction) => {
     if (direction === 'up') {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
@@ -470,7 +393,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               movePosition={movePosition} 
               localAudioRef={localAudioRef} 
               userImage={userImage} 
-              coolTime={coolTime} 
             />
           </div>
           <div className='audio-effect-container'>
@@ -488,7 +410,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             displayStartIndex={displayStartIndex} 
             handleScroll={handleScroll} 
             talkingUsers={talkingUsers} 
-            coolTime={coolTime}
           />
         </div>
       </div>
