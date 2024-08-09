@@ -229,6 +229,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
+        // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
+        if (Object.keys(peerConnections).length === 1) {
+          client.send(JSON.stringify({ type: 'rtc_disconnect_all' }));
+        }
       }
     };
 

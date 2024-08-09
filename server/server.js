@@ -74,6 +74,13 @@ wss.on('connection', (ws, req) => {
         updateClients(roomId);
         break;
 
+      case 'rtc_disconnect_all':
+        setCoolTime(roomId, userId, true);
+        setTimeout(() => {
+          setCoolTime(roomId, userId, false);
+        }, 10000);
+        break;
+
       default:
         console.error('Unrecognized message type:', data.type);
     }
@@ -95,8 +102,6 @@ const manageWebRTCConnections = (roomId, userId) => {
   const movingUser = rooms[roomId].find(user => user.id === userId);
   if (!movingUser) return;
 
-  let connectionsUpdated = false;
-
   rooms[roomId].forEach(user => {
     if (user.id !== userId) {
       const distance = calculateDistance(movingUser.position, user.position);
@@ -113,7 +118,6 @@ const manageWebRTCConnections = (roomId, userId) => {
           }
           movingUser.connectedUsers.push(user.id);
           user.connectedUsers.push(movingUser.id);
-          connectionsUpdated = true;
         }
       } else if (distance > 0.2 && isConnected) {
         disconnectWebRTC(user.ws, movingUser.id);
@@ -124,7 +128,7 @@ const manageWebRTCConnections = (roomId, userId) => {
     }
   });
 
-  if (!connectionsUpdated && movingUser.connectedUsers.length === 0) {
+  if (movingUser.connectedUsers.length === 0) {
     setCoolTime(roomId, userId, true);
     setTimeout(() => {
       setCoolTime(roomId, userId, false);
@@ -156,7 +160,10 @@ const updateClients = (roomId) => {
   }));
 
   rooms[roomId].forEach(user => {
-    user.ws.send(JSON.stringify({ type: 'update', clients: allUsers.filter(u => u.id !== user.id) }));
+    user.ws.send(JSON.stringify({
+      type: 'update',
+      clients: allUsers.filter(u => u.id !== user.id && u.hasMoved) // hasMoved가 false인 유저 제외
+    }));
   });
 };
 
