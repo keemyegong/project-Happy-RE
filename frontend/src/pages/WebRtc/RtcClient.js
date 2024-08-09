@@ -327,33 +327,33 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for offer or in coolTime');
       return;
     }
-
-    if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
+  
+    let peerConnection = peerConnections[sender]?.peerConnection;
+  
+    if (!peerConnection) {
+      peerConnection = createPeerConnection(sender);
       setPeerConnections(prevConnections => ({
         ...prevConnections,
         [sender]: { peerConnection }
       }));
     }
-
-    const peerConnection = peerConnections[sender].peerConnection;
-
+  
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-
+  
       client.send(JSON.stringify({
         type: 'answer',
         answer: answer.sdp,
         sender: clientId,
         recipient: sender
       }));
-
+  
       if (peerConnection.signalingState === 'have-remote-offer') {
         console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
       }
-
+  
     } catch (error) {
       console.error('Error handling offer:', error);
     }
