@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Response.css';
+import './ChatBox.css';
 import backgroundImg from "../../assets/bounce_ball_wallpaper.png"
 import ballImg from "../../assets/bouncing_ball.png"
 import Timer from "../timer/Timer";
@@ -10,7 +11,7 @@ const textList = [
     "테스트 문장 3번"
 ]
 
-const ChatEventWatching = ()=>{
+const ChatEventWatching = ({endChatSession})=>{
     const [balls, setBalls] = useState([]);
     const [numberOfBall, setNumberOfBalls] = useState(Math.floor(Math.random() * 5) + 3);
     const [currentText, setCurrentText] = useState(textList[0]);
@@ -42,13 +43,13 @@ const ChatEventWatching = ()=>{
                     x += dx;
                     y += dy;
 
-                    if (x <= 5 || x >= 90) {
+                    if (x <= 5 || x >= 85) {
                         dx = -dx;
-                        x = Math.max(5, Math.min(90, x));
+                        x = Math.max(5, Math.min(85, x));
                     }
-                    if (y <= 5 || y >= 90) {
+                    if (y <= 5 || y >= 85) {
                         dy = -dy;
-                        y = Math.max(5, Math.min(90, y));
+                        y = Math.max(5, Math.min(85, y));
                     }
 
                     return {x, y, dx, dy};
@@ -79,7 +80,12 @@ const ChatEventWatching = ()=>{
 
     return(
         <div className='bouncing-ball-container'>
-            <Timer/>
+            <div className='col-3 chat-quit' onClick={endChatSession}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                </svg>
+            </div>
             <p className={fadeProp}>{currentText}</p>
             <img src={backgroundImg} className='bouncing-ball-background' alt='background'></img>
             {balls.map((ball, index) => (
