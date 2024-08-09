@@ -36,6 +36,11 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
+const getConnectedUsers = (roomId) => {
+  const room = rooms[roomId] || [];
+  return room.filter(user => user.connectedUsers && user.connectedUsers.length > 0);
+};
+
 wss.on('connection', (ws, req) => {
   if (req.url !== '/webrtc') {
     ws.close(1008, 'Unauthorized path');
@@ -43,7 +48,7 @@ wss.on('connection', (ws, req) => {
   }
 
   const userId = uuidv4();
-  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '' };
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
   const roomId = getRoomWithSpace();
   rooms[roomId].push({ ws, ...userInfo });
@@ -100,23 +105,31 @@ const manageWebRTCConnections = (roomId, userId) => {
   rooms[roomId].forEach(user => {
     if (user.id !== userId) {
       const distance = calculateDistance(movingUser.position, user.position);
+      const isConnected = movingUser.connectedUsers.includes(user.id);
+
       if (distance <= 0.2 && !user.coolTime && !movingUser.coolTime) {
-        if (movingUser.connectedAt < user.connectedAt) {
-          sendWebRTCSignal(movingUser.ws, user.id, 'offer');
-          sendWebRTCSignal(user.ws, movingUser.id, 'answer');
-        } else {
-          sendWebRTCSignal(user.ws, movingUser.id, 'offer');
-          sendWebRTCSignal(movingUser.ws, user.id, 'answer');
+        if (!isConnected) {
+          if (movingUser.connectedAt < user.connectedAt) {
+            sendWebRTCSignal(movingUser.ws, user.id, 'offer');
+            sendWebRTCSignal(user.ws, movingUser.id, 'answer');
+          } else {
+            sendWebRTCSignal(user.ws, movingUser.id, 'offer');
+            sendWebRTCSignal(movingUser.ws, user.id, 'answer');
+          }
+          movingUser.connectedUsers.push(user.id);
+          user.connectedUsers.push(movingUser.id);
+          connectionsUpdated = true;
         }
-        connectionsUpdated = true;
-      } else if (distance > 0.2) {
+      } else if (distance > 0.2 && isConnected) {
         disconnectWebRTC(user.ws, movingUser.id);
         disconnectWebRTC(movingUser.ws, user.id);
+        movingUser.connectedUsers = movingUser.connectedUsers.filter(id => id !== user.id);
+        user.connectedUsers = user.connectedUsers.filter(id => id !== movingUser.id);
       }
     }
   });
 
-  if (!connectionsUpdated) {
+  if (!connectionsUpdated && movingUser.connectedUsers.length === 0) {
     setCoolTime(roomId, userId, true);
     setTimeout(() => {
       setCoolTime(roomId, userId, false);
@@ -160,6 +173,9 @@ const forwardToRecipient = (data, roomId, userId) => {
 
 const removeClient = (roomId, userId) => {
   rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+  rooms[roomId].forEach(user => {
+    user.connectedUsers = user.connectedUsers.filter(id => id !== userId);
+  });
 };
 
 const setCoolTime = (roomId, userId, state) => {
