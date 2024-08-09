@@ -5,7 +5,6 @@ import axios from 'axios';
 const UserResponse = ({ content, isAudio, isRender }) => {
 
   const playVideo = ()=>{
-    console.log(isAudio);
     console.log('재생');
     axios.get(
       `http://happy-re-test.s3.ap-northeast-2.amazonaws.com/${isAudio}`,
@@ -21,7 +20,7 @@ const UserResponse = ({ content, isAudio, isRender }) => {
   return(
     <div className='user-response-container'>
     <p className='user-response'>{content}
-    {isAudio !== null && isRender && <span>
+    {isAudio !== '' && isRender && <span>
         <br></br>
         <button onClick={playVideo} className='btn user-voice-play-btn'>Play</button>
       </span>}
