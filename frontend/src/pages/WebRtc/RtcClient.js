@@ -242,14 +242,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const createPeerConnection = (userId) => {
-    if (coolTime) return null;  // coolTime이 true일 때 연결 시도하지 않음
-  
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
     console.log('WebRTC 연결 완료');
+  
+    peerConnections[userId] = { peerConnection, pendingCandidates: [] };
   
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -282,11 +282,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           localAudioRef.current.srcObject = null;
         }
         // ICE 후보 초기화
-        setPeerConnections(prevConnections => {
-          const updatedConnections = { ...prevConnections };
-          delete updatedConnections[userId].pendingCandidates;
-          return updatedConnections;
-        });
+        if (peerConnections[userId]) {
+          delete peerConnections[userId].pendingCandidates;
+        }
         // AudioEffect에서도 제거
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
@@ -321,21 +319,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleOffer = async (offer, sender) => {
-    if (coolTime || !sender) {
-      console.error('No sender provided for offer or in coolTime');
+    if (!sender) {
+      console.error('No sender provided for offer');
       return;
     }
   
-    console.log(`Handling offer from sender ${sender}`);
-    
     let peerConnection = peerConnections[sender]?.peerConnection;
   
     if (!peerConnection) {
       peerConnection = createPeerConnection(sender);
-      setPeerConnections(prevConnections => ({
-        ...prevConnections,
-        [sender]: { peerConnection }
-      }));
     }
   
     try {
@@ -350,8 +342,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         recipient: sender
       }));
   
-      if (peerConnection.signalingState === 'have-remote-offer') {
-        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+      if (peerConnections[sender]?.pendingCandidates.length > 0) {
+        for (const candidate of peerConnections[sender].pendingCandidates) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        peerConnections[sender].pendingCandidates = [];
       }
   
     } catch (error) {
@@ -365,8 +360,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
-    console.log(`Handling answer from sender ${sender}`);
-    
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
@@ -382,17 +375,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
       // Add pending ICE candidates if any
-      const pendingCandidates = peerConnections[sender]?.pendingCandidates || [];
-      for (const candidate of pendingCandidates) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-      setPeerConnections(prevConnections => ({
-        ...prevConnections,
-        [sender]: {
-          ...prevConnections[sender],
-          pendingCandidates: []
+      if (peerConnections[sender]?.pendingCandidates.length > 0) {
+        for (const candidate of peerConnections[sender].pendingCandidates) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         }
-      }));
+        peerConnections[sender].pendingCandidates = [];
+      }
     } catch (error) {
       console.error('Error handling answer:', error);
     }
@@ -404,8 +392,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
-    console.log(`Handling candidate from sender ${sender}`);
-    
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
@@ -413,22 +399,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
     const peerConnection = connection.peerConnection;
   
-    const addCandidateWithRetry = async (candidate, retries = 5) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          if (peerConnection.remoteDescription) {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-            return;
-          }
-        } catch (error) {
-          console.error('Error adding ICE candidate:', error);
-        }
-        await new Promise(resolve => setTimeout(resolve, 1000));  // 1 second delay between retries
+    if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (error) {
+        console.error('Error adding ICE candidate:', error);
       }
-      console.error('Failed to add ICE candidate after retries');
-    };
-  
-    addCandidateWithRetry(candidate);
+    } else {
+      peerConnections[sender].pendingCandidates.push(candidate);
+      console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
+    }
   };
 
   const handleRtcDisconnect = (userId) => {
