@@ -72,12 +72,12 @@ const AppContent = (setHappyreNumber) => {
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
           <Route path="/webrtc"
             element={
-              // <PrivateRoute>
+              <PrivateRoute>
                 <RtcClient
                   initialPosition={initialPosition}
                   characterImage={characterImage}
                 />
-              // </PrivateRoute>
+              </PrivateRoute>
             }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
           <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
@@ -97,9 +97,10 @@ const App = () => {
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
         // fastUrl: '',
-        fastUrl: 'https://i11b204.p.ssafy.io',
-        // defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
+        // defaultUrl: 'http://192.168.31.216:8080',
+        // defaultUrl: 'http://192.168.31.48:8080',
+        fastUrl: 'https://i11b204.p.ssafy.io',
         // fastUrl: 'http://192.168.31.229:8000', 
         isAuthenticated,
         setIsAuthenticated,
