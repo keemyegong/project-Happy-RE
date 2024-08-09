@@ -118,6 +118,8 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     api_instance = user_session[user_id]
     user_input = request.user_input
     audio = request.audio
+    if audio=='':
+        audio = None
     
     if request.request == "user":
         message_session_update(user_id, user_input, "user", audio)
