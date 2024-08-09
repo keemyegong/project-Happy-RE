@@ -7,10 +7,6 @@ import soldier from '../../assets/characters/soldier.png';
 import steel from '../../assets/characters/steel.png';
 
 const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUsers, coolTime }) => {
-  useEffect(() => {
-    console.log('Nearby Users:', nearbyUsers);
-  }, [nearbyUsers]);
-
   return (
     <div className="right-panel">
       <div className="scroll-buttons">

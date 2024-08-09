@@ -35,6 +35,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   }, [position]);
 
   useEffect(() => {
+    console.log('Nearby Users:', nearbyUsers);
+  }, [nearbyUsers]);
+
+
+  useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
       client.close();
       return;
