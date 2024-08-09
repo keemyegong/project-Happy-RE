@@ -92,7 +92,7 @@ wss.on('connection', (ws, req) => {
 });
 
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId].filter(user => user.hasMoved).map(user => ({
+  const allUsers = rooms[roomId].map(user => ({
     id: user.id,
     position: user.position,
     characterImage: user.characterImage,
