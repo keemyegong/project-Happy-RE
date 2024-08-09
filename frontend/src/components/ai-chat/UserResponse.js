@@ -5,7 +5,8 @@ import axios from 'axios';
 const UserResponse = ({ content, isAudio, isRender }) => {
 
   const playVideo = ()=>{
-    console.log('재생')
+    console.log(isAudio);
+    console.log('재생');
     axios.get(
       `http://happy-re-test.s3.ap-northeast-2.amazonaws.com/${isAudio}`,
       {responseType:'blob'},
