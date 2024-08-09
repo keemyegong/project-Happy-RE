@@ -305,6 +305,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
 
+    // 즉시 오퍼 시도
+    if (userId && !coolTime) {
+      attemptOffer(peerConnection, userId);
+    }
+
     return peerConnection;
   };
 
