@@ -70,7 +70,7 @@ const AppContent = (setHappyreNumber) => {
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
-          <Route path="/mindtalk"
+          <Route path="/webrtc"
             element={
               <PrivateRoute>
                 <RtcClient
@@ -99,8 +99,9 @@ const App = () => {
         // fastUrl: '',
         // fastUrl: 'https://i11b204.p.ssafy.io',
         defaultUrl: 'http://192.168.31.216:8080',
-        // fastUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://192.168.31.229:8000', 
+        // defaultUrl: 'http://192.168.31.48:8080',
+        fastUrl: 'https://i11b204.p.ssafy.io',
+        // fastUrl: 'http://192.168.31.229:8000', 
         isAuthenticated,
         setIsAuthenticated,
         todayDone,

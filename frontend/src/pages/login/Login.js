@@ -33,7 +33,7 @@ function Login() {
     }
 
     axios.post(
-      `${universal.defaultUrl}/api/login`,
+      `${universal.defaultUrl}/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
