@@ -341,7 +341,7 @@ const AIChat = () => {
 
       setUserInputCount(prevCount => {
         const newCount = prevCount + 1;
-        if (newCount >= 3 && !isEventDone) {
+        if (newCount >= 3 && !isEventDone && response.data.trigger) {
           eventStart();
           setIsEventDone(true);
         }

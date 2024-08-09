@@ -200,9 +200,13 @@ const UserProfile = () => {
           <div className='col-12 col-md-8 col-xxl-10'>
             <div className='user-emotion-info-container row'>
               <div className='col-12 col-xxl-6'>
-                <div className='profile-mywords-title text-white'>
-                  <p className='profile-mywords-title-text'>My Words</p>
-                </div>
+              <div class='profile-mywords-title text-white'>
+                <p class='profile-mywords-title-text'>My Words</p>
+                <span class='profile-mywords-guide'>
+                  내가 자주 사용하는 어휘들을 통해서 나의 감정을 돌아볼 수 있어요
+                </span>
+              </div>
+
                 <div className='wordcloud-container'>
                   <WordCloud
                     data={data}
@@ -226,6 +230,11 @@ const UserProfile = () => {
               <div className='col-12 col-xxl-6'>
                 <div className='profile-emotion-title text-white'>
                   <p className='profile-emotion-title-text'>Emotion Graph</p>
+                  <span class='profile-mywords-guide'>
+                    최근 한 달 나의 감정을 그래프를 통해 알아볼 수 있어요
+                    <br/>
+                    X축은 긍정도, Y축은 각성도를 나타내요
+                  </span>
                 </div>
                 <div className='emotion-graph-container'>
                   <EmotionGraph data={emotionData} />

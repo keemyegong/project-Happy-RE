@@ -33,7 +33,8 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
   return (
     <div className='DiaryReport'>
       <div className='diary-report-header'>
-        {`${year}-${month}-${date} report`}
+        <p className='diary-report-header-text'>{`${year}-${month}-${date} report`}</p>
+
       </div>
       {loading &&
       <div className='modal-loading-container'> 
@@ -92,7 +93,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
           <div className='diary-report-graph-body'>
             <EmotionGraph data={emotionData} />
             <div className='diary-report-graph-label'>
-              <p className='diary-report-header'>
+              <p className='diary-report-header diary-report-header-kr'>
                 요약
               </p>
               <div className='diary-report-border my-2' />
@@ -100,7 +101,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
                 {daySummary}
               </p>
               <p className='diary-report-header'>
-                russell Number Avg
+                Russell Number Avg
               </p>
               <div className='diary-report-border my-2' />
               <p>
@@ -109,12 +110,10 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
               <p>
                 Arousel : {russellY.toFixed(3)}
               </p>
-              
-
             </div>
           </div>
         </div>
-        <div className='mt-5 text-center diary-report-explain-label'>*Arousel은 흥분도를, valance는 긍정도를 나타내요</div>
+        <div className='mt-5 text-center diary-report-explain-label'>*Arousel은 각성도를, valance는 긍정도를 나타내요</div>
       </div>}
     </div>
   );

@@ -9,6 +9,7 @@ public class UserDTO {
 
     private String role;
     private String name;
+    @Deprecated
     private String username;
     private String email;
 }

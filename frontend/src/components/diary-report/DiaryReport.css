@@ -12,11 +12,17 @@
   font-family: "Alegreya Sans SC";
   font-size: clamp(14px, 1.3vw, 18px);
   color: white;
-  text-align: center;
   margin-top: 5px;
   margin-bottom: 10px;
 }
 
+.diary-report-header-kr {
+  font-family: Pretendard;
+}
+
+.diary-report-header-text {
+  text-align: center;
+}
 .diary-report-body {
   display: flex;
   flex-direction: column;
@@ -76,6 +82,7 @@
 }
 
 .diary-report-graph {
+  font-family: 'Pretendard-Regular';
   margin-top: 20px;
 }
 
@@ -113,8 +120,6 @@
   color: white;
   max-width: 200px;
   font-size: 12px;
-
-
 }
 
 .diary-report-keyword-none{
@@ -135,7 +140,6 @@
 }
 
 .diary-modal-popup-spinner{
-
   width: 200px;
   height: 200px;
   color: rgb(175, 175, 193);
@@ -157,7 +161,6 @@
   position: absolute;
   top: 30%;
   left: 45%;
-
 }
 
 .modal-loading-text{
@@ -166,6 +169,7 @@
 }
 
 .diary-report-explain-label{
+  font-family: 'Pretendard-Regular';
   color: #696969;
   padding: 0;
   margin-top: 30px;
