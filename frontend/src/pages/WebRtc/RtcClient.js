@@ -13,9 +13,9 @@ import steel from '../../assets/characters/steel.png';
 import './ChatRoomContainer.css';
 
 const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
-const peerConnections = {};
 
 const RtcClient = ({ initialPosition, characterImage }) => {
+  const [peerConnections, setPeerConnections] = useState({});
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
   const positionRef = useRef(position);
@@ -53,7 +53,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
   },[]);
 
@@ -67,10 +67,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     Object.values(peerConnections).forEach(({ peerConnection }) => {
       peerConnection.close();
     });
-    Object.keys(peerConnections).forEach(userId => {
-      delete peerConnections[userId];
-      audioEffectRef.current?.removeStream(userId);
-    });
+    setPeerConnections({});
+    if (audioEffectRef.current) {
+      Object.keys(peerConnections).forEach(userId => {
+        audioEffectRef.current.removeStream(userId);
+      });
+    }
     checkAndSetCoolTime();
   };
 
@@ -88,8 +90,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const movePosition = (dx, dy) => {
-    if (coolTime) return;
-
     const newPosition = {
       x: Math.min(1, Math.max(-1, positionRef.current.x + dx)),
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)),
@@ -98,7 +98,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     setPosition(newPosition);
     setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true}));
+      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
     }
   };
 
@@ -206,23 +206,30 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-
+  
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-
+  
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
-          peerConnections[user.id] = { peerConnection };
+          setPeerConnections(prevConnections => ({
+            ...prevConnections,
+            [user.id]: { peerConnection }
+          }));
           if (clientId < user.id) {
             attemptOffer(peerConnection, user.id);
           }
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
-        delete peerConnections[user.id];
+        setPeerConnections(prevConnections => {
+          const updatedConnections = { ...prevConnections };
+          delete updatedConnections[user.id];
+          return updatedConnections;
+        });
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(user.id);
         }
@@ -230,68 +237,69 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-
+  
     setNearbyUsers(newNearbyUsers);
   };
 
   const createPeerConnection = (userId) => {
     if (coolTime) return null;  // coolTime이 true일 때 연결 시도하지 않음
-  
+
     const peerConnection = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
-      ]
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' }
+        ]
     });
     console.log('WebRTC 연결 완료');
-  
+
+    peerConnections[userId] = { peerConnection, pendingCandidates: [] };
+
     peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        client.send(JSON.stringify({
-          type: 'candidate',
-          candidate: event.candidate,
-          sender: clientId,
-          recipient: userId
-        }));
-      }
+        if (event.candidate) {
+            client.send(JSON.stringify({
+                type: 'candidate',
+                candidate: event.candidate,
+                sender: clientId,
+                recipient: userId
+            }));
+        }
     };
-  
+
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-        // AudioEffect에 스트림 추가
-        if (audioEffectRef.current) {
-          audioEffectRef.current.addStream(userId, event.streams[0]);
-        }
-      }
-    };
-  
-    peerConnection.onconnectionstatechange = () => {
-      if (peerConnection.connectionState === 'connected') {
-        console.log(`WebRTC connection established with user ${userId}`);
-      }
-      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
-        console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
+            localAudioRef.current.srcObject = event.streams[0];
+            // AudioEffect에 스트림 추가
+            if (audioEffectRef.current) {
+                audioEffectRef.current.addStream(userId, event.streams[0]);
+            }
         }
-        // ICE 후보 초기화
-        if (peerConnections[userId]) {
-          delete peerConnections[userId].pendingCandidates;
-        }
-        // AudioEffect에서도 제거
-        if (audioEffectRef.current) {
-          audioEffectRef.current.removeStream(userId);
-        }
-        checkAndSetCoolTime();
-      }
     };
-  
+
+    peerConnection.onconnectionstatechange = () => {
+        if (peerConnection.connectionState === 'connected') {
+            console.log(`WebRTC connection established with user ${userId}`);
+        }
+        if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+            console.log('WebRTC 연결이 끊어졌습니다.');
+            if (localAudioRef.current) {
+                localAudioRef.current.srcObject = null;
+            }
+            // ICE 후보 초기화
+            if (peerConnections[userId]) {
+                delete peerConnections[userId].pendingCandidates;
+            }
+            // AudioEffect에서도 제거
+            if (audioEffectRef.current) {
+                audioEffectRef.current.removeStream(userId);
+            }
+        }
+    };
+
     if (stream) {
-      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
-  };
+};
 
   const attemptOffer = (peerConnection, recipientId) => {
     if (coolTime || !peerConnection) return;
@@ -313,67 +321,42 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const handleOffer = async (offer, sender) => {
-    if (coolTime || !sender) {
-      console.error('No sender provided for offer or in coolTime');
+    if (!sender) {
+      console.error('No sender provided for offer');
       return;
     }
-
-    if (!peerConnections[sender]) {
-      const peerConnection = createPeerConnection(sender);
-      peerConnections[sender] = { peerConnection };
-    }
-
+  
+    resetPeerConnection(sender);
     const peerConnection = peerConnections[sender].peerConnection;
-
+  
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-
+  
       client.send(JSON.stringify({
         type: 'answer',
         answer: answer.sdp,
         sender: clientId,
         recipient: sender
       }));
-
-      if (peerConnection.signalingState === 'have-remote-offer') {
-        console.log(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
+  
+      const pendingCandidates = peerConnections[sender]?.pendingCandidates || [];
+      if (pendingCandidates.length > 0) {
+        for (const candidate of pendingCandidates) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        setPeerConnections(prevConnections => ({
+          ...prevConnections,
+          [sender]: {
+            ...prevConnections[sender],
+            pendingCandidates: []
+          }
+        }));
       }
-
+  
     } catch (error) {
       console.error('Error handling offer:', error);
-    }
-  };
-
-  const handleAnswer = async (answer, sender) => {
-    if (!sender) {
-      console.error('No sender provided for answer');
-      return;
-    }
-  
-    const connection = peerConnections[sender];
-    if (!connection) {
-      console.error(`No peer connection found for sender ${sender}`);
-      return;
-    }
-    const peerConnection = connection.peerConnection;
-  
-    if (peerConnection.signalingState !== 'have-local-offer') {
-      console.error(`Attempted to setRemoteDescription in unexpected state: ${peerConnection.signalingState}`);
-      return;
-    }
-  
-    try {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
-      // Add pending ICE candidates if any
-      const pendingCandidates = peerConnections[sender].pendingCandidates || [];
-      for (const candidate of pendingCandidates) {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-      peerConnections[sender].pendingCandidates = [];
-    } catch (error) {
-      console.error('Error handling answer:', error);
     }
   };
 
@@ -388,19 +371,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
+  
     const peerConnection = connection.peerConnection;
   
-    if (peerConnection.remoteDescription) {
+    if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (error) {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      if (!peerConnections[sender].pendingCandidates) {
-        peerConnections[sender].pendingCandidates = [];
-      }
-      peerConnections[sender].pendingCandidates.push(candidate);
+      setPeerConnections(prevConnections => {
+        const newPendingCandidates = (prevConnections[sender]?.pendingCandidates || []).concat(candidate);
+        return {
+          ...prevConnections,
+          [sender]: {
+            ...prevConnections[sender],
+            pendingCandidates: newPendingCandidates
+          }
+        };
+      });
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
@@ -408,7 +398,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
-      delete peerConnections[userId];
+      setPeerConnections(prevConnections => {
+        const { [userId]: removedConnection, ...restConnections } = prevConnections;
+        return restConnections;
+      });
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
       // AudioEffect에서도 제거
@@ -417,6 +410,64 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       checkAndSetCoolTime();
     }
+  };
+
+  const resetPeerConnection = (userId) => {
+    if (peerConnections[userId]) {
+      peerConnections[userId].peerConnection.close();
+    }
+  
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    });
+  
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        client.send(JSON.stringify({
+          type: 'candidate',
+          candidate: event.candidate,
+          sender: clientId,
+          recipient: userId
+        }));
+      }
+    };
+  
+    peerConnection.ontrack = (event) => {
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
+        if (audioEffectRef.current) {
+          audioEffectRef.current.addStream(userId, event.streams[0]);
+        }
+      }
+    };
+  
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'connected') {
+        console.log(`WebRTC connection established with user ${userId}`);
+      }
+      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+        console.log('WebRTC 연결이 끊어졌습니다.');
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
+        }
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(userId);
+        }
+      }
+    };
+  
+    setPeerConnections(prevConnections => ({
+      ...prevConnections,
+      [userId]: { peerConnection, pendingCandidates: [] }
+    }));
+  
+    if (stream) {
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+    }
+  
+    return peerConnection;
   };
 
   const handleScroll = (direction) => {

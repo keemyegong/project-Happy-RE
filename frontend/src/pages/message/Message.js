@@ -87,6 +87,17 @@ const Message = () => {
     setShowContainer(showContainer === 'messages' ? 'input' : 'messages');
   };
 
+  const getMessage = ()=>{
+    axios
+      .get(`${universal.defaultUrl}/api/usermsg/4`, {
+        headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
+      })
+      .then((response) => {
+        console.log(response.data);
+      })
+      
+  }
+
   return (
     <main className="Message">
       <div className="message-profile-container">

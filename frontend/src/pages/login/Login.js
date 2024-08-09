@@ -23,7 +23,7 @@ function Login() {
     
   }
   const naverLogin = ()=>{
-    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/kakao`
   }
 
   const login = ()=>{
@@ -33,7 +33,7 @@ function Login() {
     }
 
     axios.post(
-      `${universal.defaultUrl}/login`,
+      `${universal.defaultUrl}/api/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
