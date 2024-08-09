@@ -32,6 +32,13 @@
   font-weight: 400;
 }
 
+.message-input-keyword-left-btn {
+  color: white;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 .divider {
   border: 0;
   height: 1px;
@@ -82,4 +89,10 @@
 
 .message-keyword-card{
   width: 200px;
+  padding: 0px 20px;
+}
+
+.text-input::placeholder {
+  font-weight: 100;
+  color: #999; /* 필요에 따라 색상도 변경할 수 있습니다 */
 }
