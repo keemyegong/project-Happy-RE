@@ -83,6 +83,9 @@ const Archive = () => {
         <div className="archive-mywords-container col-6">
           <div className="archive-mywords-header">
             <p className="archive-mywords-header-text">My Words</p>
+            <span class='archive-mywords-guide'>
+              내가 보관한 감정 키워드에 대한 기록을 볼 수 있어요
+            </span>
           </div>
           <div className="archive-mywords-content">
             {keywords.map((keyword) => (
@@ -136,6 +139,9 @@ const Archive = () => {
         <div className="archive-message-container col-6">
           <div className="archive-message-header">
             <p className="archive-message-header-text">Messages</p>
+            <span class='archive-mywords-guide'>
+              내가 보관한 메시지들을 확인할 수 있어요
+            </span>
           </div>
           <div className="archive-message-content">
             {/* {messages.map((message) => (
