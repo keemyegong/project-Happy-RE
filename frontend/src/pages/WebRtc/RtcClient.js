@@ -208,17 +208,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-
+  
     // 현재 클라이언트의 connectedAt 값을 찾음
     const currentUser = currentUsers.find(user => user.id === clientId);
     const connectedAt = currentUser ? currentUser.connectedAt : Date.now();
-
+  
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-
+  
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           setPeerConnections(prevConnections => ({
@@ -243,7 +243,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-
+  
     setNearbyUsers(newNearbyUsers);
   };
 
@@ -253,10 +253,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-    console.log('WebRTC 연결 완료');
-
+    console.log('WebRTC 연결 객체 생성 완료');
+  
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-
+  
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -267,7 +267,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-
+  
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -277,10 +277,12 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-
+  
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
+      } else {
+        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
       if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
         console.log('WebRTC 연결이 끊어졌습니다.');
@@ -297,11 +299,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-
+  
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-
+  
     return peerConnection;
   };
 
