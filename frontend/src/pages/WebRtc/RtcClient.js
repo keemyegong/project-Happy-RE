@@ -242,62 +242,64 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const createPeerConnection = (userId) => {
+    if (coolTime) return null;  // coolTime이 true일 때 연결 시도하지 않음
+
     const peerConnection = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
-      ]
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' }
+        ]
     });
     console.log('WebRTC 연결 완료');
-  
+
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-  
+
     peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        client.send(JSON.stringify({
-          type: 'candidate',
-          candidate: event.candidate,
-          sender: clientId,
-          recipient: userId
-        }));
-      }
+        if (event.candidate) {
+            client.send(JSON.stringify({
+                type: 'candidate',
+                candidate: event.candidate,
+                sender: clientId,
+                recipient: userId
+            }));
+        }
     };
-  
+
     peerConnection.ontrack = (event) => {
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = event.streams[0];
-        // AudioEffect에 스트림 추가
-        if (audioEffectRef.current) {
-          audioEffectRef.current.addStream(userId, event.streams[0]);
-        }
-      }
-    };
-  
-    peerConnection.onconnectionstatechange = () => {
-      if (peerConnection.connectionState === 'connected') {
-        console.log(`WebRTC connection established with user ${userId}`);
-      }
-      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
-        console.log('WebRTC 연결이 끊어졌습니다.');
         if (localAudioRef.current) {
-          localAudioRef.current.srcObject = null;
+            localAudioRef.current.srcObject = event.streams[0];
+            // AudioEffect에 스트림 추가
+            if (audioEffectRef.current) {
+                audioEffectRef.current.addStream(userId, event.streams[0]);
+            }
         }
-        // ICE 후보 초기화
-        if (peerConnections[userId]) {
-          delete peerConnections[userId].pendingCandidates;
-        }
-        // AudioEffect에서도 제거
-        if (audioEffectRef.current) {
-          audioEffectRef.current.removeStream(userId);
-        }
-      }
     };
-  
+
+    peerConnection.onconnectionstatechange = () => {
+        if (peerConnection.connectionState === 'connected') {
+            console.log(`WebRTC connection established with user ${userId}`);
+        }
+        if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+            console.log('WebRTC 연결이 끊어졌습니다.');
+            if (localAudioRef.current) {
+                localAudioRef.current.srcObject = null;
+            }
+            // ICE 후보 초기화
+            if (peerConnections[userId]) {
+                delete peerConnections[userId].pendingCandidates;
+            }
+            // AudioEffect에서도 제거
+            if (audioEffectRef.current) {
+                audioEffectRef.current.removeStream(userId);
+            }
+        }
+    };
+
     if (stream) {
-      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
-  };
+};
 
   const attemptOffer = (peerConnection, recipientId) => {
     if (coolTime || !peerConnection) return;
@@ -324,11 +326,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
-    let peerConnection = peerConnections[sender]?.peerConnection;
-  
-    if (!peerConnection) {
-      peerConnection = createPeerConnection(sender);
-    }
+    const peerConnection = resetPeerConnection(sender);
   
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
@@ -346,9 +344,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         for (const candidate of peerConnections[sender].pendingCandidates) {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         }
-        peerConnections[sender].pendingCandidates = [];
+        setPeerConnections(prevConnections => ({
+          ...prevConnections,
+          [sender]: {
+            ...prevConnections[sender],
+            pendingCandidates: []
+          }
+        }));
       }
-  
     } catch (error) {
       console.error('Error handling offer:', error);
     }
@@ -397,6 +400,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
+  
     const peerConnection = connection.peerConnection;
   
     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
@@ -406,10 +410,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
-      if (!peerConnections[sender].pendingCandidates) {
-        peerConnections[sender].pendingCandidates = [];
-      }
-      peerConnections[sender].pendingCandidates.push(candidate);
+      setPeerConnections(prevConnections => {
+        const newPendingCandidates = (prevConnections[sender]?.pendingCandidates || []).concat(candidate);
+        return {
+          ...prevConnections,
+          [sender]: {
+            ...prevConnections[sender],
+            pendingCandidates: newPendingCandidates
+          }
+        };
+      });
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
   };
@@ -417,8 +427,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
-      const { [userId]: removedConnection, ...restConnections } = peerConnections;
-      setPeerConnections(restConnections);
+      setPeerConnections(prevConnections => {
+        const { [userId]: removedConnection, ...restConnections } = prevConnections;
+        return restConnections;
+      });
       setNearbyUsers(prev => prev.filter(user => user.id !== userId));
       console.log(`WebRTC connection closed with user ${userId}`);
       // AudioEffect에서도 제거
@@ -427,6 +439,63 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       }
       checkAndSetCoolTime();
     }
+  };
+
+  const resetPeerConnection = (userId) => {
+    if (peerConnections[userId]) {
+      peerConnections[userId].peerConnection.close();
+    }
+  
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    });
+  
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        client.send(JSON.stringify({
+          type: 'candidate',
+          candidate: event.candidate,
+          sender: clientId,
+          recipient: userId
+        }));
+      }
+    };
+  
+    peerConnection.ontrack = (event) => {
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = event.streams[0];
+        if (audioEffectRef.current) {
+          audioEffectRef.current.addStream(userId, event.streams[0]);
+        }
+      }
+    };
+  
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'connected') {
+        console.log(`WebRTC connection established with user ${userId}`);
+      } else if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'closed') {
+        console.log('WebRTC 연결이 끊어졌습니다.');
+        if (localAudioRef.current) {
+          localAudioRef.current.srcObject = null;
+        }
+        if (audioEffectRef.current) {
+          audioEffectRef.current.removeStream(userId);
+        }
+      }
+    };
+  
+    setPeerConnections(prevConnections => ({
+      ...prevConnections,
+      [userId]: { peerConnection, pendingCandidates: [] }
+    }));
+  
+    if (stream) {
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+    }
+  
+    return peerConnection;
   };
 
   const handleScroll = (direction) => {
