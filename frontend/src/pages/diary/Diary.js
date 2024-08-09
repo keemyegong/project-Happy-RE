@@ -38,7 +38,7 @@ const Diary = () => {
           withCredentials: true,
         }
       }).then((response)=>{
-        if (response.data.keywordEntities == null){
+        if (response.data.keywordEntities == []){
           setShowButton(true);
         }
           axios.get(
