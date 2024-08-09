@@ -30,6 +30,7 @@
 }
 
 .diary-report-keyword {
+  font-family: Pretendard;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -127,15 +128,19 @@
 }
 
 .diary-report-keyword-none-header{
+  opacity: 0.;
+  font-size: 20px;
   color: white;
 
 }
 
 .diary-report-keyword-none-label-positive{
+  font-size: 13px;
   color: #9DB6B9;
 }
 
 .diary-report-keyword-none-label-negative{
+  font-size: 13px;
   color: #B99D9D;
 }
 
@@ -146,6 +151,13 @@
   border-width: 10px;
 
 }
+.modal-loading-text {
+  font-family: Pretendard;
+  font-weight: 500;
+  font-size: 18px;
+  opacity: 0.9;
+  line-height: 30px;
+}
 
 .modal-loading-container{
   position: relative;
@@ -153,7 +165,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 150px;
+  margin-top: 100px;
+  margin-bottom: 60px;
 }
 
 .modal-loading-label{

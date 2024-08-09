@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext, } from 'react';
 import './Archive.css';
 import KeywordCard from '../../components/diary-report/KeywordCard';
 import Test from '../../components/emotion-graph/Test';
+import axios from 'axios';
+import { universeVariable } from '../../App';
+import Cookies from 'js-cookie';
+import MessageCard from '../../components/message-card/MessageCard';
+import Swal from 'sweetalert2'
+
 
 const Archive = () => {
+  const universal = useContext(universeVariable);
   const [messages, setMessages] = useState([]);
   const [keywords, setKeywords] = useState([]);
   const [dummyKeywords, setDummyKeywords] = useState([]);
@@ -12,51 +19,120 @@ const Archive = () => {
   const [currentKeywordIndex, setCurrentKeywordIndex] = useState(0);
   const [filteredKeywords, setFilteredKeywords] = useState([]);
 
-  useEffect(() => {
-    const dummyMessages = [
-      { id: 1, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER1', content: 'This is the first message content.' },
-      { id: 2, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER2', content: 'This is the second message content.' },
-      { id: 3, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER3', content: 'This is the third message content.' },
-      { id: 4, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER4', content: 'This is the fourth message content.' },
-      { id: 5, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER5', content: 'This is the fourth message content.' },
-      { id: 6, profileImageUrl: 'https://via.placeholder.com/150', userName: 'USER6', content: 'This is the fourth message content.' },
-    ];
+  const getKeyword = ()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/keyword`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        setKeywords(response.data);
+        keywordLoad(response.data);
+        const tmp_emotionData = [];
+        response.data.forEach(element => {
+          tmp_emotionData.push({x:element.russellX, y:element.russellY, value:0.8});
+        });
 
-    const dummyKeywordsData = [
-      { id: 1, title: '워터파크', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 2, title: '두꺼비', date: '2024-08-03', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 3, title: '담배', date: '2024-08-04', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 4, title: '워터파크', date: '2024-08-05', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 5, title: '니코틴', date: '2024-08-06', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 6, title: '카페인', date: '2024-08-07', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 7, title: '워터파크', date: '2024-08-08', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 8, title: '아쿠아리움', date: '2024-08-09', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 9, title: '담배', date: '2024-08-10', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-    ];
+        return tmp_emotionData;
+      }).then((tmp_emotionData)=>{
+        setEmotionData(tmp_emotionData);
+      })
+  }
+  const getMessage = ()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/archived`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        console.log(response.data.userMessageEntityList);
+        setMessages(response.data.userMessageEntityList.map((element)=>{
+          return {...element}
+        }));
+      })
+  }
 
-    setMessages(dummyMessages);
-    setDummyKeywords(dummyKeywordsData);
+  const deleteArchived = (messageId)=>{
+    Swal.fire({
+      title: '메시지를 정리 할까요?',
+      text: '한 번 삭제한 메시지는 다시 만나는 게 힘들지도 몰라요...',
+      icon: "question",
+      iconColor: "#4B4E6D",
+      color: 'white',
+      background: '#292929',
+      confirmButtonColor: '#4B4E6D',
+      showCancelButton: true,
+      cancelButtonColor: "#333758",
+      confirmButtonText: "삭제",
+      cancelButtonText: "취소"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: '성공적으로 메시지를 정리했습니다!',
+          // text: '',
+          icon: "success",
+          iconColor: "#4B4E6D",
+          color: 'white',
+          background: '#292929',
+          confirmButtonColor: '#4B4E6D',
+        }).then((result)=>{
+          setMessages([...messages].filter((Element)=>{
+            return Element.userMessageId != messageId
+          }))
+          delteArchive(messageId);
+        });
+      } else{
+      }
+    })
 
-    const uniqueKeywords = dummyKeywordsData.reduce((acc, keyword) => {
-      if (!acc.some(kw => kw.title === keyword.title)) {
+  }
+
+
+  const delteArchive = (messageId)=>{
+    axios
+    .delete(
+      `${universal.defaultUrl}/api/usermsg/archive/${messageId}`,
+      { headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` } }
+    )
+    .then((Response)=>{
+      console.log('successfully unarchive');
+    })
+  }
+
+  const keywordLoad = (keywords)=>{
+    const uniqueKeywords = keywords.reduce((acc, keyword) => {
+      if (!acc.some(kw => kw.keyword === keyword.keyword)) {
         acc.push(keyword);
       }
       return acc;
     }, []);
 
     setKeywords(uniqueKeywords);
+    console.log(uniqueKeywords);
 
-    if (dummyKeywordsData.length > 0) {
-      setSelectedKeyword(dummyKeywordsData[0]);
-      setFilteredKeywords(dummyKeywordsData.filter(kw => kw.title === dummyKeywordsData[0].title));
+    if (keywords.length > 0) {
+      setSelectedKeyword(keywords[0]);
+      setFilteredKeywords(keywords.filter(kw => kw.keyword === keywords[0].keyword));
     }
+  }
+
+  useEffect(() => {
+    getMessage();
+    getKeyword();
+
+    
   }, []);
 
   const handleKeywordClick = (keyword) => {
     setSelectedKeyword(keyword);
-    const filtered = dummyKeywords.filter(kw => kw.title === keyword.title);
+    const filtered = keywords.filter(kw => kw.keyword === keyword.keyword);
     setFilteredKeywords(filtered);
     setCurrentKeywordIndex(0);
+
   };
 
   const handlePrevClick = () => {
@@ -94,11 +170,11 @@ const Archive = () => {
                 key={keyword.id}
                 onClick={() => handleKeywordClick(keyword)}
                 style={{
-                  fontWeight: selectedKeyword?.title === keyword.title ? '800' : 'normal',
-                  opacity: selectedKeyword?.title === keyword.title ? '1' : '0.7'
+                  fontWeight: selectedKeyword?.keyword === keyword.keyword ? '800' : 'normal',
+                  opacity: selectedKeyword?.keyword === keyword.keyword ? '1' : '0.7'
                 }}
               >
-                {keyword.title}
+                {keyword.keyword}
               </div>
             ))}
           </div>
@@ -144,15 +220,20 @@ const Archive = () => {
             </span>
           </div>
           <div className="archive-message-content">
-            {/* {messages.map((message) => (
-              <MessageCard
-                key={message.id}
-                messageId={message.id}
-                profileImageUrl={message.profileImageUrl}
-                userName={message.userName}
-                content={message.content}
-              />
-            ))} */}
+            {messages.map((message) => {
+              
+                return <MessageCard
+                  key={message.userMessageId}
+                  messageId={message.userMessageId}
+                  persona={message.userEntity.myfrog}
+                  keyword={message.userMessageAttachedKeywordEntityList[0]}
+                  content={message.content}
+                  archived={true}
+                  deleteArchived={deleteArchived}
+
+                />
+              
+            })} 
           </div>
         </div>
       </div>

@@ -97,6 +97,14 @@
   margin-inline: 0px;
 }
 
+.wordcloud-none-word {
+  font-family: Pretendard;
+  color: white;
+  font-weight: 100;
+  font-size: 13px;
+  margin: 30px 10px;
+  margin-bottom: 150px;
+}
 .emotion-graph-container{
   width: 100%;
   display: flex;

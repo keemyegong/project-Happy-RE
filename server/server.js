@@ -43,7 +43,7 @@ wss.on('connection', (ws, req) => {
   }
 
   const userId = uuidv4();
-  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '' };
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
   const roomId = getRoomWithSpace();
   rooms[roomId].push({ ws, ...userInfo });
@@ -60,8 +60,7 @@ wss.on('connection', (ws, req) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
-        updateClients(roomId);
+        handleMove(roomId, userId, data.position);
         break;
 
       case 'offer':
@@ -72,11 +71,6 @@ wss.on('connection', (ws, req) => {
 
       case 'disconnect':
         removeClient(roomId, userId);
-        updateClients(roomId);
-        break;
-
-      case 'coolTime':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
         updateClients(roomId);
         break;
 
@@ -91,15 +85,76 @@ wss.on('connection', (ws, req) => {
   });
 });
 
+const handleMove = (roomId, userId, position) => {
+  rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position, hasMoved: true } : user);
+  updateClients(roomId);
+  manageWebRTCConnections(roomId, userId);
+};
+
+const manageWebRTCConnections = (roomId, userId) => {
+  const movingUser = rooms[roomId].find(user => user.id === userId);
+  if (!movingUser) return;
+
+  let connectionsUpdated = false;
+
+  rooms[roomId].forEach(user => {
+    if (user.id !== userId) {
+      const distance = calculateDistance(movingUser.position, user.position);
+      const isConnected = movingUser.connectedUsers.includes(user.id);
+
+      if (distance <= 0.2 && movingUser.hasMoved && user.hasMoved && !user.coolTime && !movingUser.coolTime) {
+        if (!isConnected) {
+          if (movingUser.connectedAt < user.connectedAt) {
+            sendWebRTCSignal(movingUser.ws, user.id, 'offer');
+            sendWebRTCSignal(user.ws, movingUser.id, 'answer');
+          } else {
+            sendWebRTCSignal(user.ws, movingUser.id, 'offer');
+            sendWebRTCSignal(movingUser.ws, user.id, 'answer');
+          }
+          movingUser.connectedUsers.push(user.id);
+          user.connectedUsers.push(movingUser.id);
+          connectionsUpdated = true;
+        }
+      } else if (distance > 0.2 && isConnected) {
+        disconnectWebRTC(user.ws, movingUser.id);
+        disconnectWebRTC(movingUser.ws, user.id);
+        movingUser.connectedUsers = movingUser.connectedUsers.filter(id => id !== user.id);
+        user.connectedUsers = user.connectedUsers.filter(id => id !== movingUser.id);
+      }
+    }
+  });
+
+  if (!connectionsUpdated && movingUser.connectedUsers.length === 0) {
+    setCoolTime(roomId, userId, true);
+    setTimeout(() => {
+      setCoolTime(roomId, userId, false);
+    }, 10000);
+  }
+};
+
+const sendWebRTCSignal = (ws, targetId, role) => {
+  ws.send(JSON.stringify({ type: 'start_webrtc', targetId, role }));
+};
+
+const disconnectWebRTC = (ws, targetId) => {
+  ws.send(JSON.stringify({ type: 'rtc_disconnect', targetId }));
+};
+
+const calculateDistance = (pos1, pos2) => {
+  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+};
+
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId].filter(user => user.hasMoved).map(user => ({
-    id: user.id,
-    position: user.position,
-    characterImage: user.characterImage,
-    hasMoved: user.hasMoved,
-    connectedAt: user.connectedAt,
-    coolTime: user.coolTime
-  }));
+  const allUsers = rooms[roomId]
+    .filter(user => user.hasMoved) // hasMoved가 true인 유저만 필터링
+    .map(user => ({
+      id: user.id,
+      position: user.position,
+      characterImage: user.characterImage,
+      hasMoved: user.hasMoved,
+      connectedAt: user.connectedAt,
+      coolTime: user.coolTime
+    }));
 
   rooms[roomId].forEach(user => {
     user.ws.send(JSON.stringify({ type: 'update', clients: allUsers.filter(u => u.id !== user.id) }));
@@ -115,6 +170,14 @@ const forwardToRecipient = (data, roomId, userId) => {
 
 const removeClient = (roomId, userId) => {
   rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+  rooms[roomId].forEach(user => {
+    user.connectedUsers = user.connectedUsers.filter(id => id !== userId);
+  });
+};
+
+const setCoolTime = (roomId, userId, state) => {
+  rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: state } : user);
+  updateClients(roomId);
 };
 
 server.listen(5001, () => {
