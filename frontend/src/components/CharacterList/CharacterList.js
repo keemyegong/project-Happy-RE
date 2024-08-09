@@ -2,6 +2,12 @@
 
 import React from 'react';
 import './CharacterList.css';
+import artist from '../../assets/characters/art.png';
+import butler from '../../assets/characters/butler.png';
+import defaultPersona from '../../assets/characters/default.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+
 
 const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUsers, coolTime }) => (
   <div className="right-panel">
@@ -14,16 +20,18 @@ const CharacterList = ({ nearbyUsers, displayStartIndex, handleScroll, talkingUs
     </div>
     <div className="character-list">
       {!coolTime && nearbyUsers.slice(displayStartIndex, displayStartIndex + 4).map((user, index) => (
-        <div 
-          key={user.id}
-          className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
-        >
-          <img 
-            src={user.image} 
-            alt="character"
-            className="character-image-small"
-          />
-        </div>
+        user.coolTime === false && (
+          <div 
+            key={user.id}
+            className={`character-image-small-wrapper ${talkingUsers.includes(user.id) ? 'talking' : ''}`}
+          >
+            <img 
+              src={user.characterImage} 
+              alt="character"
+              className="character-image-small"
+            />
+          </div>
+        )
       ))}
     </div>
     <div className="scroll-buttons">

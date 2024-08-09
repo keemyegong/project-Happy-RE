@@ -1,14 +1,22 @@
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 import React, { useEffect, useState, useRef } from 'react';
 import defaultImg from '../../assets/characters/default.png';
 import CoordinatesGraph from '../../components/ChatGraph/ChatGraph';
 import CharacterList from '../../components/CharacterList/CharacterList';
 import AudioEffect from '../../components/audio-api/AudioApi';
+import artist from '../../assets/characters/art.png';
+import butler from '../../assets/characters/butler.png';
+import defaultPersona from '../../assets/characters/default.png';
+import soldier from '../../assets/characters/soldier.png';
+import steel from '../../assets/characters/steel.png';
+
 import './ChatRoomContainer.css';
 
-const client = new WebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
+const client = new W3CWebSocket('wss://i11b204.p.ssafy.io:5000/webrtc');
 const peerConnections = {};
 
 const RtcClient = ({ initialPosition, characterImage }) => {
+  const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
   const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
@@ -44,6 +52,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       client.close();
     };
   }, []);
+
+    useEffect(() => {
+    setUserImage(happyRelist['1']);//localStorage.getItem("personaNumber")]);
+  },[]);
 
   const handleBeforeUnload = () => {
     client.send(JSON.stringify({ type: 'disconnect' }));
@@ -93,16 +105,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const handleKeyDown = (event) => {
     switch (event.key) {
       case 'ArrowUp':
-        movePosition(0, 0.025);
+        movePosition(0, 0.005);
         break;
       case 'ArrowDown':
-        movePosition(0, -0.025);
+        movePosition(0, -0.005);
         break;
       case 'ArrowLeft':
-        movePosition(-0.025, 0);
+        movePosition(-0.005, 0);
         break;
       case 'ArrowRight':
-        movePosition(0.025, 0);
+        movePosition(0.005, 0);
         break;
       default:
         break;
@@ -194,7 +206,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-    const newGroups = {};
 
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
@@ -209,27 +220,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
             attemptOffer(peerConnection, user.id);
           }
         }
-
-        // 그룹에 속한 유저들과 연결
-        newNearbyUsers.forEach(nearbyUser => {
-          if (nearbyUser.id !== user.id && !peerConnections[nearbyUser.id] && !coolTime) {
-            const peerConnection = createPeerConnection(nearbyUser.id);
-            peerConnections[nearbyUser.id] = { peerConnection };
-            if (clientId < nearbyUser.id) {
-              attemptOffer(peerConnection, nearbyUser.id);
-            }
-          }
-        });
-
-        // 그룹에 추가
-        if (!newGroups[user.id]) {
-          newGroups[user.id] = [];
-        }
-        newNearbyUsers.forEach(nearbyUser => {
-          if (nearbyUser.id !== user.id && !newGroups[user.id].includes(nearbyUser.id)) {
-            newGroups[user.id].push(nearbyUser.id);
-          }
-        });
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
         delete peerConnections[user.id];
@@ -239,19 +229,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.log(`WebRTC connection closed with user ${user.id}`);
         checkAndSetCoolTime();
       }
-    });
-
-    // 그룹 내 연결 처리
-    Object.keys(newGroups).forEach(userId => {
-      newGroups[userId].forEach(nearbyUserId => {
-        if (!peerConnections[nearbyUserId] && !coolTime) {
-          const peerConnection = createPeerConnection(nearbyUserId);
-          peerConnections[nearbyUserId] = { peerConnection };
-          if (clientId < nearbyUserId) {
-            attemptOffer(peerConnection, nearbyUserId);
-          }
-        }
-      });
     });
 
     setNearbyUsers(newNearbyUsers);
