@@ -321,7 +321,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               recipient: recipientId,
               sender: clientId
             }));
-            console.log(`Offer sent to ${recipientId}`);
+            console.log(`Offer sent to ${recipientId}`); // 추가된 로그
           })
           .catch(error => console.error('Error setting local description:', error));
       })
