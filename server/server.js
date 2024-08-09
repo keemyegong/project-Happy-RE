@@ -60,7 +60,8 @@ wss.on('connection', (ws, req) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: true } : user);
+        handleMove(roomId, userId);
         updateClients(roomId);
         break;
 
@@ -90,6 +91,31 @@ wss.on('connection', (ws, req) => {
     updateClients(roomId);
   });
 });
+
+const handleMove = (roomId, userId) => {
+  const movingUser = rooms[roomId].find(user => user.id === userId);
+  if (!movingUser) return;
+
+  rooms[roomId].forEach(user => {
+    if (user.id !== userId) {
+      const distance = calculateDistance(movingUser.position, user.position);
+      if (distance <= 0.2 && movingUser.hasMoved && !user.coolTime && !movingUser.coolTime) {
+        if (movingUser.connectedAt < user.connectedAt) {
+          // movingUser가 오퍼를 보내도록 함
+          movingUser.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: user.id, role: 'offer' }));
+          user.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: movingUser.id, role: 'answer' }));
+        } else {
+          user.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: movingUser.id, role: 'offer' }));
+          movingUser.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: user.id, role: 'answer' }));
+        }
+      }
+    }
+  });
+};
+
+const calculateDistance = (pos1, pos2) => {
+  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+};
 
 const updateClients = (roomId) => {
   const allUsers = rooms[roomId].filter(user => user.hasMoved).map(user => ({

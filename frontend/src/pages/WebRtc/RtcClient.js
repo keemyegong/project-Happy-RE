@@ -21,7 +21,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
-  const [hasMoved, setHasMoved] = useState(false);
   const [stream, setStream] = useState(null);
   const [displayStartIndex, setDisplayStartIndex] = useState(0);
   const [userImage, setUserImage] = useState(characterImage || defaultImg);
@@ -96,9 +95,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       id: clientId
     };
     setPosition(newPosition);
-    setHasMoved(true);
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'move', position: newPosition, hasMoved: true }));
+      client.send(JSON.stringify({ type: 'move', position: newPosition }));
     }
   };
 
@@ -144,9 +142,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         client.send(JSON.stringify({
           type: 'connect',
           position,
-          characterImage: userImage,
-          hasMoved,
-          coolTime
+          characterImage: userImage
         }));
       } else if (dataFromServer.type === 'all_users') {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
@@ -159,14 +155,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           image: user.characterImage
         })));
-        checkDistances(filteredUsers);
+        setNearbyUsers(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
         const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 }, connectedAt: dataFromServer.connectedAt || 0 };
         setUsers(prevUsers => [...prevUsers, newUser]);
-        checkDistances([...users, newUser]);
+        setNearbyUsers(prevUsers => [...prevUsers, newUser]);
       } else if (dataFromServer.type === 'move') {
         setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime, connectedAt: dataFromServer.connectedAt || 0 } : user));
-        checkDistances(users);
+        setNearbyUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime, connectedAt: dataFromServer.connectedAt || 0 } : user));
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -186,6 +182,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         })));
       } else if (dataFromServer.type === 'coolTime') {
         setCoolTime(dataFromServer.coolTime);
+      } else if (dataFromServer.type === 'start_webrtc') {
+        if (dataFromServer.role === 'offer') {
+          const peerConnection = createPeerConnection(dataFromServer.targetId);
+          attemptOffer(peerConnection, dataFromServer.targetId);
+        } else if (dataFromServer.role === 'answer') {
+          const peerConnection = createPeerConnection(dataFromServer.targetId);
+          setPeerConnections(prevConnections => ({
+            ...prevConnections,
+            [dataFromServer.targetId]: { peerConnection }
+          }));
+        }
       }
     };
 
@@ -199,54 +206,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } else {
       console.error('getUserMedia is not supported in this browser.');
     }
-  }, [position, userImage, hasMoved, coolTime]);
-
-  useEffect(() => {
-    if (clientId) {
-      checkDistances(users);
-    }
-  }, [clientId, users]);
-
-  const checkDistances = (currentUsers) => {
-    const newNearbyUsers = [];
-
-    // 현재 클라이언트의 connectedAt 값을 찾음
-    const currentUser = currentUsers.find(user => user.id === clientId);
-    const connectedAt = currentUser ? currentUser.connectedAt : Date.now();
-
-    currentUsers.forEach(user => {
-      if (user.id === undefined || clientId === null || !user.hasMoved) return;
-      const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
-      if (distance <= 0.2 && hasMoved) {
-        newNearbyUsers.push(user);
-
-        if (!peerConnections[user.id] && !coolTime) {
-          const peerConnection = createPeerConnection(user.id);
-          setPeerConnections(prevConnections => ({
-            ...prevConnections,
-            [user.id]: { peerConnection }
-          }));
-          if (connectedAt < user.connectedAt) { // 연결 시작 역할 지정
-            attemptOffer(peerConnection, user.id);
-          }
-        }
-      } else if (peerConnections[user.id]) {
-        peerConnections[user.id].peerConnection.close();
-        setPeerConnections(prevConnections => {
-          const updatedConnections = { ...prevConnections };
-          delete updatedConnections[user.id];
-          return updatedConnections;
-        });
-        if (audioEffectRef.current) {
-          audioEffectRef.current.removeStream(user.id);
-        }
-        console.log(`WebRTC connection closed with user ${user.id}`);
-        checkAndSetCoolTime();
-      }
-    });
-
-    setNearbyUsers(newNearbyUsers);
-  };
+  }, [position, userImage]);
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
@@ -303,11 +263,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-    }
-
-    // 즉시 오퍼 시도
-    if (userId && !coolTime) {
-      attemptOffer(peerConnection, userId);
     }
 
     return peerConnection;
