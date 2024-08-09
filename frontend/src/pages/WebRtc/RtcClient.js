@@ -74,7 +74,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       });
     }
     checkAndSetCoolTime();
-  };  
+  };
 
   const checkAndSetCoolTime = () => {
     if (Object.keys(peerConnections).length === 0) {
@@ -406,6 +406,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         console.error('Error adding ICE candidate:', error);
       }
     } else {
+      if (!peerConnections[sender].pendingCandidates) {
+        peerConnections[sender].pendingCandidates = [];
+      }
       peerConnections[sender].pendingCandidates.push(candidate);
       console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
     }
