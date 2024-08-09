@@ -72,20 +72,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         audioEffectRef.current.removeStream(userId);
       });
     }
-    checkAndSetCoolTime();
-  };
-
-  const checkAndSetCoolTime = () => {
-    if (Object.keys(peerConnections).length === 0) {
-      setCoolTime(true);
-      client.send(JSON.stringify({ type: 'coolTime', coolTime: true }));
-      console.log('All connections closed, setting CoolTime to true');
-      setTimeout(() => {
-        setCoolTime(false);
-        client.send(JSON.stringify({ type: 'coolTime', coolTime: false }));
-        console.log('CoolTime reset to false after 10 seconds');
-      }, 10000);
-    }
   };
 
   const movePosition = (dx, dy) => {
@@ -170,7 +156,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       } else if (dataFromServer.type === 'candidate') {
         handleCandidate(dataFromServer.candidate, dataFromServer.sender);
       } else if (dataFromServer.type === 'rtc_disconnect') {
-        handleRtcDisconnect(dataFromServer.id);
+        handleRtcDisconnect(dataFromServer.targetId);
       } else if (dataFromServer.type === 'talking') {
         setTalkingUsers(dataFromServer.talkingUsers);
       } else if (dataFromServer.type === 'update') {
@@ -393,7 +379,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
-      checkAndSetCoolTime();
     }
   };
 

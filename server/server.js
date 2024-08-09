@@ -60,9 +60,7 @@ wss.on('connection', (ws, req) => {
         break;
 
       case 'move':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position: data.position, hasMoved: true } : user);
-        handleMove(roomId, userId);
-        updateClients(roomId);
+        handleMove(roomId, userId, data.position);
         break;
 
       case 'offer':
@@ -73,11 +71,6 @@ wss.on('connection', (ws, req) => {
 
       case 'disconnect':
         removeClient(roomId, userId);
-        updateClients(roomId);
-        break;
-
-      case 'coolTime':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: data.coolTime } : user);
         updateClients(roomId);
         break;
 
@@ -92,25 +85,51 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-const handleMove = (roomId, userId) => {
+const handleMove = (roomId, userId, position) => {
+  rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position, hasMoved: true } : user);
+  updateClients(roomId);
+  manageWebRTCConnections(roomId, userId);
+};
+
+const manageWebRTCConnections = (roomId, userId) => {
   const movingUser = rooms[roomId].find(user => user.id === userId);
   if (!movingUser) return;
+
+  let connectionsUpdated = false;
 
   rooms[roomId].forEach(user => {
     if (user.id !== userId) {
       const distance = calculateDistance(movingUser.position, user.position);
-      if (distance <= 0.2 && movingUser.hasMoved && !user.coolTime && !movingUser.coolTime) {
+      if (distance <= 0.2 && !user.coolTime && !movingUser.coolTime) {
         if (movingUser.connectedAt < user.connectedAt) {
-          // movingUser가 오퍼를 보내도록 함
-          movingUser.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: user.id, role: 'offer' }));
-          user.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: movingUser.id, role: 'answer' }));
+          sendWebRTCSignal(movingUser.ws, user.id, 'offer');
+          sendWebRTCSignal(user.ws, movingUser.id, 'answer');
         } else {
-          user.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: movingUser.id, role: 'offer' }));
-          movingUser.ws.send(JSON.stringify({ type: 'start_webrtc', targetId: user.id, role: 'answer' }));
+          sendWebRTCSignal(user.ws, movingUser.id, 'offer');
+          sendWebRTCSignal(movingUser.ws, user.id, 'answer');
         }
+        connectionsUpdated = true;
+      } else if (distance > 0.2) {
+        disconnectWebRTC(user.ws, movingUser.id);
+        disconnectWebRTC(movingUser.ws, user.id);
       }
     }
   });
+
+  if (!connectionsUpdated) {
+    setCoolTime(roomId, userId, true);
+    setTimeout(() => {
+      setCoolTime(roomId, userId, false);
+    }, 10000);
+  }
+};
+
+const sendWebRTCSignal = (ws, targetId, role) => {
+  ws.send(JSON.stringify({ type: 'start_webrtc', targetId, role }));
+};
+
+const disconnectWebRTC = (ws, targetId) => {
+  ws.send(JSON.stringify({ type: 'rtc_disconnect', targetId }));
 };
 
 const calculateDistance = (pos1, pos2) => {
@@ -118,7 +137,7 @@ const calculateDistance = (pos1, pos2) => {
 };
 
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId].filter(user => user.hasMoved).map(user => ({
+  const allUsers = rooms[roomId].map(user => ({
     id: user.id,
     position: user.position,
     characterImage: user.characterImage,
@@ -141,6 +160,11 @@ const forwardToRecipient = (data, roomId, userId) => {
 
 const removeClient = (roomId, userId) => {
   rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);
+};
+
+const setCoolTime = (roomId, userId, state) => {
+  rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, coolTime: state } : user);
+  updateClients(roomId);
 };
 
 server.listen(5001, () => {
