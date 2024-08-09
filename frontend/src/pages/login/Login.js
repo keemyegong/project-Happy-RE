@@ -23,7 +23,7 @@ function Login() {
     
   }
   const naverLogin = ()=>{
-    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/kakao`
   }
 
   const login = ()=>{
