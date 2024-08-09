@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,14 +52,14 @@ public class SecurityConfig {
     }
 
 
-//    @Bean
-//    @Order(1)
-//    public SecurityFilterChain swaggerChain(HttpSecurity http) throws Exception {
-//        http
-//                .securityMatcher("/v3/**", "/api/swagger-ui/**")
-//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-//        return http.build();
-//    }
+    @Bean
+    @Order(1)
+    public SecurityFilterChain swaggerChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/v3/**", "/api/swagger-ui/**")
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

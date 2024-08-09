@@ -2,9 +2,12 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
+import com.example.happyre.repository.KeywordEmotionRepository;
 import com.example.happyre.repository.KeywordRepository;
+import com.example.happyre.repository.UserWordFrequencyRepository;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ public class KeywordServiceImpl implements KeywordService {
 
     private final KeywordRepository keywordRepository;
     private final DiaryService diaryService;
+    private final UserWordFrequencyRepository userWordFrequencyRepository;
+    private final KeywordEmotionRepository keywordEmotionRepository;
 
     private static KeywordEntity getKeywordEntity(KeywordEntityDTO keywordEntityDTO, DiaryEntity diaryEntity) {
         KeywordEntity newOne = new KeywordEntity();
@@ -38,6 +43,12 @@ public class KeywordServiceImpl implements KeywordService {
     @Override
     public KeywordEntity insert(KeywordEntity keywordEntity) {
         Assert.notNull(keywordEntity.getDiaryEntity(), "keywordEntity.diaryEntity must not be null");
+        userWordFrequencyRepository.upsertFrequency(
+                keywordEntity.getDiaryEntity().getUserEntity().getId(),
+                keywordEntity.getKeyword(),
+                1
+        );
+
         return keywordRepository.save(keywordEntity);
     }
 
@@ -75,7 +86,7 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Override
     public List<KeywordEntity> findByKeywordAndUserEntity(String keyword, UserEntity userEntity) {
-        return keywordRepository.findByKeywordAndUserEntity(keyword, userEntity);
+        return keywordRepository.findByKeywordAndUserEntity(keyword.strip(), userEntity);
     }
 
     @Override
@@ -119,5 +130,10 @@ public class KeywordServiceImpl implements KeywordService {
 
 
         return keywordEntityList;
+    }
+
+    @Override
+    public List<EmotionEntity> findEmotionsByKeywordId(Integer id) {
+        return keywordEmotionRepository.findEmotionsByKeywordId(id);
     }
 }

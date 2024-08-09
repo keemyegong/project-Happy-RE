@@ -3,8 +3,7 @@ package com.example.happyre.dto.keywordemotion;
 import lombok.Data;
 
 @Data
-public class KeywordEmotionEntityDTO {
-    private Integer keywordEmotionId;
+public class KeywordEmotionDTO {
     private Integer keywordId;
-    private Integer emotionId;
+    private String emotion;
 }

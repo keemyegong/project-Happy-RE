@@ -2,6 +2,7 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.exception.diary.DiaryEntryAlreadyExistsException;
 import com.example.happyre.repository.DiaryRepository;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +27,9 @@ public class DiaryServiceImpl implements DiaryService {
     @Override
     public DiaryEntity insert(DiaryEntity diaryEntity) {
         //중복 체크
-        Date currentDate = Date.valueOf(LocalDate.now());
-        List<DiaryEntity> todayDiary = diaryRepository.findByUserEntityAndDate(diaryEntity.getUserEntity(), currentDate);
-        if (todayDiary.size() != 0) throw new DiaryEntryAlreadyExistsException("같은 날짜의 Diary 가 이미 존재함");
-        //Save 한 뒤, SQL 에서 지정해준 Date 값을 사용하기 위해 재 Fetch.
+        if (diaryEntity.getDate() == null) diaryEntity.onCreate();
+        List<DiaryEntity> thatDayDiary = diaryRepository.findByUserEntityAndDate(diaryEntity.getUserEntity(), new Date(diaryEntity.getDate().getTime()));
+        if (thatDayDiary.size() != 0) throw new DiaryEntryAlreadyExistsException("같은 날짜의 Diary 가 이미 존재함");
         return diaryRepository.save(diaryEntity);
     }
 
@@ -39,6 +39,11 @@ public class DiaryServiceImpl implements DiaryService {
         DiaryEntity diaryEntity = new DiaryEntity();
         diaryEntity.setUserEntity(userEntity);
         diaryEntity.setSummary(diaryEntityDTO.getSummary());
+        diaryEntity.setRussellAvgX(diaryEntityDTO.getRussellAvgX());
+        diaryEntity.setRussellAvgY(diaryEntityDTO.getRussellAvgY());
+        if (diaryEntityDTO.getDate() != null) {
+            diaryEntity.setDate(Timestamp.valueOf(diaryEntityDTO.getDate()));
+        }
         return this.insert(diaryEntity);
     }
 
@@ -57,11 +62,12 @@ public class DiaryServiceImpl implements DiaryService {
         return diaryRepository.findByUserEntity(userEntity);
     }
 
-    // 오직 Summary만 바꿀 수 있다.
     @Override
     public DiaryEntity update(DiaryEntity diaryDTOEntity) {
         DiaryEntity matchingEntity = diaryRepository.findById(diaryDTOEntity.getDiaryId()).orElseThrow();
         matchingEntity.setSummary(diaryDTOEntity.getSummary());
+        matchingEntity.setRussellAvgX(diaryDTOEntity.getRussellAvgX());
+        matchingEntity.setRussellAvgY(diaryDTOEntity.getRussellAvgY());
         return diaryRepository.save(matchingEntity);
     }
 
@@ -79,6 +85,8 @@ public class DiaryServiceImpl implements DiaryService {
         Date endDate = new Date(calendar.getTimeInMillis());
         return diaryRepository.findByUserEntityAndDateRange(userEntity, date, endDate);
     }
+
+
 
 
 }

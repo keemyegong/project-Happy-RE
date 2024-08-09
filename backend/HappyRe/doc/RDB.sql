@@ -1,5 +1,6 @@
 use happyre;
 
+DROP Table IF EXISTS `UserWordFrequency`; --Rename?
 DROP TABLE IF EXISTS `user_message_archived`;
 DROP TABLE IF EXISTS `user_message_attached_keyword`;
 DROP TABLE IF EXISTS `user_message`;
@@ -32,6 +33,8 @@ CREATE TABLE `diary` (
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int NOT NULL,
   `summary` text,
+  `russell_avg_x` double DEFAULT NULL,
+  `russell_avg_y` double DEFAULT NULL,
   PRIMARY KEY (`diary_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `diary_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
@@ -76,7 +79,7 @@ CREATE TABLE `emotion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `keyword_emotion` (
-    `keyword_emotion_id` int PRIMARY KEY,
+    `keyword_emotion_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `keyword_id` int NOT NULL,
     `emotion_id` int NOT NULL,
     FOREIGN KEY (`keyword_id`) REFERENCES `keyword`(`keyword_id`) ON DELETE CASCADE
@@ -113,4 +116,12 @@ CREATE TABLE `user_message_archived` (
 	`user_message_id` int NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
 	FOREIGN KEY (`user_message_id`) REFERENCES `user_message`(`user_message_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE UserWordFrequency (
+    user_id INT,
+    word VARCHAR(255),
+    frequency INT DEFAULT 1,
+    PRIMARY KEY (user_id, word),
+    FOREIGN KEY (user_id) REFERENCES User(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

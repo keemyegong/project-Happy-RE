@@ -87,6 +87,17 @@ const Message = () => {
     setShowContainer(showContainer === 'messages' ? 'input' : 'messages');
   };
 
+  const getMessage = ()=>{
+    axios
+      .get(`${universal.defaultUrl}/api/usermsg/4`, {
+        headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
+      })
+      .then((response) => {
+        console.log(response.data);
+      })
+      
+  }
+
   return (
     <main className="Message">
       <div className="message-profile-container">
@@ -126,10 +137,10 @@ const Message = () => {
         </div>
       </div>
       <Button
-              className="toggle-btn btn dark-btn small"
-              content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
-              onClick={toggleContainer}
-            />
+        className="toggle-btn btn dark-btn small"
+        content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
+        onClick={toggleContainer}
+      />
     </main>
   );
 };

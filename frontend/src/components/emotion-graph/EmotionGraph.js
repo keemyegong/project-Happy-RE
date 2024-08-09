@@ -13,14 +13,14 @@ const EmotionGraph = ({ data }) => {
     heatmapInstance.current = h337.create({
       container,
       radius: 25, // 히트맵 점 반지름
-      maxOpacity: 0.6, // 최대 불투명도
+      maxOpacity: 1, // 최대 불투명도
       minOpacity: 0, // 최소 불투명도
       blur: 0.75, // 흐림
       gradient: {
-        0.45: "blue",
-        0.55: "green",
-        0.65: "yellow",
-        0.95: "red",
+        0.2: "#333758",
+        0.4: "#54587E",
+        0.6: "#717598",
+        0.9: "#FFFFFF",
       },
     });
 

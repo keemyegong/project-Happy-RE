@@ -2,10 +2,13 @@ package com.example.happyre.controller;
 
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
+import com.example.happyre.dto.keywordemotion.KeywordEmotionDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.KeywordEmotionEntity;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.DiaryService;
+import com.example.happyre.service.KeywordEmotionService;
 import com.example.happyre.service.KeywordService;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,11 +32,53 @@ public class KeywordController {
     private final KeywordService keywordService;
     private final DiaryService diaryService;
     private final UserService userService;
+    private final KeywordEmotionService keywordEmotionService;
 
 
     @GetMapping()
     public ResponseEntity<?> getMyKeywords(HttpServletRequest request) {
         System.out.println(" Get My Keywords ");
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            if (userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            List<KeywordEntity> keywordEntityList = keywordService.getMyKeywords(userEntity);
+            return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
+
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @GetMapping("/keywordName/{keyword}")
+    public ResponseEntity<?> findByKeywordName(HttpServletRequest request, @PathVariable String keyword) {
+        System.out.println(" findByKeywordName ");
+        System.out.println(" findByKeywordName ");
+        System.out.println(" findByKeywordName ");
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            if (userEntity == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+            List<KeywordEntity> keywordEntityList = keywordService.findByKeywordAndUserEntity(keyword.strip(), userEntity);
+            return new ResponseEntity<>(keywordEntityList, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(e.getStackTrace(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(e.getStackTrace(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @GetMapping("/cloud")
+    public ResponseEntity<?> getMyWordCloud(HttpServletRequest request) {
+        System.out.println(" GetMyWordCloud ");
         try {
             UserEntity userEntity = userService.findByRequest(request);
             if (userEntity == null) {
@@ -96,5 +141,45 @@ public class KeywordController {
 
     }
 
+    //Emotion
+    @Operation(summary = "Emotion 생성")
+    @PostMapping("/emotion")
+    public ResponseEntity<?> createEmotion(HttpServletRequest request, @RequestBody KeywordEmotionDTO keywordEmotionDTO) {
+        try {
+            if (null == keywordEmotionDTO.getKeywordId()) throw new AssertionError();
+            KeywordEntity keywordEntity = keywordService.findById(keywordEmotionDTO.getKeywordId()).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 Keyword 객체 없음 "));
+            if (keywordEntity.getDiaryEntity().getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
+            keywordEmotionService.insertDTO(keywordEmotionDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Emotion 추가중 에러 : " + e.getMessage());
+        }
+    }
 
+    @Operation(summary = "keywordId로 Emotion 조회")
+    @GetMapping("/emotion/keyword/{id}")
+    public ResponseEntity<?> findEmotionByKeyword(HttpServletRequest request, @PathVariable Integer id) {
+        try {
+            KeywordEntity keywordEntity = keywordService.findById(id).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 Keyword 객체 없음 "));
+            if (keywordEntity.getDiaryEntity().getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
+            return ResponseEntity.ok(keywordEntity.getKeywordEmotionEntityList());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Emotion 조회중 에러 : " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/emotion/{id}")
+    public ResponseEntity<?> deleteKeywordEmotion(HttpServletRequest request, @PathVariable Integer id) {
+        try {
+            KeywordEmotionEntity keywordEmotionEntity = keywordEmotionService.findById(id).orElseThrow(() -> new RuntimeException("주어진 id에 해당하는 keywordEmotion 없음"));
+            if (keywordEmotionEntity.getKeywordEntity().getDiaryEntity().getUserEntity().getId() != userService.findByRequest(request).getId())
+                throw new RuntimeException("권한 없음");
+            keywordEmotionService.delete(keywordEmotionEntity);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Emotion 삭제중 에러 : " + e.getMessage());
+        }
+    }
 }

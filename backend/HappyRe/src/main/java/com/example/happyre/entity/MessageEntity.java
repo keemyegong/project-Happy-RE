@@ -48,4 +48,5 @@ public class MessageEntity {
     public enum Speaker {
         ai, user
     }
+
 }

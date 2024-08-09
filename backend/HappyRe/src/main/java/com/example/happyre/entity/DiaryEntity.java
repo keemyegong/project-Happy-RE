@@ -1,10 +1,11 @@
 package com.example.happyre.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Entity
@@ -20,18 +21,24 @@ public class DiaryEntity {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    //TODO: Simplify: 사실상 DB에 아무것도 안 넣겠다는 말이라 좀 봐야함.
-    //    @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Column(nullable = false)
+
     private Timestamp date;
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String summary;
+    @Column(name = "russell_avg_x")
+    private Double russellAvgX;
+    @Column(name = "russell_avg_y")
+    private Double russellAvgY;
+    //Non_column_field
+    @JsonManagedReference//prevent looping json output
+    @OneToMany(mappedBy = "diaryEntity", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.REMOVE})
+    private List<DiaryEmotionEntity> diaryEmotionEntityList;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         if (date == null) {
             date = new Timestamp(System.currentTimeMillis());
         }
     }
-    @Column(columnDefinition = "TEXT", nullable = true)
-    private String summary;
 
 }
