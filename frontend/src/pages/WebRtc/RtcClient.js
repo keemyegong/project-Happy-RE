@@ -151,7 +151,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         const filteredUsers = dataFromServer.users.filter(user => user.id !== clientId).map(user => ({
           ...user,
           position: user.position || { x: 0, y: 0 },
-          coolTime: user.coolTime || false
+          coolTime: user.coolTime || false,
+          connectedAt: user.connectedAt || 0
         }));
         setUsers(filteredUsers.map(user => ({
           ...user,
@@ -159,11 +160,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         })));
         checkDistances(filteredUsers);
       } else if (dataFromServer.type === 'new_user') {
-        const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 } };
+        const newUser = { ...dataFromServer, image: dataFromServer.characterImage, position: dataFromServer.position || { x: 0, y: 0 }, connectedAt: dataFromServer.connectedAt || 0 };
         setUsers(prevUsers => [...prevUsers, newUser]);
         checkDistances([...users, newUser]);
       } else if (dataFromServer.type === 'move') {
-        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime } : user));
+        setUsers(prevUsers => prevUsers.map(user => user.id === dataFromServer.id ? { ...user, position: dataFromServer.position, hasMoved: dataFromServer.hasMoved, coolTime: dataFromServer.coolTime, connectedAt: dataFromServer.connectedAt || 0 } : user));
         checkDistances(users);
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
@@ -179,7 +180,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setUsers(dataFromServer.clients.map(user => ({
           ...user,
           position: user.position || { x: 0, y: 0 },
-          coolTime: user.coolTime || false
+          coolTime: user.coolTime || false,
+          connectedAt: user.connectedAt || 0
         })));
       } else if (dataFromServer.type === 'coolTime') {
         setCoolTime(dataFromServer.coolTime);
@@ -206,20 +208,24 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-  
+
+    // 현재 클라이언트의 connectedAt 값을 찾음
+    const currentUser = currentUsers.find(user => user.id === clientId);
+    const connectedAt = currentUser ? currentUser.connectedAt : Date.now();
+
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-  
+
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           setPeerConnections(prevConnections => ({
             ...prevConnections,
             [user.id]: { peerConnection }
           }));
-          if (clientId < user.id) {
+          if (connectedAt < user.connectedAt) { // 연결 시작 역할 지정
             attemptOffer(peerConnection, user.id);
           }
         }
@@ -237,7 +243,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-  
+
     setNearbyUsers(newNearbyUsers);
   };
 
@@ -248,9 +254,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       ]
     });
     console.log('WebRTC 연결 완료');
-  
+
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -261,7 +267,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -271,7 +277,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -291,11 +297,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
   };
 
@@ -323,11 +329,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for offer');
       return;
     }
-  
+
     console.log(`Handling offer from sender ${sender}`);
     
     let peerConnection = peerConnections[sender]?.peerConnection;
-  
+
     if (!peerConnection || peerConnection.signalingState === 'closed') {
       peerConnection = createPeerConnection(sender);
       setPeerConnections(prevConnections => ({
@@ -335,26 +341,26 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         [sender]: { peerConnection }
       }));
     }
-  
+
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-  
+
       client.send(JSON.stringify({
         type: 'answer',
         answer: answer.sdp,
         sender: clientId,
         recipient: sender
       }));
-  
+
       if (peerConnections[sender]?.pendingCandidates.length > 0) {
         for (const candidate of peerConnections[sender].pendingCandidates) {
           await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         }
         peerConnections[sender].pendingCandidates = [];
       }
-  
+
     } catch (error) {
       console.error('Error handling offer:', error);
     }
@@ -365,16 +371,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for answer');
       return;
     }
-  
+
     console.log(`Handling answer from sender ${sender}`);
     
     const peerConnection = peerConnections[sender]?.peerConnection;
-  
+
     if (!peerConnection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
-  
+
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
     } catch (error) {
@@ -387,14 +393,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       console.error('No sender provided for candidate');
       return;
     }
-  
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-  
+
     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -429,13 +435,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
     }
-  
+
     const peerConnection = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' }
       ]
     });
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -446,7 +452,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -455,7 +461,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -470,16 +476,16 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     setPeerConnections(prevConnections => ({
       ...prevConnections,
       [userId]: { peerConnection, pendingCandidates: [] }
     }));
-  
+
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
   };
 
