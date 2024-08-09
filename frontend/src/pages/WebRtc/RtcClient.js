@@ -68,9 +68,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       peerConnection.close();
     });
     setPeerConnections({});
-    Object.keys(peerConnections).forEach(userId => {
-      audioEffectRef.current?.removeStream(userId);
-    });
+    if (audioEffectRef.current) {
+      Object.keys(peerConnections).forEach(userId => {
+        audioEffectRef.current.removeStream(userId);
+      });
+    }
     checkAndSetCoolTime();
   };
 
@@ -206,13 +208,13 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-
+  
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-
+  
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           setPeerConnections(prevConnections => ({
@@ -225,8 +227,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       } else if (peerConnections[user.id]) {
         peerConnections[user.id].peerConnection.close();
-        const { [user.id]: removedConnection, ...restConnections } = peerConnections;
-        setPeerConnections(restConnections);
+        setPeerConnections(prevConnections => {
+          const updatedConnections = { ...prevConnections };
+          delete updatedConnections[user.id];
+          return updatedConnections;
+        });
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(user.id);
         }
@@ -234,7 +239,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-
+  
     setNearbyUsers(newNearbyUsers);
   };
 
@@ -267,7 +272,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.addStream(userId, event.streams[0]);
         }
       }
-    };    
+    };
   
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
@@ -280,8 +285,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
         // ICE 후보 초기화
         setPeerConnections(prevConnections => {
-          const { [userId]: removedConnection, ...restConnections } = prevConnections;
-          return restConnections;
+          const updatedConnections = { ...prevConnections };
+          delete updatedConnections[userId].pendingCandidates;
+          return updatedConnections;
         });
         // AudioEffect에서도 제거
         if (audioEffectRef.current) {
