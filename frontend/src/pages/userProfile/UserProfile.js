@@ -206,22 +206,25 @@ const UserProfile = () => {
                   내가 자주 사용하는 어휘들을 통해서 나의 감정을 돌아볼 수 있어요
                 </span>
               </div>
-
-                <div className='wordcloud-container'>
-                  <WordCloud
-                    data={data}
-                    width={300}
-                    height={100}
-                    font="Times"
-                    fontWeight="bold"
-                    fontSize={(word) => Math.log2(word.value) * 2.2}
-                    spiral="rectangular"
-                    padding={5}
-                    fill={(d, i) => {
-                      const rand = Math.floor(Math.random() * 10);
-                      return `rgba(215,218,249,${1 - rand * 0.07})`;
-                    }}
-                  />
+              <div className='wordcloud-container'>
+                  {data.length > 0 ? (
+                    <WordCloud
+                      data={data}
+                      width={300}
+                      height={100}
+                      font="Times"
+                      fontWeight="bold"
+                      fontSize={(word) => Math.log2(word.value) * 2.2}
+                      spiral="rectangular"
+                      padding={5}
+                      fill={(d, i) => {
+                        const rand = Math.floor(Math.random() * 10);
+                        return `rgba(215,218,249,${1 - rand * 0.07})`;
+                      }}
+                    />
+                  ) : (
+                    <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
+                  )}
                 </div>
                 <div className='my-5 calender-container'>
                   <Calendar />
