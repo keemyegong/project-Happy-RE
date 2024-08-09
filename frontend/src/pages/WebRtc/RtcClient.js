@@ -326,6 +326,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
+    console.log(`Handling offer from sender ${sender}`);
+    
     let peerConnection = peerConnections[sender]?.peerConnection;
   
     if (!peerConnection) {
@@ -363,6 +365,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
+    console.log(`Handling answer from sender ${sender}`);
+    
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
@@ -392,7 +396,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } catch (error) {
       console.error('Error handling answer:', error);
     }
-  };  
+  };
 
   const handleCandidate = async (candidate, sender) => {
     if (!sender) {
@@ -400,6 +404,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       return;
     }
   
+    console.log(`Handling candidate from sender ${sender}`);
+    
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
