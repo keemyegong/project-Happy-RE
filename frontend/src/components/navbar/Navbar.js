@@ -47,7 +47,7 @@ function Nav() {
             <ul className="navbar-nav ms-auto">
               <>
                 <li className="nav-item">
-                  <Link className='navbar-menu navbar-menu-font' to='/mindtalk'>TALK</Link>
+                  <Link className='navbar-menu navbar-menu-font' to='/webrtc'>TALK</Link>
                 </li>
                 <li className="nav-item">
                   <Link className='navbar-menu navbar-menu-font' to='/diary'>DIARY</Link>
