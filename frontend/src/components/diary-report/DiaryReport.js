@@ -90,7 +90,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
             GRAPH
           </div>
           <div className='diary-report-graph-body'>
-            <Test data={emotionData} />
+            <EmotionGraph data={emotionData} />
             <div className='diary-report-graph-label'>
               <p className='diary-report-header'>
                 요약

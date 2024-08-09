@@ -123,7 +123,42 @@ const UserProfile = () => {
             console.error('Error setting up request:', error.message);
         }
       })
-  },[])
+
+
+    // 이모션 데이터
+    axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`
+      }
+    }).then((response) => {
+      console.log('요청 데이터', response.data)
+      const { messageEntities } = response.data;
+      const processedData = messageEntities
+        .filter(message => message.russellX !== null && message.russellY !== null)
+        .map(message => ({
+          x: message.russellX,
+          y: message.russellY,
+          value: 0.8
+        })
+      );
+      setEmotionData(processedData);
+      console.log("이모션 데이터", emotionData)
+    }).catch(error => {
+      // 에러가 발생했을 때 실행할 코드
+      if (error.response) {
+        // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
+        console.error('Error status:', error.response.status);
+        console.error('Error data:', error.response.data);
+      } else if (error.request) {
+        // 요청이 만들어졌으나 서버로부터 응답이 없을 때
+        console.error('No response received:', error.request);
+      } else {
+        // 요청을 설정하는 중에 에러가 발생했을 때
+        console.error('Error setting up request:', error.message);
+      }
+    });
+  }, []);
+
 
   const showModal = () => {
     setShow(show === 'show-modal' ? 'unshow-modal' : 'show-modal');
@@ -143,6 +178,7 @@ const UserProfile = () => {
 
   const schemeCategory10ScaleOrdinal = scaleOrdinal(schemeCategory10);
 
+  
   return (
     <>
       <div className='container-fluid user-profile-container'>
