@@ -36,11 +36,6 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
-const getConnectedUsers = (roomId) => {
-  const room = rooms[roomId] || [];
-  return room.filter(user => user.connectedUsers && user.connectedUsers.length > 0);
-};
-
 wss.on('connection', (ws, req) => {
   if (req.url !== '/webrtc') {
     ws.close(1008, 'Unauthorized path');
@@ -107,7 +102,7 @@ const manageWebRTCConnections = (roomId, userId) => {
       const distance = calculateDistance(movingUser.position, user.position);
       const isConnected = movingUser.connectedUsers.includes(user.id);
 
-      if (distance <= 0.2 && !user.coolTime && !movingUser.coolTime) {
+      if (distance <= 0.2 && movingUser.hasMoved && user.hasMoved && !user.coolTime && !movingUser.coolTime) {
         if (!isConnected) {
           if (movingUser.connectedAt < user.connectedAt) {
             sendWebRTCSignal(movingUser.ws, user.id, 'offer');
@@ -150,7 +145,7 @@ const calculateDistance = (pos1, pos2) => {
 };
 
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId].filter(user => user.hasMoved).map(user => ({
+  const allUsers = rooms[roomId].map(user => ({
     id: user.id,
     position: user.position,
     characterImage: user.characterImage,
