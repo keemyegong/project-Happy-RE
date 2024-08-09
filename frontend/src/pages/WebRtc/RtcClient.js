@@ -32,7 +32,8 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   useEffect(() => {
     positionRef.current = position;
-  }, [position]);
+    console.log('NearbyUsers', nearbyUsers)
+  }, [position, nearbyUsers]);
 
 
   useEffect(() => {
@@ -143,7 +144,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // nearbyUsers는 connectedUsers에 있는 유저들만 포함하도록 수정
         const currentUser = filteredUsers.find(user => user.id === clientId);
         if (currentUser) {
-          setNearbyUsers(currentUser.connectedUsers.map(connectedUser => ({
+          setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
             id: connectedUser.id,
             image: connectedUser.characterImage,
           })));
@@ -171,6 +172,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
+    
     
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
