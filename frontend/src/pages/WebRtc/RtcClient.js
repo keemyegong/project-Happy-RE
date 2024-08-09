@@ -138,6 +138,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
+      console.log("Received message from server:", dataFromServer); // 추가된 로그
       if (dataFromServer.type === 'assign_id') {
         setClientId(dataFromServer.id);
         client.send(JSON.stringify({
@@ -208,17 +209,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   const checkDistances = (currentUsers) => {
     const newNearbyUsers = [];
-  
+
     // 현재 클라이언트의 connectedAt 값을 찾음
     const currentUser = currentUsers.find(user => user.id === clientId);
     const connectedAt = currentUser ? currentUser.connectedAt : Date.now();
-  
+
     currentUsers.forEach(user => {
       if (user.id === undefined || clientId === null || !user.hasMoved) return;
       const distance = Math.sqrt(Math.pow(user.position.x - position.x, 2) + Math.pow(user.position.y - position.y, 2));
       if (distance <= 0.2 && hasMoved) {
         newNearbyUsers.push(user);
-  
+
         if (!peerConnections[user.id] && !coolTime) {
           const peerConnection = createPeerConnection(user.id);
           setPeerConnections(prevConnections => ({
@@ -243,7 +244,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         checkAndSetCoolTime();
       }
     });
-  
+
     setNearbyUsers(newNearbyUsers);
   };
 
@@ -254,9 +255,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       ]
     });
     console.log('WebRTC 연결 객체 생성 완료');
-  
+
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(JSON.stringify({
@@ -267,7 +268,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }));
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -277,7 +278,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -299,11 +300,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
-  
+
     if (stream) {
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
   };
 
@@ -320,6 +321,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               recipient: recipientId,
               sender: clientId
             }));
+            console.log(`Offer sent to ${recipientId}`);
           })
           .catch(error => console.error('Error setting local description:', error));
       })
@@ -333,7 +335,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     console.log(`Handling offer from sender ${sender}`);
-    
+
     let peerConnection = peerConnections[sender]?.peerConnection;
 
     if (!peerConnection || peerConnection.signalingState === 'closed') {
@@ -355,6 +357,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         sender: clientId,
         recipient: sender
       }));
+      console.log(`Answer sent to ${sender}`);
 
       if (peerConnections[sender]?.pendingCandidates.length > 0) {
         for (const candidate of peerConnections[sender].pendingCandidates) {
@@ -375,7 +378,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
 
     console.log(`Handling answer from sender ${sender}`);
-    
+
     const peerConnection = peerConnections[sender]?.peerConnection;
 
     if (!peerConnection) {
@@ -406,6 +409,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        console.log(`ICE candidate added for ${sender}`);
       } catch (error) {
         console.error('Error adding ICE candidate:', error);
       }
@@ -499,53 +503,51 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-
   return (
-<div className="chat-room-container" ref={containerRef}>
-  <div className="chat-graph-audio-container">
-    <div className="chat-room-guide-container">
-      <p className="chat-room-guide-title">마인드 톡</p>
-      <p className="chat-room-guide-text">
-        나와 비슷한 감정을 느끼는 사람들과 함께 마음속 이야기를 나눠보세요
-        <br/>
-        키보드 방향키를 통해 나의 위치를 이동하고,
-        <br/>
-        반경 안에 들어오는 친구와 소통할 수 있어요
-        <br/>
-        서로의 이야기에 귀 기울이며 오늘의 감정을 공유해 볼까요?</p>
-    </div>
-    <div className='graph-chat-container'>
-      <div className='coordinates-graph-container'>
-        <CoordinatesGraph 
-          position={position} 
-          users={users} 
-          movePosition={movePosition} 
-          localAudioRef={localAudioRef} 
-          userImage={userImage} 
-          coolTime={coolTime} 
-        />
+    <div className="chat-room-container" ref={containerRef}>
+      <div className="chat-graph-audio-container">
+        <div className="chat-room-guide-container">
+          <p className="chat-room-guide-title">마인드 톡</p>
+          <p className="chat-room-guide-text">
+            나와 비슷한 감정을 느끼는 사람들과 함께 마음속 이야기를 나눠보세요
+            <br/>
+            키보드 방향키를 통해 나의 위치를 이동하고,
+            <br/>
+            반경 안에 들어오는 친구와 소통할 수 있어요
+            <br/>
+            서로의 이야기에 귀 기울이며 오늘의 감정을 공유해 볼까요?</p>
+        </div>
+        <div className='graph-chat-container'>
+          <div className='coordinates-graph-container'>
+            <CoordinatesGraph 
+              position={position} 
+              users={users} 
+              movePosition={movePosition} 
+              localAudioRef={localAudioRef} 
+              userImage={userImage} 
+              coolTime={coolTime} 
+            />
+          </div>
+          <div className='audio-effect-container'>
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12%" height="25%" fill="currentColor" className="audio-effect-icon bi bi-volume-up-fill" viewBox="0 0 16 16">
+                <path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.48 7.48 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303z"/>
+                <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.48 5.48 0 0 1 11.025 8a5.48 5.48 0 0 1-1.61 3.89z"/>
+                <path d="M8.707 11.182A4.5 4.5 0 0 0 10.025 8a4.5 4.5 0 0 0-1.318-3.182L8 5.525A3.5 3.5 0 0 1 9.025 8 3.5 3.5 0 0 1 8 10.475zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06"/>
+              </svg>
+            </span>
+            <AudioEffect ref={audioEffectRef} />
+          </div>
+          <CharacterList 
+            nearbyUsers={nearbyUsers} 
+            displayStartIndex={displayStartIndex} 
+            handleScroll={handleScroll} 
+            talkingUsers={talkingUsers} 
+            coolTime={coolTime}
+          />
+        </div>
       </div>
-      <div className='audio-effect-container'>
-        <span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="12%" height="25%" fill="currentColor" className="audio-effect-icon bi bi-volume-up-fill" viewBox="0 0 16 16">
-            <path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.48 7.48 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303z"/>
-            <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.48 5.48 0 0 1 11.025 8a5.48 5.48 0 0 1-1.61 3.89z"/>
-            <path d="M8.707 11.182A4.5 4.5 0 0 0 10.025 8a4.5 4.5 0 0 0-1.318-3.182L8 5.525A3.5 3.5 0 0 1 9.025 8 3.5 3.5 0 0 1 8 10.475zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06"/>
-          </svg>
-        </span>
-        <AudioEffect ref={audioEffectRef} />
-      </div>
-      <CharacterList 
-        nearbyUsers={nearbyUsers} 
-        displayStartIndex={displayStartIndex} 
-        handleScroll={handleScroll} 
-        talkingUsers={talkingUsers} 
-        coolTime={coolTime}
-      />
     </div>
-  </div>
-</div>
-
   );
 }
 
