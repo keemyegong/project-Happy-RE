@@ -23,7 +23,7 @@ function Login() {
     
   }
   const naverLogin = ()=>{
-    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
+    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/kakao`
   }
 
   const login = ()=>{
@@ -61,10 +61,12 @@ function Login() {
           <div className='login-title'>
             <img width='200px' src={loginTitle}/>
           </div>
+          <a href="https://www.flaticon.com/free-icons/google" title="google icons">Google icons created by Freepik - Flaticon</a>
+          <a href="https://www.flaticon.com/free-icons/kakao-talk" title="kakao talk icons">Kakao talk icons created by Fathema Khanom - Flaticon</a>
           <button className='btn google-login-btn ms-0'
           onClick={googleLogin}>Login With Google</button>
-                    <button className='btn google-login-btn ms-0'
-          onClick={naverLogin}>Login With Naver</button>
+          <button className='btn google-login-btn ms-0'
+          onClick={naverLogin}>Login With Kakao</button>
         </div>
         <hr className='border-light border-1' />
       
