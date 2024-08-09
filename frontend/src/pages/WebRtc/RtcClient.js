@@ -263,7 +263,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.addStream(userId, event.streams[0]);
         }
       }
-    };
+    };    
   
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === 'connected') {
@@ -282,7 +282,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
         }
-        checkAndSetCoolTime();
+        //checkAndSetCoolTime();
       }
     };
   

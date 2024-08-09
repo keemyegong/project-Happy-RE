@@ -7,7 +7,8 @@ const AudioEffect = forwardRef((props, ref) => {
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const bufferLengthRef = useRef(null);
-  const streams = useRef({});
+  const combinedStreamRef = useRef(new MediaStream());
+  const sourceRef = useRef(null);
 
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -55,19 +56,24 @@ const AudioEffect = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     addStream: (userId, stream) => {
-      if (!streams.current[userId]) {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-        streams.current[userId] = source;
+      stream.getTracks().forEach(track => combinedStreamRef.current.addTrack(track));
+
+      if (!sourceRef.current) {
+        sourceRef.current = audioContextRef.current.createMediaStreamSource(combinedStreamRef.current);
+        sourceRef.current.connect(analyserRef.current);
       }
     },
     removeStream: (userId) => {
-      if (streams.current[userId]) {
-        streams.current[userId].disconnect(analyserRef.current);
-        delete streams.current[userId];
+      const tracks = combinedStreamRef.current.getTracks();
+      tracks.forEach(track => track.stop());
+      combinedStreamRef.current = new MediaStream();
+
+      if (sourceRef.current) {
+        sourceRef.current.disconnect(analyserRef.current);
+        sourceRef.current = null;
       }
+
       if (Object.keys(streams.current).length === 0) {
-        // Reset the analyser if no streams are left
         analyserRef.current.disconnect();
         if (audioContextRef.current.state !== 'closed') {
           audioContextRef.current.close().then(() => {
