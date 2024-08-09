@@ -34,10 +34,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     positionRef.current = position;
   }, [position]);
 
-  useEffect(() => {
-    console.log('Nearby Users:', nearbyUsers);
-  }, [nearbyUsers]);
-
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -147,14 +143,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // nearbyUsers는 connectedUsers에 있는 유저들만 포함하도록 수정
         const currentUser = filteredUsers.find(user => user.id === clientId);
         if (currentUser) {
-          setNearbyUsers(currentUser.connectedUsers.map(connectedUserId => {
-            const connectedUser = filteredUsers.find(user => user.id === connectedUserId);
-            return {
-              id: connectedUser.id,
-              image: connectedUser.characterImage,
-              position: connectedUser.position
-            };
-          }));
+          setNearbyUsers(currentUser.connectedUsers.map(connectedUser => ({
+            id: connectedUser.id,
+            image: connectedUser.characterImage,
+          })));
         }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
@@ -179,6 +171,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
+    
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ audio: true })
