@@ -16,6 +16,7 @@ const MessageCard = ({ messageId, profileImageUrl, userName, content, keyword })
     axios
       .post(
         `${universal.defaultUrl}/api/usermsg/archive/${messageId.toString()}`,
+        {},
         { headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` } }
       )
       .then((Response)=>{
