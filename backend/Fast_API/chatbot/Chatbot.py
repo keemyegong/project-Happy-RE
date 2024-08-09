@@ -71,7 +71,7 @@ class Chatbot:
                 you must talk in KOREAN.\
                 here's some infos definning your personality. {pdescribe}\
                 and you are {consult_style}\
-                you should talk like these examples, {examples}\
+                you should speak in a tone similar to these examples, {examples}\
                 then, you take persona of {pname}\
                 response should be limited on five sentences\
                 you will be penalized or rewarded with $100 tip according to your performance",
