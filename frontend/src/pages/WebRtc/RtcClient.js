@@ -139,10 +139,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           image: user.characterImage
         })));
         // nearbyUsers는 connectedUsers에 있는 유저들만 포함하도록 수정
-        const currentUser = filteredUsers.find(user => user.id === clientId);
-        if (currentUser) {
-          setNearbyUsers(filteredUsers.filter(user => currentUser.connectedUsers.includes(user.id)));
-        }
+      const currentUser = filteredUsers.find(user => user.id === clientId);
+      if (currentUser) {
+        setNearbyUsers(currentUser.connectedUsers.map(connectedUser => ({
+          id: connectedUser.id,
+          image: connectedUser.characterImage,
+          position: filteredUsers.find(user => user.id === connectedUser.id)?.position
+        })));
+      }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {

@@ -156,7 +156,13 @@ const updateClients = (roomId) => {
     hasMoved: user.hasMoved,
     connectedAt: user.connectedAt,
     coolTime: user.coolTime,
-    connectedUsers: user.connectedUsers // 연결된 유저 정보 추가
+    connectedUsers: user.connectedUsers.map(connectedId => {
+      const connectedUser = rooms[roomId].find(u => u.id === connectedId);
+      return {
+        id: connectedUser.id,
+        characterImage: connectedUser.characterImage
+      };
+    }) // 연결된 유저 정보 추가
   }));
 
   rooms[roomId].forEach(user => {
