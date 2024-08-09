@@ -39,7 +39,7 @@ const Diary = () => {
         }
       }).then((response)=>{
         console.log(response.data.keywordEntities);
-        if (response.data.keywordEntities == []){
+        if (response.data.keywordEntities == undefined){
           setShowButton(true);
         }
           axios.get(
