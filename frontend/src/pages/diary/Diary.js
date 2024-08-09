@@ -38,6 +38,7 @@ const Diary = () => {
           withCredentials: true,
         }
       }).then((response)=>{
+        console.log(response.data.keywordEntities);
         if (response.data.keywordEntities == []){
           setShowButton(true);
         }
