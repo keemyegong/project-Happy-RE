@@ -128,12 +128,12 @@ const manageWebRTCConnections = (roomId, userId) => {
     }
   });
 
-  if (movingUser.connectedUsers.length === 0) {
-    setCoolTime(roomId, userId, true);
-    setTimeout(() => {
-      setCoolTime(roomId, userId, false);
-    }, 10000);
-  }
+  // if (movingUser.connectedUsers.length === 0) {
+  //   setCoolTime(roomId, userId, true);
+  //   setTimeout(() => {
+  //     setCoolTime(roomId, userId, false);
+  //   }, 10000);
+  // }
 };
 
 const sendWebRTCSignal = (ws, targetId, role) => {
