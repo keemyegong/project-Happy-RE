@@ -137,10 +137,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           position: user.position || { x: 0, y: 0 },
           connectedAt: user.connectedAt || 0
         }));
-        setUsers(filteredUsers.map(user => ({
-          ...user,
-          image: user.characterImage
-        })));
+        
+        // 자기 자신 정보를 제외하고 users를 설정
+        setUsers(filteredUsers
+          .filter(user => user.id !== clientId)
+          .map(user => ({
+            ...user,
+            image: user.characterImage
+          }))
+        );
     
         // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
         const currentUser = filteredUsers.find(user => user.id === clientId);
