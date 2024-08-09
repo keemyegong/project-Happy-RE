@@ -99,15 +99,15 @@ wss.on('connection', (ws, req) => {
         break;
 
       case 'offer':
-      case 'answer':
-      case 'candidate':
-        const recipient = rooms[roomId].find(user => user.id === data.recipient);
-        if (recipient) {
-          recipient.ws.send(JSON.stringify(data));
-        } else {
-          console.error(`User ${data.recipient} does not exist`);
-        }
-        break;
+        case 'answer':
+        case 'candidate':
+          const recipient = rooms[roomId].find(user => user.id === data.recipient);
+          if (recipient) {
+            recipient.ws.send(JSON.stringify({ ...data, sender: userId }));
+          } else {
+            console.error(`User ${data.recipient} does not exist`);
+          }
+          break;
 
       case 'disconnect':
         rooms[roomId] = rooms[roomId].filter(user => user.id !== userId);

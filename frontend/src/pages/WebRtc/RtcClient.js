@@ -380,7 +380,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     try {
       await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answer }));
       // Add pending ICE candidates if any
-      const pendingCandidates = peerConnections[sender].pendingCandidates || [];
+      const pendingCandidates = peerConnections[sender]?.pendingCandidates || [];
       for (const candidate of pendingCandidates) {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       }
