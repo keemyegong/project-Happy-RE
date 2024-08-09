@@ -409,25 +409,22 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
     const peerConnection = connection.peerConnection;
   
-    if (peerConnection.remoteDescription) {
-      try {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (error) {
-        console.error('Error adding ICE candidate:', error);
-      }
-    } else {
-      setPeerConnections(prevConnections => {
-        const newPendingCandidates = (prevConnections[sender]?.pendingCandidates || []).concat(candidate);
-        return {
-          ...prevConnections,
-          [sender]: {
-            ...prevConnections[sender],
-            pendingCandidates: newPendingCandidates
+    const addCandidateWithRetry = async (candidate, retries = 5) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          if (peerConnection.remoteDescription) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            return;
           }
-        };
-      });
-      console.error('Remote description not set yet. ICE candidate cannot be added. Adding to pending candidates.');
-    }
+        } catch (error) {
+          console.error('Error adding ICE candidate:', error);
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));  // 1 second delay between retries
+      }
+      console.error('Failed to add ICE candidate after retries');
+    };
+  
+    addCandidateWithRetry(candidate);
   };
 
   const handleRtcDisconnect = (userId) => {
