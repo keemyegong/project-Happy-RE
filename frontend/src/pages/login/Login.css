@@ -156,3 +156,25 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
     color: #8f90b9;
     font-size: 12px;
 }
+
+.google-login-logo {
+
+    border-radius: 50%; /* 이미지나 요소를 완전히 둥글게 만듭니다 */
+    width: 32px; /* 너비 */
+    height: 32px; /* 높이 */
+    overflow: hidden; /* 자식 요소가 경계를 벗어나지 않도록 설정 */
+    margin-left: 3px;
+    margin-right: 3px;
+    align-items: center; /* 세로 가운데 정렬 */
+    justify-content: center; /* 가로 가운데 정렬 */
+}
+.login-logo-container{
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 (필요할 경우) */
+   
+
+}
+.margin-top{
+    margin-top: 3px;
+}
