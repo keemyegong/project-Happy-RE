@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './KeywordCard.css';
 import AddEmotionTag from './AddEmotionTag';
 
-const KeywordCard = ({ props, plusButton }) => {
+const KeywordCard = ({ props, plusButton, emotiontags }) => {
   const { keyword,summary, emotions, } = props;
   const [emotionTagsRender, setEmotionTagsRender] = useState([]);
 
@@ -11,7 +11,6 @@ const KeywordCard = ({ props, plusButton }) => {
       <div className='keyword-title'>{keyword}</div>
       <div className='keyword-date'></div>
       <div className='keyword-content'>{summary}</div>
-      {emotions!= null || plusButton != false && <p className='keyword-line'></p>}
       <span className='emotion-tags'>
           {emotions!=null && emotions.map((tag, index) => (
             <span key={index} className='emotion-tag'># {tag.emotion}</span>
@@ -20,6 +19,11 @@ const KeywordCard = ({ props, plusButton }) => {
           {emotionTagsRender !== null && plusButton == true && 
             emotionTagsRender.map((tag, index) => (
               <span key={index} className='emotion-tag'># {tag}</span>
+            ))
+          }
+          {emotiontags != null && 
+            emotiontags.map((tag, index) => (
+              <span key={index} className='emotion-tag'># {tag.emotionEntity.emotion}</span>
             ))
           }
           {plusButton && (

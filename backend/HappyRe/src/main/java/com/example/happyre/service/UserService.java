@@ -36,6 +36,9 @@ public class UserService {
 
     //TODO: 유저를 찾을 수 없는 경우의 예외 처리
     public UserEntity findByRequest(HttpServletRequest request) {
+
+        System.out.println(request.toString());
+        System.out.println(request);
         String token = request.getHeader("Authorization").substring(7);
         UserEntity user = userRepository.findByEmail(jwtUtil.getEmail(token));
         return user;
