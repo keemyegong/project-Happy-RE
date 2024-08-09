@@ -123,6 +123,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       console.log("Received message from server:", dataFromServer);
+    
       if (dataFromServer.type === 'assign_id') {
         setClientId(dataFromServer.id);
         client.send(JSON.stringify({
@@ -141,14 +142,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           image: user.characterImage
         })));
     
-        // nearbyUsers는 connectedUsers에 있는 유저들만 포함하도록 수정
-        const currentUser = filteredUsers.find(user => user.id === clientId);
-        if (currentUser) {
-          setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
-            id: connectedUser.id,
-            image: connectedUser.characterImage,
-          })));
-        }
+        // currentUser는 별도로 관리
+        const currentUser = {
+          id: clientId,
+          position,
+          characterImage: userImage,
+          connectedUsers: dataFromServer.clients.find(user => user.id === clientId)?.connectedUsers || []
+        };
+    
+        // nearbyUsers는 currentUser의 connectedUsers에 있는 유저들만 포함하도록 수정
+        setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
+          id: connectedUser.id,
+          image: connectedUser.characterImage,
+        })));
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -172,6 +178,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
+    
     
     
 
