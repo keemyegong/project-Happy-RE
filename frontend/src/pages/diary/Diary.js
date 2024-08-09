@@ -38,7 +38,7 @@ const Diary = () => {
           withCredentials: true,
         }
       }).then((response)=>{
-        if (response.data.keywordEntities == null){
+        if (response.data.keywordEntities == []){
           setShowButton(true);
         }
           axios.get(
@@ -93,7 +93,7 @@ const Diary = () => {
       }).then((response)=>{
 
         if (response.data[0] != undefined){
-          console.log(response.data);
+          // console.log(response.data);
           setDaySummary(response.data[0].summary);
           const example = response.data[0].diaryId;
 
@@ -106,7 +106,7 @@ const Diary = () => {
               }
             }).then((response)=>{
               
-              console.log(response.data.keywordEntities)
+              console.log(response.data.messageEntities);
               setKeyword(response.data.keywordEntities);
               setChatlog(response.data.messageEntities);
 
