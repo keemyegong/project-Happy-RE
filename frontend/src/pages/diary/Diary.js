@@ -202,6 +202,7 @@ const Diary = () => {
   return (
     <div className='Diary'>
       <div className='diary-container'>
+
         <div className='diary-week-control-container'>
           <svg
             onClick={handlePreviousWeek}
@@ -226,6 +227,9 @@ const Diary = () => {
           >
             <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
           </svg>
+        </div>
+        <div className='diary-guide'>
+          날짜를 클릭하면 그날의 다이어리 레포트를 확인할 수 있어요
         </div>
         <div className='diary-week-info-container'>
           <div className='diary-week-line'></div>

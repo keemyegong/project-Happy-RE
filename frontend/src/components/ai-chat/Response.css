@@ -154,13 +154,12 @@
 }
 
 .user-voice-play-btn{
-  border: 1px solid white !important;
-  color: white;
+  cursor: pointer;
 }
 
-.user-voice-play-btn:hover{
+/* .user-voice-play-btn:hover{
   background-color: #3b3c40;
-}
+} */
 
 @keyframes fadein {
   from {
