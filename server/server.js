@@ -145,16 +145,15 @@ const calculateDistance = (pos1, pos2) => {
 };
 
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId]
-    .filter(user => user.hasMoved) // hasMoved가 true인 유저만 필터링
-    .map(user => ({
-      id: user.id,
-      position: user.position,
-      characterImage: user.characterImage,
-      hasMoved: user.hasMoved,
-      connectedAt: user.connectedAt,
-      coolTime: user.coolTime
-    }));
+  const allUsers = rooms[roomId].map(user => ({
+    id: user.id,
+    position: user.position,
+    characterImage: user.characterImage,
+    hasMoved: user.hasMoved,
+    connectedAt: user.connectedAt,
+    coolTime: user.coolTime,
+    connectedUsers: user.connectedUsers // 연결된 유저 정보 추가
+  }));
 
   rooms[roomId].forEach(user => {
     user.ws.send(JSON.stringify({ type: 'update', clients: allUsers.filter(u => u.id !== user.id) }));

@@ -138,7 +138,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           ...user,
           image: user.characterImage
         })));
-        setNearbyUsers(filteredUsers);
+        // nearbyUsers는 connectedUsers에 있는 유저들만 포함하도록 수정
+        const currentUser = filteredUsers.find(user => user.id === clientId);
+        if (currentUser) {
+          setNearbyUsers(filteredUsers.filter(user => currentUser.connectedUsers.includes(user.id)));
+        }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
