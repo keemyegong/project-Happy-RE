@@ -371,7 +371,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     }
   };
 
-
   return (
     <div className="chat-room-container" ref={containerRef}>
       <div className="chat-graph-audio-container">
