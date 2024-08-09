@@ -74,7 +74,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       });
     }
     checkAndSetCoolTime();
-  };
+  };  
 
   const checkAndSetCoolTime = () => {
     if (Object.keys(peerConnections).length === 0) {
@@ -90,8 +90,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   };
 
   const movePosition = (dx, dy) => {
-    if (coolTime) return;
-
     const newPosition = {
       x: Math.min(1, Math.max(-1, positionRef.current.x + dx)),
       y: Math.min(1, Math.max(-1, positionRef.current.y + dy)),
@@ -394,7 +392,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } catch (error) {
       console.error('Error handling answer:', error);
     }
-  };
+  };  
 
   const handleCandidate = async (candidate, sender) => {
     if (!sender) {
