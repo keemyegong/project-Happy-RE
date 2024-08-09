@@ -19,6 +19,27 @@ const Archive = () => {
   const [currentKeywordIndex, setCurrentKeywordIndex] = useState(0);
   const [filteredKeywords, setFilteredKeywords] = useState([]);
 
+  const getKeyword = ()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/keyword`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        setKeywords(response.data);
+        keywordLoad(response.data);
+        const tmp_emotionData = [];
+        response.data.forEach(element => {
+          tmp_emotionData.push({x:element.russellX, y:element.russellY, value:0.8});
+        });
+
+        return tmp_emotionData;
+      }).then((tmp_emotionData)=>{
+        setEmotionData(tmp_emotionData);
+      })
+  }
   const getMessage = ()=>{
     axios.get(
       `${universal.defaultUrl}/api/archived`,
@@ -82,44 +103,36 @@ const Archive = () => {
     })
   }
 
-  useEffect(() => {
-    getMessage();
-
-
-    const dummyKeywordsData = [
-      { id: 1, title: '워터파크', date: '2024-08-02', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 2, title: '두꺼비', date: '2024-08-03', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 3, title: '담배', date: '2024-08-04', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 4, title: '워터파크', date: '2024-08-05', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 5, title: '니코틴', date: '2024-08-06', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 6, title: '카페인', date: '2024-08-07', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 7, title: '워터파크', date: '2024-08-08', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 8, title: '아쿠아리움', date: '2024-08-09', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-      { id: 9, title: '담배', date: '2024-08-10', content: "This is a summary example of keywords. It's going to come out roughly like this. I have nothing more to say.", emotionTags: ['#기쁨', '#신남', '#행복'] },
-    ];
-
-    setDummyKeywords(dummyKeywordsData);
-
-    const uniqueKeywords = dummyKeywordsData.reduce((acc, keyword) => {
-      if (!acc.some(kw => kw.title === keyword.title)) {
+  const keywordLoad = (keywords)=>{
+    const uniqueKeywords = keywords.reduce((acc, keyword) => {
+      if (!acc.some(kw => kw.keyword === keyword.keyword)) {
         acc.push(keyword);
       }
       return acc;
     }, []);
 
     setKeywords(uniqueKeywords);
+    console.log(uniqueKeywords);
 
-    if (dummyKeywordsData.length > 0) {
-      setSelectedKeyword(dummyKeywordsData[0]);
-      setFilteredKeywords(dummyKeywordsData.filter(kw => kw.title === dummyKeywordsData[0].title));
+    if (keywords.length > 0) {
+      setSelectedKeyword(keywords[0]);
+      setFilteredKeywords(keywords.filter(kw => kw.keyword === keywords[0].keyword));
     }
+  }
+
+  useEffect(() => {
+    getMessage();
+    getKeyword();
+
+    
   }, []);
 
   const handleKeywordClick = (keyword) => {
     setSelectedKeyword(keyword);
-    const filtered = dummyKeywords.filter(kw => kw.title === keyword.title);
+    const filtered = keywords.filter(kw => kw.keyword === keyword.keyword);
     setFilteredKeywords(filtered);
     setCurrentKeywordIndex(0);
+
   };
 
   const handlePrevClick = () => {
@@ -157,11 +170,11 @@ const Archive = () => {
                 key={keyword.id}
                 onClick={() => handleKeywordClick(keyword)}
                 style={{
-                  fontWeight: selectedKeyword?.title === keyword.title ? '800' : 'normal',
-                  opacity: selectedKeyword?.title === keyword.title ? '1' : '0.7'
+                  fontWeight: selectedKeyword?.keyword === keyword.keyword ? '800' : 'normal',
+                  opacity: selectedKeyword?.keyword === keyword.keyword ? '1' : '0.7'
                 }}
               >
-                {keyword.title}
+                {keyword.keyword}
               </div>
             ))}
           </div>
