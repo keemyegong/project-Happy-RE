@@ -73,7 +73,7 @@ const AudioEffect = forwardRef((props, ref) => {
         sourceRef.current = null;
       }
 
-      if (Object.keys(streams.current).length === 0) {
+      if (combinedStreamRef.current.getTracks().length === 0) {
         analyserRef.current.disconnect();
         if (audioContextRef.current.state !== 'closed') {
           audioContextRef.current.close().then(() => {
