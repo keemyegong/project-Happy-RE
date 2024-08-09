@@ -86,6 +86,14 @@
   flex:3;
 }
 
+.message-input-keyword{
+  align-items: center;
+  justify-content: space-evenly;
+  display: flex;
+  margin: 10px;
+  gap: 10px;
+}
+
 /* 반응형 디자인을 위한 미디어 쿼리 */
 @media (max-width: 1024px) {
   .Message {

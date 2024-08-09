@@ -4,11 +4,30 @@ import Button from '../Button/Button';
 import axios from 'axios';
 import { universeVariable } from '../../App';
 import Cookies from 'js-cookie';
+import KeywordCard from '../diary-report/KeywordCard';
+import Swal from 'sweetalert2'
 
-const MessageInput = () => {
+const MessageInput = ({keywords}) => {
   const [message, setMessage] = useState('');
-  const universal = useContext(universeVariable);
+  const [keywordId, setKeywordId] = useState(0);
+  const [leftdisable, setLeftdisable] = useState(true);
+  const [rightdisable, setRightdisable] = useState(false);
 
+  const universal = useContext(universeVariable);
+  const goLeftKeyword = ()=>{
+    if(keywordId>0){
+      setKeywordId(keywordId-1);
+      setRightdisable(false);
+      if(keywordId==1){setLeftdisable(true)};
+    }
+  }
+  const goRightKeyword = ()=>{
+    if(keywordId<keywords.length-1){
+      setKeywordId(keywordId+1);
+      setLeftdisable(false);
+      if(keywordId == keywords.length-2){setRightdisable(true);}
+    } 
+  }
 
   const handleInputChange = (event) => {
     setMessage(event.target.value);
@@ -17,7 +36,7 @@ const MessageInput = () => {
   const handleSendMessage = () => {
     const data = {
       content: message,
-      keywordEntityDTOList: []
+      keywordEntityDTOList: [keywords[keywordId]]
     };
 
     axios
@@ -28,6 +47,15 @@ const MessageInput = () => {
       )
       .then((response) => {
         console.log('Message sent successfully:', response.data);
+        Swal.fire({
+          title: '메시지를 보내는 데 성공했습니다!',
+          text: '해피리가 책임지고 다른분들께 전달해드릴게요!',
+          icon: "success",
+          iconColor: "#4B4E6D",
+          color: 'white',
+          background: '#292929',
+          confirmButtonColor: '#4B4E6D',
+        });
         setMessage(''); // Clear the input after sending
       })
       .catch((error) => {
@@ -53,12 +81,17 @@ const MessageInput = () => {
           value={message}
           onChange={handleInputChange}
         ></textarea>
-        <button className='btn keyword-btn'>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-plus-circle" viewBox="0 0 16 16">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-          </svg>
-        </button>
+        <div className='message-input-keyword'>
+          <div className='message-keyword-left-button'>
+            <button disabled={leftdisable} onClick={goLeftKeyword}>left</button>
+          </div>
+          <div className='message-keyword-card'>
+            { keywords[keywordId] !== undefined && <KeywordCard props={keywords[keywordId]} />}
+          </div>
+          <div className='message-keyword-left-button'>
+            <button disabled={rightdisable} onClick={goRightKeyword}>right</button>
+          </div>
+        </div> 
       </div>
       <hr className="divider" />
       <Button

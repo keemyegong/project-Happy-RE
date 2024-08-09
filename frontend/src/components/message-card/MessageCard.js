@@ -1,35 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useContext  } from 'react';
 import './MessageCard.css';
+import {universeVariable} from '../../App';
+
+
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import userProfileImage from '../../assets/sampleUserImage.jpg';
+import KeywordCard from '../diary-report/KeywordCard';
 
-const MessageCard = ({ messageId, profileImageUrl, userName, content }) => {
+const MessageCard = ({ messageId, profileImageUrl, userName, content, keyword }) => {
+  const universal = useContext(universeVariable);
   const [favorite, setFavorite] = useState(false);
 
-  const handleFavoriteClick = () => {
-    const newFavoriteStatus = !favorite;
-    const url = newFavoriteStatus ? '/api/messages/archive' : '/api/messages/unarchive';
-
+  const addArchive = ()=>{
     axios
       .post(
-        url,
-        { messageId },
-        {
-          headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
-        }
+        `${universal.defaultUrl}/api/usermsg/archive/${messageId.toString()}`,
+        { headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` } }
       )
-      .then(() => {
-        setFavorite(newFavoriteStatus);
+      .then((Response)=>{
+        console.log('successfully archive');
+        setFavorite(true);
       })
-      .catch((error) => {
-        console.error('Failed to update favorite status:', error);
-      });
+  }
+
+  const delteArchive = ()=>{
+    axios
+    .delete(
+      `${universal.defaultUrl}/api/usermsg/archive/${messageId}`,
+      { headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` } }
+    )
+    .then((Response)=>{
+      console.log('successfully unarchive');
+      setFavorite(false);
+    })
+  }
+  
+  const handleFavoriteClick = () => {
+    if (favorite){
+      delteArchive();
+    }else{
+      addArchive();
+    }
+
   };
 
   return (
     <div className="message-card">
       <div className="message-card-header">
-        {profileImageUrl && <img src={profileImageUrl} alt={userName} className="profile-image" />}
+        <img src={userProfileImage} alt={userName} className="profile-image" />
         <div className="user-info">
           <h3 className="user-name">{userName}</h3>
           <button className={`favorite-button ${favorite ? 'favorite' : ''}`} onClick={handleFavoriteClick}>
@@ -41,6 +60,13 @@ const MessageCard = ({ messageId, profileImageUrl, userName, content }) => {
       </div>
       <div className="message-card-content">
         <p className="message-card-text">{content}</p>
+      </div>
+
+      {/* 메시지 카드에 담긴 키워드 */}
+      <div className='message-card-keyword-content'>
+        {keyword != undefined && <KeywordCard props={keyword.keywordEntity} emotiontags={keyword.keywordEntity.
+keywordEmotionEntityList} />}
+        
       </div>
     </div>
   );
