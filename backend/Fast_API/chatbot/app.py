@@ -68,11 +68,14 @@ async def emotion_tagging(user_id: str, text: str):
     trigger = False
     
     russell_coord = await emotion_analysis(text)
+    print(f"러셀 좌표 테스트 : {text, russell_coord[0]}")
     
     if user_id not in user_emotion_russell:
         user_emotion_russell[user_id] = {}
         
-    if russell_coord[0] < -0.8:
+    if russell_coord[0] <= -0.75:
+        print("--------------------------------트리거 터졌숑-----------------------------------------")
+        print(f"트리거 켜졌숑!\n {text}")
         trigger = True
         
     user_emotion_russell[user_id][text.strip()] = russell_coord
@@ -134,16 +137,19 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     if request.request == "user":
         trigger = await emotion_tagging(user_id, user_input)
     
-    print(f"response : {response}")
-    print("---------------------------------------")
-    print(f"user session: {user_session}")
-    print("---------------------------------------")
-    pprint(f"user message: {user_message}")
+    # print(f"response : {response}")
+    # print("---------------------------------------")
+    # print(f"user session: {user_session}")
+    # print("---------------------------------------")
+    # pprint(f"user message: {user_message}")
+    if trigger == True:
+        print(f"-----------------------트리거 터진 텍스트 {user_input}----------------------")
     
     content = {
         "content":response,
         "trigger":trigger
     }
+    print(f"Content 확인 \n {content}")
     print("Chatbot Post End")
     return JSONResponse(content=content, status_code=200)
 
