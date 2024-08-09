@@ -142,19 +142,18 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           image: user.characterImage
         })));
     
-        // currentUser는 별도로 관리
-        const currentUser = {
-          id: clientId,
-          position,
-          characterImage: userImage,
-          connectedUsers: dataFromServer.clients.find(user => user.id === clientId)?.connectedUsers || []
-        };
-    
-        // nearbyUsers는 currentUser의 connectedUsers에 있는 유저들만 포함하도록 수정
-        setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
-          id: connectedUser.id,
-          image: connectedUser.characterImage,
-        })));
+        // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
+        const currentUser = filteredUsers.find(user => user.id === clientId);
+        if (currentUser) {
+          const nearbyUsersData = (currentUser.connectedUsers || []).map(connectedUser => ({
+            id: connectedUser.id,
+            image: connectedUser.characterImage,
+          }));
+          setNearbyUsers(nearbyUsersData);
+          console.log('Nearby Users:', nearbyUsersData);
+        } else {
+          setNearbyUsers([]);
+        }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {

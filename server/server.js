@@ -168,7 +168,7 @@ const updateClients = (roomId) => {
   rooms[roomId].forEach(user => {
     user.ws.send(JSON.stringify({
       type: 'update',
-      clients: allUsers.filter(u => u.id !== user.id && u.hasMoved) // hasMoved가 false인 유저 제외
+      clients: allUsers.filter(u => u.hasMoved) // hasMoved가 false인 유저 제외
     }));
   });
 };
