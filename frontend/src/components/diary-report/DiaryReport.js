@@ -44,7 +44,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
         <p className='modal-loading-label'>
           Loading...
         </p>
-        <h5 className='modal-loading-text my-4 text-center'>해파리들이 당신의 소중한 오늘을<br></br> 열심히 정리하고 있어요.</h5>
+        <h5 className='modal-loading-text my-4 text-center'>해파리들이 당신의 소중한 오늘을<br></br> 열심히 정리하고 있어요</h5>
       </div>
       }
 
