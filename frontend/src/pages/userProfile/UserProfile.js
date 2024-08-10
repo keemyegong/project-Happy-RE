@@ -11,6 +11,10 @@ import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
+import * as echarts from 'echarts';
+import 'echarts-wordcloud';
+import Swal from 'sweetalert2'
+import DiaryDetail from '../../components/diary-report/DiaryDetail';
 
 
 import artist from '../../assets/characters/art.png';
@@ -22,6 +26,7 @@ import steel from '../../assets/characters/steel.png';
 import { Modal } from 'react-bootstrap';
 
 const UserProfile = () => {
+  
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const happyReHello = [
     "당신의 마음을 편하게 해주는 작은 기쁨이 필요하다면 언제든지 말씀해 주세요. 함께 해결해 나갈 수 있을 거예요.",
@@ -46,17 +51,119 @@ const UserProfile = () => {
   const [emotionData, setEmotionData] = useState([]);
   const [data, setData] = useState([]);
   const universal = useContext(universeVariable);
+  const today = new Date();
+  const monthAgo = new Date(today);
+  monthAgo.setMonth(today.getMonth()-1);
+  const [keyword, setKeyword] = useState([])
+  const [chatlog, setChatlog] = useState([])
+  const [daySummary, setDaySummary] = useState('');
+  const [showDiary, setShowDiary] = useState(false); 
+  const [selectedDay, setSelectedDay] = useState(today);
+  const [possibleList, setPossibleList] = useState([]);
+  const [recentList, setRecentList] = useState([]);
+  let possibleDates = [];
+  let recentinfo = [];
+
+
   let navigate = useNavigate();
 
   const [show, setShow] = useState(false);
   const [keywordEntities, setKeywordEntities] = useState(null);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const balloonImage = new Image();
+  balloonImage.src = '../../assets/wordimg.svg'; // 말풍선 이미지 경로
+  
+  const getRecentMonthDiary = ()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth()+1}&day=${monthAgo.getDate()}&period=${31}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        response.data.filter((element)=>{ return element.russellAvgX!=null && element.russellAvgY!=null}).forEach((element)=>{
+          recentinfo.push({x:element.russellAvgX, y:element.russellAvgY, value:0.8})
+        })
+        setRecentList(recentinfo);
 
+      })
+  }
+
+  const getDiary = (year, month, date)=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${year}&month=${month}&day=${date}&period=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+
+        if (response.data[0] != undefined){
+          // console.log(response.data);
+          setDaySummary(response.data[0].summary);
+          const example = response.data[0].diaryId;
+
+          axios.get(
+            `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then((response)=>{
+              
+              console.log(response.data.messageEntities);
+              setKeyword(response.data.keywordEntities);
+              setChatlog(response.data.messageEntities);
+
+              setShowDiary(true);
+            })
+          } else {
+            Swal.fire({
+              title: '다이어리가 없습니다!',
+              text: '해파리가 열심히 찾아봤지만, 안타깝게도 해당 날짜에는 하루를 기록한 흔적이 없는 것 같아요.',
+              icon: "question",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            });
+            
+          }
+      })
+  }
+
+  const showDiaryModal = (date)=>{
+    getDiary(date.getFullYear(),date.getMonth()+1,date.getDate());
+  }
+
+  const getMonthlyDiary = (startDate)=>{
+    const last = new Date(startDate.getFullYear(),startDate.getMonth()+1,0);
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth()+1}&day=1&period=${last.getDate()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        response.data.forEach(element => {
+          possibleDates.push(element.date.substring(0,10));
+          
+        });
+        if (possibleDates.length !== possibleList.length){
+          setPossibleList(possibleDates);
+        }
+      })
+  }
   useEffect(() => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
+    getMonthlyDiary(today);
+    getRecentMonthDiary();
 
     axios.get(`${universal.defaultUrl}/api/user/me`, {
       headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` }
@@ -85,45 +192,62 @@ const UserProfile = () => {
 
 
     
-    axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
-      {headers:{
-          Authorization : `Bearer ${Cookies.get('Authorization')}`
-      }}
-      ).then((response)=>{
-        const responseData = response.data; 
-        console.log(responseData)
+    axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`
+      }
+    })
+    .then((response) => {
+      const responseData = response.data; 
+      console.log(responseData);
 
-        const keywordMap = new Map();
-      
-        responseData.forEach(item => {
-          const { word, frequency } = item;
-          keywordMap.set(word, frequency);
-        });
-      
-        const keywordObject = Object.fromEntries(keywordMap);
-        console.log(keywordObject);
-      
-        const wordCloudData = Object.keys(keywordObject).map(keyword => ({
-          text: keyword,
-          value: keywordObject[keyword] * 3 // frequency에 대한 가중치
-        }))
+      // 데이터를 ECharts의 워드클라우드 형식으로 변환
+      const wordCloudData = responseData.map(item => ({
+        name: item.word,
+        value: item.frequency  // frequency에 대한 가중치 적용
+      }));
+      setData(wordCloudData);
 
-        setData(wordCloudData);
-      }).catch(error => {
-        // 에러가 발생했을 때 실행할 코드
-        if (error.response) {
-            // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
-            console.error('Error status:', error.response.status);
-            console.error('Error data:', error.response.data);
-        } else if (error.request) {
-            // 요청이 만들어졌으나 서버로부터 응답이 없을 때
-            console.error('No response received:', error.request);
-        } else {
-            // 요청을 설정하는 중에 에러가 발생했을 때
-            console.error('Error setting up request:', error.message);
-        }
-      })
+      // 차트를 초기화할 DOM 요소 선택
+      const chart = echarts.init(document.getElementById('wordCloud'));
 
+
+
+      // ECharts 옵션 설정
+      chart.setOption({
+        series: [{
+          type: 'wordCloud',
+          maskImage: balloonImage,
+          sizeRange: [12, 50], // 글자 크기 범위
+          rotationRange: [-90, 90], // 글자의 회전 범위
+          gridSize: 2, // 글자 간격
+          drawOutOfBound: false,
+          textStyle: {
+            normal: {
+              color: function() {
+                // 랜덤 색상 적용
+                return 'rgb(' + [
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160)
+                ].join(',') + ')';
+              }
+            },
+          },
+          data: wordCloudData
+        }]
+      });
+    })
+    .catch(error => {
+      if (error.response) {
+        console.error('Error status:', error.response.status);
+        console.error('Error data:', error.response.data);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
+    });
 
     // 이모션 데이터
     axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
@@ -207,27 +331,20 @@ const UserProfile = () => {
                 </span>
               </div>
               <div className='wordcloud-container'>
-                  {data.length > 0 ? (
-                    <WordCloud
-                      data={data}
-                      width={300}
-                      height={100}
-                      font="Times"
-                      fontWeight="bold"
-                      fontSize={(word) => Math.log2(word.value) * 2.2}
-                      spiral="rectangular"
-                      padding={5}
-                      fill={(d, i) => {
-                        const rand = Math.floor(Math.random() * 10);
-                        return `rgba(215,218,249,${1 - rand * 0.07})`;
-                      }}
-                    />
+                  <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
+                  {/* {data.length > 0 ? (
+                    <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
+         
                   ) : (
                     <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
-                  )}
+                  )} */}
                 </div>
                 <div className='my-5 calender-container'>
-                  <Calendar />
+                  <Calendar 
+                    possibleList={possibleList}
+                    showDiaryModal={showDiaryModal}
+                    getMonthlyDiary={getMonthlyDiary}
+                  />
                 </div>
               </div>
               <div className='col-12 col-xxl-6'>
@@ -240,7 +357,7 @@ const UserProfile = () => {
                   </span>
                 </div>
                 <div className='emotion-graph-container'>
-                  <EmotionGraph data={emotionData} />
+                  <EmotionGraph data={recentList} />
                 </div>
 
                 <div className='change-happyre-persona my-5'>
@@ -358,6 +475,18 @@ const UserProfile = () => {
           </div>
           <Button className='btn light-btn small' content='Close' onClick={showModal} />
         </div>
+      </div>
+      <div className='modal-container'>
+        {showDiary && (
+          <DiaryDetail 
+            daySummary={daySummary}
+            chatlog={chatlog}
+            keyword={keyword}
+            selectedDay={selectedDay} // 전체 날짜 정보 전달
+            onClose={() => setShowDiary(false)}
+            hideplus={true}
+          />
+        )}
       </div>
     </>
   );
