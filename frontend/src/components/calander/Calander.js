@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Calander.css';
 import { format, startOfWeek, addDays, addMonths, subMonths, startOfMonth, endOfMonth, endOfWeek, isSameMonth, isSameDay } from 'date-fns';
 
-const Calendar = ({showDiaryModal, possibleList}) => {
+const Calendar = ({showDiaryModal, possibleList, getMonthlyDiary}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
 
@@ -93,10 +93,12 @@ const Calendar = ({showDiaryModal, possibleList}) => {
   };
 
   const nextMonth = () => {
+    getMonthlyDiary(addMonths(currentDate, 1));
     setCurrentDate(addMonths(currentDate, 1));
   };
 
   const prevMonth = () => {
+    getMonthlyDiary(subMonths(currentDate, 1));
     setCurrentDate(subMonths(currentDate, 1));
   };
 

@@ -58,7 +58,9 @@ const UserProfile = () => {
   const [showDiary, setShowDiary] = useState(false); 
   const [selectedDay, setSelectedDay] = useState(today);
   const [possibleList, setPossibleList] = useState([]);
+  const [recentList, setRecentList] = useState([]);
   let possibleDates = [];
+  let recentinfo = [];
 
 
   let navigate = useNavigate();
@@ -77,8 +79,11 @@ const UserProfile = () => {
           withCredentials: true,
         }
       }).then((response)=>{
-        console.log('한달일기:')
-        console.log(response.data);
+        response.data.filter((element)=>{ return element.russellAvgX!=null && element.russellAvgY!=null}).forEach((element)=>{
+          recentinfo.push({x:element.russellAvgX, y:element.russellAvgY, value:0.8})
+        })
+        setRecentList(recentinfo);
+
       })
   }
 
@@ -154,6 +159,7 @@ const UserProfile = () => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
+    getRecentMonthDiary();
 
     axios.get(`${universal.defaultUrl}/api/user/me`, {
       headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` }
@@ -327,6 +333,7 @@ const UserProfile = () => {
                   <Calendar 
                     possibleList={possibleList}
                     showDiaryModal={showDiaryModal}
+                    getMonthlyDiary={getMonthlyDiary}
                   />
                 </div>
               </div>
@@ -340,7 +347,7 @@ const UserProfile = () => {
                   </span>
                 </div>
                 <div className='emotion-graph-container'>
-                  <EmotionGraph data={emotionData} />
+                  <EmotionGraph data={recentList} />
                 </div>
 
                 <div className='change-happyre-persona my-5'>
