@@ -99,6 +99,7 @@ const UserProfile = () => {
         name: item.word,
         value: item.frequency * 3 // frequency에 대한 가중치 적용
       }));
+      setData(wordCloudData);
 
       // 차트를 초기화할 DOM 요소 선택
       const chart = echarts.init(document.getElementById('wordCloud'));
