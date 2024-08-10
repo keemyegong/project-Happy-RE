@@ -55,7 +55,9 @@ const UserProfile = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
+  const balloonImage = new Image();
+  balloonImage.src = '../../assets/wordimg.svg'; // 말풍선 이미지 경로
+  
   useEffect(() => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
@@ -106,14 +108,12 @@ const UserProfile = () => {
       // 차트를 초기화할 DOM 요소 선택
       const chart = echarts.init(document.getElementById('wordCloud'));
 
-      const balloonImage = new Image();
-      balloonImage.src = '../../assets/wordimg.svg'; // 말풍선 이미지 경로
+
 
       // ECharts 옵션 설정
       chart.setOption({
         series: [{
           type: 'wordCloud',
-          shape: 'circle', // 백업용
           maskImage: balloonImage,
           sizeRange: [12, 50], // 글자 크기 범위
           rotationRange: [-90, 90], // 글자의 회전 범위
