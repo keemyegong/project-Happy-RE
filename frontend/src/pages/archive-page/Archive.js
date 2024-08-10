@@ -230,7 +230,7 @@ const Archive = () => {
                   content={message.content}
                   archived={true}
                   deleteArchived={deleteArchived}
-
+                  className="archive-message-card"
                 />
               
             })} 

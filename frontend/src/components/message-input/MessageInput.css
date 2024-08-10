@@ -96,3 +96,11 @@
   font-weight: 100;
   color: #999; /* 필요에 따라 색상도 변경할 수 있습니다 */
 }
+
+.message-keyword-none-text {
+  font-size: 13px;
+  text-align: center;
+  color: white;
+  opacity: 0.7;
+  padding-top: 10px;
+}
