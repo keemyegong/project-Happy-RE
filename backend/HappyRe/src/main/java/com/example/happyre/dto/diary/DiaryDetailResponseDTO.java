@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class DiaryDetailResponseDTO {
     private List<MessageEntityDTO> messageEntities;
-    private List<KeywordEntityDTO> keywordEntities;
+    private List<KeywordWithEmotionDTO> keywordEntities;
 
     public DiaryDetailResponseDTO(List<MessageEntity> messageEntities, List<KeywordEntity> keywordEntities) {
         this.messageEntities = new ArrayList<>();
@@ -28,12 +28,13 @@ public class DiaryDetailResponseDTO {
             messageEntityDTO.setRussellX(messageEntity.getRussellX());
             messageEntityDTO.setRussellY(messageEntity.getRussellY());
             messageEntityDTO.setArchived(messageEntity.getArchived());
+            messageEntityDTO.setAudioKey(messageEntity.getAudioKey());
 
             this.messageEntities.add(messageEntityDTO);
         }
         this.keywordEntities = new ArrayList<>();
         for (KeywordEntity keywordEntity : keywordEntities) {
-            KeywordEntityDTO keywordEntityDTO = new KeywordEntityDTO();
+            KeywordWithEmotionDTO keywordEntityDTO = new KeywordWithEmotionDTO();
 
             keywordEntityDTO.setKeywordId(keywordEntity.getKeywordId());
             keywordEntityDTO.setDiaryId(keywordEntity.getDiaryEntity().getDiaryId());

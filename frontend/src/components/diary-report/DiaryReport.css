@@ -2,20 +2,27 @@
 
 .DiaryReport {
   width: 600px;
-  height: 1000px;
+  height: 100%;
   background-color: black;
   padding: 10px;
+  padding-bottom: 20px;
 }
 
 .diary-report-header {
   font-family: "Alegreya Sans SC";
   font-size: clamp(14px, 1.3vw, 18px);
   color: white;
-  text-align: center;
   margin-top: 5px;
   margin-bottom: 10px;
 }
 
+.diary-report-header-kr {
+  font-family: Pretendard;
+}
+
+.diary-report-header-text {
+  text-align: center;
+}
 .diary-report-body {
   display: flex;
   flex-direction: column;
@@ -23,6 +30,7 @@
 }
 
 .diary-report-keyword {
+  font-family: Pretendard;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -75,6 +83,7 @@
 }
 
 .diary-report-graph {
+  font-family: 'Pretendard-Regular';
   margin-top: 20px;
 }
 
@@ -89,15 +98,65 @@
 }
 
 .diary-report-graph-body {
-  margin: auto;
+  padding-top: 30px;
+  display: flex;
+  margin-inline: 30px;
+  justify-content: space-between;
+  align-items: center;
+  height: 250px;
+}
+.diary-report-header{
+  text-align: left;
+  font-weight: bold;
+  margin: 0px;
+}
+
+.diary-report-border{
+  border-color: white !important;
+  border-bottom: 0.3px solid ;
+}
+
+.diary-report-graph-label{
+  padding-top: 50px;
+  color: white;
+  max-width: 200px;
+  font-size: 12px;
+}
+
+.diary-report-keyword-none{
+  margin: 0px;
+}
+
+.diary-report-keyword-none-header{
+  opacity: 0.;
+  font-size: 20px;
+  color: white;
+
+}
+
+.diary-report-keyword-none-label-positive{
+  font-size: 13px;
+  color: #9DB6B9;
+}
+
+.diary-report-keyword-none-label-negative{
+  font-size: 13px;
+  color: #B99D9D;
 }
 
 .diary-modal-popup-spinner{
-
   width: 200px;
   height: 200px;
   color: rgb(175, 175, 193);
   border-width: 10px;
+
+}
+.modal-loading-text {
+  font-family: Pretendard;
+  font-weight: 500;
+  font-size: 18px;
+  opacity: 0.9;
+  line-height: 30px;
 }
 
 .modal-loading-container{
@@ -106,7 +165,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 150px;
+  margin-top: 100px;
+  margin-bottom: 60px;
 }
 
 .modal-loading-label{
@@ -114,12 +174,19 @@
   position: absolute;
   top: 30%;
   left: 45%;
-
 }
 
 .modal-loading-text{
   color: white;
   margin-top: 10px;
+}
+
+.diary-report-explain-label{
+  font-family: 'Pretendard-Regular';
+  color: #696969;
+  padding: 0;
+  margin-top: 30px;
+  font-size: 13px;
 }
 
 /* 미디어 쿼리: 화면 너비가 1350px 이하일 때 */
@@ -134,7 +201,13 @@
   .DiaryReport {
     margin: auto;
     width: 500px;
-    height: 1150px;
+
+  }
+  .diary-report-graph-body{
+    justify-content: center;
+  }
+  .diary-report-graph-label{
+    display: none;
   }
 }
 
@@ -143,7 +216,7 @@
   .DiaryReport {
     margin: auto;
     width: 470px;
-    height: 1250px;
+
   }
 }
 
@@ -152,6 +225,6 @@
   .DiaryReport {
     width: 300px;
     margin: auto;
-    height: 1500px;
+
   }
 }

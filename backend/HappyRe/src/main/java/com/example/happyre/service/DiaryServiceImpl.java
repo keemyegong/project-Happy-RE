@@ -2,6 +2,7 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.diary.DiaryEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.exception.diary.DiaryEntryAlreadyExistsException;
 import com.example.happyre.repository.DiaryRepository;
@@ -26,7 +27,7 @@ public class DiaryServiceImpl implements DiaryService {
     @Override
     public DiaryEntity insert(DiaryEntity diaryEntity) {
         //중복 체크
-        if(diaryEntity.getDate() == null) diaryEntity.onCreate();
+        if (diaryEntity.getDate() == null) diaryEntity.onCreate();
         List<DiaryEntity> thatDayDiary = diaryRepository.findByUserEntityAndDate(diaryEntity.getUserEntity(), new Date(diaryEntity.getDate().getTime()));
         if (thatDayDiary.size() != 0) throw new DiaryEntryAlreadyExistsException("같은 날짜의 Diary 가 이미 존재함");
         return diaryRepository.save(diaryEntity);
@@ -40,7 +41,7 @@ public class DiaryServiceImpl implements DiaryService {
         diaryEntity.setSummary(diaryEntityDTO.getSummary());
         diaryEntity.setRussellAvgX(diaryEntityDTO.getRussellAvgX());
         diaryEntity.setRussellAvgY(diaryEntityDTO.getRussellAvgY());
-        if(diaryEntityDTO.getDate() != null){
+        if (diaryEntityDTO.getDate() != null) {
             diaryEntity.setDate(Timestamp.valueOf(diaryEntityDTO.getDate()));
         }
         return this.insert(diaryEntity);
@@ -84,6 +85,8 @@ public class DiaryServiceImpl implements DiaryService {
         Date endDate = new Date(calendar.getTimeInMillis());
         return diaryRepository.findByUserEntityAndDateRange(userEntity, date, endDate);
     }
+
+
 
 
 }

@@ -6,13 +6,13 @@ import AIResponse from '../ai-chat/AIResponse';
 const DiaryChat = ({ chatHistory }) => {
 
     return (
-        <div className='container diary-chat-box-container'>
+        <div className='container diary-chat-box-container '>
     
-          <div className='diary-chat-box-content-container'>
+          <div className='diary-chat-box-content-container diary-mywords-content'>
             {[...chatHistory].reverse().map((chat, index) => {
               if (chat) {
-                if (chat.type === 'user') {
-                  return <UserResponse key={index} content={chat.content} />
+                if (chat.speaker === 'user') {
+                  return <UserResponse key={index} content={chat.content} isAudio={chat.audioKey} isRender={true} />
                 } else {
                   return <AIResponse key={index} content={chat.content} />
                 }

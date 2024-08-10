@@ -150,7 +150,9 @@ public class MessageServiceImpl implements MessageService {
                 }
                 messageEntities.add(messageEntity);
             }
-
+            System.out.println("------------USER WORD-----------");
+            System.out.println(userWords.size());
+            System.out.println("------------USER WORD-----------");
             userWordFrequencyService.splitWord(userWords,diaryEntity.getUserEntity().getId());
             return messageEntities;
         } catch (Exception e) {

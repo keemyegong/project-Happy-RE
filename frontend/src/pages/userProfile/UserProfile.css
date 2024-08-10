@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
 
 .user-profile-container{
   margin-top: 150px;
-
+  font-family: Pretendard;
 }
 
 .user-avatar{
@@ -38,15 +37,14 @@
 
 
 .email{
-  font-size: 12px;
+  font-size: 13px !important;
   color: rgb(193, 193, 193);
 }
 
 .nickname{
-  font-size: 20px;
+  font-size: 15px;
   color: white;
   margin: 0px;
-
 }
 
 .user-emotion-info-container {
@@ -74,6 +72,10 @@
   border-bottom: 0.5px solid white;
   opacity: 0.8;
   margin-bottom: 15px;
+  display: flex; /* 추가 */
+  align-items: center; /* 추가 */
+  justify-content: space-between; /* 추가 */
+  padding-left: 5px; /* 기존 padding을 부모 요소로 이동 */
 }
 
 .profile-mywords-title-text {
@@ -81,13 +83,28 @@
   font-family: "Poiret One", sans-serif;
   font-weight: 400;
   font-style: normal;
-  padding-left: 5px;
+}
+
+.profile-mywords-guide {
+  font-family: "Poiret One", sans-serif;
+  font-weight: 100;
+  font-size: 10px;
+  opacity: 0.7;
+  padding-right: 10px;
 }
 
 .wordcloud-container{
   margin-inline: 0px;
 }
 
+.wordcloud-none-word {
+  font-family: Pretendard;
+  color: white;
+  font-weight: 100;
+  font-size: 13px;
+  margin: 30px 10px;
+  margin-bottom: 150px;
+}
 .emotion-graph-container{
   width: 100%;
   display: flex;
@@ -98,6 +115,11 @@
 .profile-emotion-title {
   border-bottom: 0.5px solid white;
   opacity: 0.8;
+  margin-bottom: 15px;
+  display: flex; /* 추가 */
+  align-items: center; /* 추가 */
+  justify-content: space-between; /* 추가 */
+  padding-left: 5px; /* 기존 padding을 부모 요소로 이동 */
 }
 
 .profile-emotion-title-text {
@@ -105,7 +127,6 @@
   font-family: "Poiret One", sans-serif;
   font-weight: 400;
   font-style: normal;
-  padding-left: 5px;
 }
 
 .change-happyre-persona{
@@ -157,8 +178,6 @@
   'opsz' 24
 }
 
-
-
 .persona-chat-container {
   font-size: 13px;
   display: flex;
@@ -171,7 +190,7 @@
   background-color: #4B4E6D;
   border-radius: 15px;
   padding: 20px;
-  max-width: 100%;
+  max-width: 90%;
   position: relative;
   word-wrap: break-word;
 }
@@ -190,6 +209,11 @@
   margin-top: 5px;
   margin-left: -10px;
   border-width: 15px;
+}
+
+.persona-diary-add-btn {
+  padding-top: 10px;
+  text-align: center;
 }
 
 .modal-backdrop {
@@ -213,7 +237,8 @@
 
 
 .happyre-choice-preview{
-  width: 100%
+  width: 100%;
+  max-width: 170px;
 }
 
 .borderless{
@@ -249,22 +274,33 @@
 }
 
 .happyre-persona-change-container{
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow-wrap: normal;
   align-items: center;
-  min-width: 500px
+  min-width: 100px;
+  font-family: Pretendard;
 }
 
 .happyre-persona-icon-container{
-
   padding: 20px;
   cursor: pointer;
-  max-width: 200px;
-  display: flex;
+  max-width: 300px;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
+}
 
+.happyre-persona-info {
+  color: white;
+}
+
+.happyre-persona-info-title {
+  font-weight: 700;
+  padding-bottom: 5px;
+}
+
+.happyre-persona-info-description {
+  font-size: 12px;
 }

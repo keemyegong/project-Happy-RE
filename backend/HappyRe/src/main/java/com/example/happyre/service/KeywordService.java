@@ -2,6 +2,7 @@ package com.example.happyre.service;
 
 import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.entity.DiaryEntity;
+import com.example.happyre.entity.EmotionEntity;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.UserEntity;
 
@@ -31,4 +32,6 @@ public interface KeywordService {
     void updateArchive(int keywordId, boolean archive);
 
     List<KeywordEntity> getMyKeywords(UserEntity userEntity);
+
+    List<EmotionEntity> findEmotionsByKeywordId(Integer id);
 }
