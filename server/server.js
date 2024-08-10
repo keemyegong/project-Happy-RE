@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -75,9 +77,9 @@ wss.on('connection', (ws, req) => {
         break;
 
       case 'rtc_disconnect_all':
-        setCoolTime(roomId, userId, true);
+        setCoolTime(roomId, data.userId, true);
         setTimeout(() => {
-          setCoolTime(roomId, userId, false);
+          setCoolTime(roomId, data.userId, false);
         }, 10000);
         break;
 
@@ -127,14 +129,6 @@ const manageWebRTCConnections = (roomId, userId) => {
       }
     }
   });
-
-  // 모든 연결이 끊긴 경우 coolTime 설정 로직 제거 (클라이언트에서 처리)
-  // if (movingUser.connectedUsers.length === 0) {
-  //   setCoolTime(roomId, userId, true);
-  //   setTimeout(() => {
-  //     setCoolTime(roomId, userId, false);
-  //   }, 10000);
-  // }
 };
 
 const sendWebRTCSignal = (ws, targetId, role) => {

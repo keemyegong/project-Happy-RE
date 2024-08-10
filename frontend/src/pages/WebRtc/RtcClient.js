@@ -259,19 +259,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.removeStream(userId);
         }
         // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
-        setPeerConnections((prevConnections) => {
+        setPeerConnections(prevConnections => {
           const updatedConnections = { ...prevConnections };
           delete updatedConnections[userId];
-          // 초기 연결 시 coolTime을 설정하지 않기 위해 빈 연결 상태를 구분
-          if (
-            client.readyState === WebSocket.OPEN &&
-            Object.keys(updatedConnections).length === 0 &&
-            Object.keys(prevConnections).length !== 0
-          ) {
-            client.send(JSON.stringify({ type: "rtc_disconnect_all" }));
+          if (client.readyState === WebSocket.OPEN && Object.keys(updatedConnections).length === 0 && Object.keys(prevConnections).length !== 0) {
+              console.log('끊겼는지 확인용')
+              client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
           }
           return updatedConnections;
-        });
+      });
       }
     };
 
