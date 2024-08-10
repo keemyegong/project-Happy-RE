@@ -13,6 +13,7 @@ import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 import * as echarts from 'echarts';
 import 'echarts-wordcloud';
+import wordimg from '../../assets/wordimg.png'
 
 import artist from '../../assets/characters/art.png';
 import butler from '../../assets/characters/butler.png';
@@ -105,11 +106,15 @@ const UserProfile = () => {
       // 차트를 초기화할 DOM 요소 선택
       const chart = echarts.init(document.getElementById('wordCloud'));
 
+      const balloonImage = new Image();
+      balloonImage.src = '../../assets/wordimg.png'; // 말풍선 이미지 경로
+
       // ECharts 옵션 설정
       chart.setOption({
         series: [{
           type: 'wordCloud',
-          shape: 'circle', // 워드클라우드 모양 (기본 제공 모양 중 하나)
+          shape: 'circle', // 백업용
+          maskImage: balloonImage,
           sizeRange: [12, 50], // 글자 크기 범위
           rotationRange: [-90, 90], // 글자의 회전 범위
           gridSize: 2, // 글자 간격
