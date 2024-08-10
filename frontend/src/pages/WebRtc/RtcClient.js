@@ -41,14 +41,19 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       client.close();
       return;
     }
-
+  
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       client.close();
+  
+      // 페이지를 벗어날 때 마이크 기능 끄기
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
     };
   }, []);
 
@@ -60,6 +65,11 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     client.send(JSON.stringify({ type: "disconnect" }));
     client.close();
     cleanupConnections();
+  
+    // 마이크 기능 끄기
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
   };
 
   const cleanupConnections = () => {
