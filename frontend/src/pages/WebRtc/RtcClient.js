@@ -236,14 +236,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (peerConnection.connectionState === "connected") {
         console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        console.log(
-          `WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`
-        );
+        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
-      if (
-        peerConnection.connectionState === "disconnected" ||
-        peerConnection.connectionState === "closed"
-      ) {
+      if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
         console.log("WebRTC 연결이 끊어졌습니다.");
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
@@ -257,11 +252,17 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.removeStream(userId);
         }
         // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
-        if (Object.keys(peerConnections).length === 1) {
-          client.send(JSON.stringify({ type: "rtc_disconnect_all" }));
-        }
+        setPeerConnections(prevConnections => {
+          const updatedConnections = { ...prevConnections };
+          delete updatedConnections[userId];
+          if (Object.keys(updatedConnections).length === 0) {
+            client.send(JSON.stringify({ type: "rtc_disconnect_all" }));
+          }
+          return updatedConnections;
+        });
       }
     };
+    
 
     if (stream) {
       stream

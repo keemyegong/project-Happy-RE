@@ -128,13 +128,15 @@ const manageWebRTCConnections = (roomId, userId) => {
     }
   });
 
-  // if (movingUser.connectedUsers.length === 0) {
-  //   setCoolTime(roomId, userId, true);
-  //   setTimeout(() => {
-  //     setCoolTime(roomId, userId, false);
-  //   }, 10000);
-  // }
+  // 클라이언트에서 모든 연결이 끊어졌음을 확인하고 서버에 신호를 보냄
+  if (movingUser.connectedUsers.length === 0) {
+    setCoolTime(roomId, userId, true);
+    setTimeout(() => {
+      setCoolTime(roomId, userId, false);
+    }, 10000);
+  }
 };
+
 
 const sendWebRTCSignal = (ws, targetId, role) => {
   ws.send(JSON.stringify({ type: 'start_webrtc', targetId, role }));
