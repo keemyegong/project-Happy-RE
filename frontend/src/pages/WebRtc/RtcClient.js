@@ -39,6 +39,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") {
       client.close();
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
       return;
     }
   
