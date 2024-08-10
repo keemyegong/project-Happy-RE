@@ -12,6 +12,7 @@ import { schemeCategory10 } from 'd3-scale-chromatic';
 import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 import * as echarts from 'echarts';
+import 'echarts-wordcloud';
 
 import artist from '../../assets/characters/art.png';
 import butler from '../../assets/characters/butler.png';
