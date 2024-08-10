@@ -29,6 +29,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const localAudioRef = useRef(null);
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
+  const [coolTime, setCoolTime] = useState(false);
 
   useEffect(() => {
     positionRef.current = position;
@@ -152,6 +153,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
         const currentUser = filteredUsers.find((user) => user.id === clientId);
         if (currentUser) {
+          setCoolTime(currentUser.coolTime); // coolTime 상태 설정
           const nearbyUsersData = (currentUser.connectedUsers || []).map(
             (connectedUser) => ({
               id: connectedUser.id,
@@ -199,7 +201,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     } else {
       console.error("getUserMedia is not supported in this browser.");
     }
-  }, [position, userImage]);
+  }, [position, userImage, clientId]);
 
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
@@ -236,9 +238,14 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       if (peerConnection.connectionState === "connected") {
         console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
+        console.log(
+          `WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`
+        );
       }
-      if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
+      if (
+        peerConnection.connectionState === "disconnected" ||
+        peerConnection.connectionState === "closed"
+      ) {
         console.log("WebRTC 연결이 끊어졌습니다.");
         if (localAudioRef.current) {
           localAudioRef.current.srcObject = null;
@@ -252,24 +259,24 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           audioEffectRef.current.removeStream(userId);
         }
         // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
-        setPeerConnections(prevConnections => {
+        setPeerConnections((prevConnections) => {
           const updatedConnections = { ...prevConnections };
           delete updatedConnections[userId];
           // 초기 연결 시 coolTime을 설정하지 않기 위해 빈 연결 상태를 구분
-          if (client.readyState === WebSocket.OPEN && Object.keys(updatedConnections).length === 0 && Object.keys(prevConnections).length !== 0) {
+          if (
+            client.readyState === WebSocket.OPEN &&
+            Object.keys(updatedConnections).length === 0 &&
+            Object.keys(prevConnections).length !== 0
+          ) {
             client.send(JSON.stringify({ type: "rtc_disconnect_all" }));
           }
           return updatedConnections;
         });
       }
     };
-    
-    
 
     if (stream) {
-      stream
-        .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, stream));
+      stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
     }
 
     return peerConnection;
@@ -453,6 +460,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
               movePosition={movePosition}
               localAudioRef={localAudioRef}
               userImage={userImage}
+              coolTime={coolTime} // coolTime 상태 추가
             />
           </div>
           <div className="audio-effect-container">
