@@ -107,7 +107,7 @@ const UserProfile = () => {
       const chart = echarts.init(document.getElementById('wordCloud'));
 
       const balloonImage = new Image();
-      balloonImage.src = '../../assets/wordimg.png'; // 말풍선 이미지 경로
+      balloonImage.src = '../../assets/wordimg.svg'; // 말풍선 이미지 경로
 
       // ECharts 옵션 설정
       chart.setOption({
