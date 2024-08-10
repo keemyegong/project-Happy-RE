@@ -122,10 +122,10 @@ class SummarizeChatbot:
         promptTemplate=[
             (
                 "system",
-                "You need to summarize the sentences I provide, focusing on the events that occurred.\
-                The summary should be a brief answer within one sentence, using only one to three words.\
+                "You need to summarize the sentences I provide, focusing on the events that are occurred.\
+                The summary must be a word. representing \
                 Afterward, I will evaluate your response and provide either a reward or a penalty.\
-                The reward will be $100, and the penalty will be a $100 fine.\
+                The reward will be $1000, and the penalty will be a $1000 fine.\
                 You must respond in Korean."
             ),
             MessagesPlaceholder(variable_name="messages"),
