@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import './Calander.css';
 import { format, startOfWeek, addDays, addMonths, subMonths, startOfMonth, endOfMonth, endOfWeek, isSameMonth, isSameDay } from 'date-fns';
 
-const Calendar = () => {
+const Calendar = ({showDiaryModal, possibleList, getMonthlyDiary}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const today = new Date();
 
   const renderHeader = () => {
     const dateFormat = 'MMMM yyyy';
@@ -67,7 +68,7 @@ const Calendar = () => {
 
         days.push(
           <div
-            className={`col cell ${!isSameMonth(day, monthStart) ? 'disabled' : isSameDay(day, currentDate) ? 'selected' : ''}`}
+            className={`col cell ${possibleList.includes(`${format(day,'yyyy')}-${format(day,'MM')}-${format(day,'dd')}`)? 'calender-possible-day':''} ${!isSameMonth(day, monthStart) ? 'disabled' : isSameDay(day, today) ? 'selected' : ''}`}
             key={day}
             onClick={() => onDateClick(cloneDay)}
           >
@@ -77,7 +78,7 @@ const Calendar = () => {
         day = addDays(day, 1);
       }
       rows.push(
-        <div className='row' key={day}>
+        <div className='row' key={day} >
           {days}
         </div>
       );
@@ -87,14 +88,17 @@ const Calendar = () => {
   };
 
   const onDateClick = day => {
-    setCurrentDate(day);
+    // setCurrentDate(day);
+    showDiaryModal(day);
   };
 
   const nextMonth = () => {
+    getMonthlyDiary(addMonths(currentDate, 1));
     setCurrentDate(addMonths(currentDate, 1));
   };
 
   const prevMonth = () => {
+    getMonthlyDiary(subMonths(currentDate, 1));
     setCurrentDate(subMonths(currentDate, 1));
   };
 
