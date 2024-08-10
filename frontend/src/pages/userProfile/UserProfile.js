@@ -11,6 +11,8 @@ import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
+import Swal from 'sweetalert2'
+import DiaryDetail from '../../components/diary-report/DiaryDetail';
 
 
 import artist from '../../assets/characters/art.png';
@@ -22,6 +24,7 @@ import steel from '../../assets/characters/steel.png';
 import { Modal } from 'react-bootstrap';
 
 const UserProfile = () => {
+  
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const happyReHello = [
     "당신의 마음을 편하게 해주는 작은 기쁨이 필요하다면 언제든지 말씀해 주세요. 함께 해결해 나갈 수 있을 거예요.",
@@ -46,17 +49,111 @@ const UserProfile = () => {
   const [emotionData, setEmotionData] = useState([]);
   const [data, setData] = useState([]);
   const universal = useContext(universeVariable);
+  const today = new Date();
+  const monthAgo = new Date(today);
+  monthAgo.setMonth(today.getMonth()-1);
+  const [keyword, setKeyword] = useState([])
+  const [chatlog, setChatlog] = useState([])
+  const [daySummary, setDaySummary] = useState('');
+  const [showDiary, setShowDiary] = useState(false); 
+  const [selectedDay, setSelectedDay] = useState(today);
+  const [possibleList, setPossibleList] = useState([]);
+  let possibleDates = [];
+
+
   let navigate = useNavigate();
 
   const [show, setShow] = useState(false);
   const [keywordEntities, setKeywordEntities] = useState(null);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  const getRecentMonthDiary = ()=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth()+1}&day=${monthAgo.getDate()}&period=${31}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        console.log('한달일기:')
+        console.log(response.data);
+      })
+  }
+
+  const getDiary = (year, month, date)=>{
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${year}&month=${month}&day=${date}&period=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+
+        if (response.data[0] != undefined){
+          // console.log(response.data);
+          setDaySummary(response.data[0].summary);
+          const example = response.data[0].diaryId;
+
+          axios.get(
+            `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then((response)=>{
+              
+              console.log(response.data.messageEntities);
+              setKeyword(response.data.keywordEntities);
+              setChatlog(response.data.messageEntities);
+
+              setShowDiary(true);
+            })
+          } else {
+            Swal.fire({
+              title: '다이어리가 없습니다!',
+              text: '해파리가 열심히 찾아봤지만, 안타깝게도 해당 날짜에는 하루를 기록한 흔적이 없는 것 같아요.',
+              icon: "question",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            });
+            
+          }
+      })
+  }
+
+  const showDiaryModal = (date)=>{
+    getDiary(date.getFullYear(),date.getMonth()+1,date.getDate());
+  }
+
+  const getMonthlyDiary = (startDate)=>{
+    const last = new Date(startDate.getFullYear(),startDate.getMonth()+1,0);
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth()+1}&day=1&period=${last.getDate()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        }
+      }).then((response)=>{
+        response.data.forEach(element => {
+          possibleDates.push(element.date.substring(0,10));
+          
+        });
+        if (possibleDates.length !== possibleList.length){
+          setPossibleList(possibleDates);
+        }
+      })
+  }
   useEffect(() => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
+    getMonthlyDiary(today);
 
     axios.get(`${universal.defaultUrl}/api/user/me`, {
       headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` }
@@ -227,7 +324,10 @@ const UserProfile = () => {
                   )}
                 </div>
                 <div className='my-5 calender-container'>
-                  <Calendar />
+                  <Calendar 
+                    possibleList={possibleList}
+                    showDiaryModal={showDiaryModal}
+                  />
                 </div>
               </div>
               <div className='col-12 col-xxl-6'>
@@ -358,6 +458,18 @@ const UserProfile = () => {
           </div>
           <Button className='btn light-btn small' content='Close' onClick={showModal} />
         </div>
+      </div>
+      <div className='modal-container'>
+        {showDiary && (
+          <DiaryDetail 
+            daySummary={daySummary}
+            chatlog={chatlog}
+            keyword={keyword}
+            selectedDay={selectedDay} // 전체 날짜 정보 전달
+            onClose={() => setShowDiary(false)}
+            hideplus={true}
+          />
+        )}
       </div>
     </>
   );
