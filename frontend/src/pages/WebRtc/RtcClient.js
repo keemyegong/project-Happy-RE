@@ -32,7 +32,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
 
   useEffect(() => {
     positionRef.current = position;
-  }, [position]);
+    console.log('NearbyUsers', nearbyUsers)
+  }, [position, nearbyUsers]);
+
 
   useEffect(() => {
     if (window.location.pathname !== '/webrtc') {
@@ -121,6 +123,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       console.log("Received message from server:", dataFromServer);
+    
       if (dataFromServer.type === 'assign_id') {
         setClientId(dataFromServer.id);
         client.send(JSON.stringify({
@@ -134,11 +137,28 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           position: user.position || { x: 0, y: 0 },
           connectedAt: user.connectedAt || 0
         }));
-        setUsers(filteredUsers.map(user => ({
-          ...user,
-          image: user.characterImage
-        })));
-        setNearbyUsers(filteredUsers);
+        
+        // 자기 자신 정보를 제외하고 users를 설정
+        setUsers(filteredUsers
+          .filter(user => user.id !== clientId)
+          .map(user => ({
+            ...user,
+            image: user.characterImage
+          }))
+        );
+    
+        // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
+        const currentUser = filteredUsers.find(user => user.id === clientId);
+        if (currentUser) {
+          const nearbyUsersData = (currentUser.connectedUsers || []).map(connectedUser => ({
+            id: connectedUser.id,
+            image: connectedUser.characterImage,
+          }));
+          setNearbyUsers(nearbyUsersData);
+          console.log('Nearby Users:', nearbyUsersData);
+        } else {
+          setNearbyUsers([]);
+        }
       } else if (dataFromServer.type === 'offer') {
         handleOffer(dataFromServer.offer, dataFromServer.sender);
       } else if (dataFromServer.type === 'answer') {
@@ -162,6 +182,9 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         }
       }
     };
+    
+    
+    
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ audio: true })
@@ -224,6 +247,10 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         // AudioEffect에서도 제거
         if (audioEffectRef.current) {
           audioEffectRef.current.removeStream(userId);
+        }
+        // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
+        if (Object.keys(peerConnections).length === 1) {
+          client.send(JSON.stringify({ type: 'rtc_disconnect_all' }));
         }
       }
     };
@@ -370,7 +397,6 @@ const RtcClient = ({ initialPosition, characterImage }) => {
       setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
     }
   };
-
 
   return (
     <div className="chat-room-container" ref={containerRef}>

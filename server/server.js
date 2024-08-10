@@ -74,6 +74,13 @@ wss.on('connection', (ws, req) => {
         updateClients(roomId);
         break;
 
+      case 'rtc_disconnect_all':
+        setCoolTime(roomId, userId, true);
+        setTimeout(() => {
+          setCoolTime(roomId, userId, false);
+        }, 10000);
+        break;
+
       default:
         console.error('Unrecognized message type:', data.type);
     }
@@ -95,8 +102,6 @@ const manageWebRTCConnections = (roomId, userId) => {
   const movingUser = rooms[roomId].find(user => user.id === userId);
   if (!movingUser) return;
 
-  let connectionsUpdated = false;
-
   rooms[roomId].forEach(user => {
     if (user.id !== userId) {
       const distance = calculateDistance(movingUser.position, user.position);
@@ -113,7 +118,6 @@ const manageWebRTCConnections = (roomId, userId) => {
           }
           movingUser.connectedUsers.push(user.id);
           user.connectedUsers.push(movingUser.id);
-          connectionsUpdated = true;
         }
       } else if (distance > 0.2 && isConnected) {
         disconnectWebRTC(user.ws, movingUser.id);
@@ -124,12 +128,12 @@ const manageWebRTCConnections = (roomId, userId) => {
     }
   });
 
-  if (!connectionsUpdated && movingUser.connectedUsers.length === 0) {
-    setCoolTime(roomId, userId, true);
-    setTimeout(() => {
-      setCoolTime(roomId, userId, false);
-    }, 10000);
-  }
+  // if (movingUser.connectedUsers.length === 0) {
+  //   setCoolTime(roomId, userId, true);
+  //   setTimeout(() => {
+  //     setCoolTime(roomId, userId, false);
+  //   }, 10000);
+  // }
 };
 
 const sendWebRTCSignal = (ws, targetId, role) => {
@@ -145,19 +149,27 @@ const calculateDistance = (pos1, pos2) => {
 };
 
 const updateClients = (roomId) => {
-  const allUsers = rooms[roomId]
-    .filter(user => user.hasMoved) // hasMoved가 true인 유저만 필터링
-    .map(user => ({
-      id: user.id,
-      position: user.position,
-      characterImage: user.characterImage,
-      hasMoved: user.hasMoved,
-      connectedAt: user.connectedAt,
-      coolTime: user.coolTime
-    }));
+  const allUsers = rooms[roomId].map(user => ({
+    id: user.id,
+    position: user.position,
+    characterImage: user.characterImage,
+    hasMoved: user.hasMoved,
+    connectedAt: user.connectedAt,
+    coolTime: user.coolTime,
+    connectedUsers: user.connectedUsers.map(connectedId => {
+      const connectedUser = rooms[roomId].find(u => u.id === connectedId);
+      return {
+        id: connectedUser.id,
+        characterImage: connectedUser.characterImage
+      };
+    }) // 연결된 유저 정보 추가
+  }));
 
   rooms[roomId].forEach(user => {
-    user.ws.send(JSON.stringify({ type: 'update', clients: allUsers.filter(u => u.id !== user.id) }));
+    user.ws.send(JSON.stringify({
+      type: 'update',
+      clients: allUsers.filter(u => u.hasMoved) // hasMoved가 false인 유저 제외
+    }));
   });
 };
 
