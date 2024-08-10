@@ -208,6 +208,18 @@ const UserProfile = () => {
               </div>
               <div className='wordcloud-container'>
                   {data.length > 0 ? (
+                    <svg width="300" height="100" viewBox="0 0 300 100">
+                    <defs>
+                      <mask id="mask">
+                        <rect width="100%" height="100%" fill="white" />
+
+                        <path
+                          d="M20 10 Q50 -20, 80 10 L280 10 Q310 10, 280 50 L250 80 Q250 90, 240 80 L150 80 L100 90 Q70 110, 60 80 L30 50 Q10 30, 20 10"
+                          fill="black"
+                        />
+                      </mask>
+                    </defs>
+                    <rect width="100%" height="100%" fill="rgba(215,218,249,0.9)" mask="url(#mask)" />
                     <WordCloud
                       data={data}
                       width={300}
@@ -220,8 +232,10 @@ const UserProfile = () => {
                       fill={(d, i) => {
                         const rand = Math.floor(Math.random() * 10);
                         return `rgba(215,218,249,${1 - rand * 0.07})`;
-                      }}
-                    />
+                      }}></WordCloud>
+                  </svg>
+
+         
                   ) : (
                     <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
                   )}
