@@ -255,13 +255,15 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         setPeerConnections(prevConnections => {
           const updatedConnections = { ...prevConnections };
           delete updatedConnections[userId];
-          if (Object.keys(updatedConnections).length === 0) {
+          // 초기 연결 시 coolTime을 설정하지 않기 위해 빈 연결 상태를 구분
+          if (client.readyState === WebSocket.OPEN && Object.keys(updatedConnections).length === 0 && Object.keys(prevConnections).length !== 0) {
             client.send(JSON.stringify({ type: "rtc_disconnect_all" }));
           }
           return updatedConnections;
         });
       }
     };
+    
     
 
     if (stream) {
