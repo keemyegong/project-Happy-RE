@@ -88,9 +88,9 @@
 }
 
 .cell.selected {
-  color: white;
+  color: rgb(187, 92, 92);
   opacity: 1;
-  font-weight: 900;
+  
 }
 
 .cell .number {
@@ -110,6 +110,10 @@
 
 .cell.selected .bg {
   opacity: 1;
+}
+
+.calender-possible-day{
+  color: #7e96ca;
 }
 
 /* Media queries for responsive design */
