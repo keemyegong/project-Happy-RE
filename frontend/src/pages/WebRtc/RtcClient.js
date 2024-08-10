@@ -263,6 +263,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
           const updatedConnections = { ...prevConnections };
           delete updatedConnections[userId];
           if (client.readyState === WebSocket.OPEN && Object.keys(updatedConnections).length === 0 && Object.keys(prevConnections).length !== 0) {
+              console.log('끊겼는지 확인용')
               client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
           }
           return updatedConnections;
