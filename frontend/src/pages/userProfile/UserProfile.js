@@ -222,12 +222,13 @@ const UserProfile = () => {
                 </span>
               </div>
               <div className='wordcloud-container'>
-                  {data.length > 0 ? (
+                  <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
+                  {/* {data.length > 0 ? (
                     <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
          
                   ) : (
                     <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
-                  )}
+                  )} */}
                 </div>
                 <div className='my-5 calender-container'>
                   <Calendar />
