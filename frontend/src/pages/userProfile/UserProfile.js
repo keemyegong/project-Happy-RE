@@ -11,7 +11,7 @@ import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
-
+import * as echarts from 'echarts';
 
 import artist from '../../assets/characters/art.png';
 import butler from '../../assets/characters/butler.png';
@@ -85,45 +85,59 @@ const UserProfile = () => {
 
 
     
-    axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`,
-      {headers:{
-          Authorization : `Bearer ${Cookies.get('Authorization')}`
-      }}
-      ).then((response)=>{
-        const responseData = response.data; 
-        console.log(responseData)
+    axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('Authorization')}`
+      }
+    })
+    .then((response) => {
+      const responseData = response.data; 
+      console.log(responseData);
 
-        const keywordMap = new Map();
-      
-        responseData.forEach(item => {
-          const { word, frequency } = item;
-          keywordMap.set(word, frequency);
-        });
-      
-        const keywordObject = Object.fromEntries(keywordMap);
-        console.log(keywordObject);
-      
-        const wordCloudData = Object.keys(keywordObject).map(keyword => ({
-          text: keyword,
-          value: keywordObject[keyword] * 3 // frequency에 대한 가중치
-        }))
+      // 데이터를 ECharts의 워드클라우드 형식으로 변환
+      const wordCloudData = responseData.map(item => ({
+        name: item.word,
+        value: item.frequency * 3 // frequency에 대한 가중치 적용
+      }));
 
-        setData(wordCloudData);
-      }).catch(error => {
-        // 에러가 발생했을 때 실행할 코드
-        if (error.response) {
-            // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
-            console.error('Error status:', error.response.status);
-            console.error('Error data:', error.response.data);
-        } else if (error.request) {
-            // 요청이 만들어졌으나 서버로부터 응답이 없을 때
-            console.error('No response received:', error.request);
-        } else {
-            // 요청을 설정하는 중에 에러가 발생했을 때
-            console.error('Error setting up request:', error.message);
-        }
-      })
+      // 차트를 초기화할 DOM 요소 선택
+      const chart = echarts.init(document.getElementById('wordCloud'));
 
+      // ECharts 옵션 설정
+      chart.setOption({
+        series: [{
+          type: 'wordCloud',
+          shape: 'circle', // 워드클라우드 모양 (기본 제공 모양 중 하나)
+          sizeRange: [12, 50], // 글자 크기 범위
+          rotationRange: [-90, 90], // 글자의 회전 범위
+          gridSize: 2, // 글자 간격
+          drawOutOfBound: false,
+          textStyle: {
+            normal: {
+              color: function() {
+                // 랜덤 색상 적용
+                return 'rgb(' + [
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160),
+                  Math.round(Math.random() * 160)
+                ].join(',') + ')';
+              }
+            },
+          },
+          data: wordCloudData
+        }]
+      });
+    })
+    .catch(error => {
+      if (error.response) {
+        console.error('Error status:', error.response.status);
+        console.error('Error data:', error.response.data);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
+    });
 
     // 이모션 데이터
     axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
@@ -208,33 +222,7 @@ const UserProfile = () => {
               </div>
               <div className='wordcloud-container'>
                   {data.length > 0 ? (
-                    <svg width="300" height="100" viewBox="0 0 300 100">
-                    <defs>
-                      <mask id="mask">
-                        <rect width="100%" height="100%" fill="white" />
-
-                        <path
-                          d="M20 10 Q50 -20, 80 10 L280 10 Q310 10, 280 50 L250 80 Q250 90, 240 80 L150 80 L100 90 Q70 110, 60 80 L30 50 Q10 30, 20 10"
-                          fill="black"
-                        />
-                      </mask>
-                    </defs>
-                    <rect width="100%" height="100%" fill="rgba(215,218,249,0.9)" mask="url(#mask)" />
-                    <WordCloud
-                      data={data}
-                      width={300}
-                      height={100}
-                      font="Times"
-                      fontWeight="bold"
-                      fontSize={(word) => Math.log2(word.value) * 2.2}
-                      spiral="rectangular"
-                      padding={5}
-                      fill={(d, i) => {
-                        const rand = Math.floor(Math.random() * 10);
-                        return `rgba(215,218,249,${1 - rand * 0.07})`;
-                      }}></WordCloud>
-                  </svg>
-
+                    <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
          
                   ) : (
                     <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
