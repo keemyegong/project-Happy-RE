@@ -98,7 +98,7 @@ const UserProfile = () => {
       // 데이터를 ECharts의 워드클라우드 형식으로 변환
       const wordCloudData = responseData.map(item => ({
         name: item.word,
-        value: item.frequency * 3 // frequency에 대한 가중치 적용
+        value: item.frequency  // frequency에 대한 가중치 적용
       }));
       setData(wordCloudData);
 
