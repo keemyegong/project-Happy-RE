@@ -74,12 +74,12 @@ wss.on('connection', (ws, req) => {
         updateClients(roomId);
         break;
 
-      case 'rtc_disconnect_all':
-        setCoolTime(roomId, userId, true);
-        setTimeout(() => {
-          setCoolTime(roomId, userId, false);
-        }, 10000);
-        break;
+        case 'rtc_disconnect_all':
+          setCoolTime(roomId, data.userId, true);
+          setTimeout(() => {
+              setCoolTime(roomId, data.userId, false);
+          }, 10000);
+          break;
 
       default:
         console.error('Unrecognized message type:', data.type);
