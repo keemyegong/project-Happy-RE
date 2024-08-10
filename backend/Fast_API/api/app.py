@@ -61,13 +61,17 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
         print(f"user_audio_dir : {user_audio_dir}")
         for root, dirs, files in os.walk(user_audio_dir):
             for filename in files:
-                
                 local_path = os.path.join(root, filename)
                 absolute_path = os.path.abspath(local_path)
 
                 try:
                     with open(absolute_path, 'rb') as file:
-                        s3_client.upload_fileobj(file, BUCKET_NAME, filename)
+                        s3_client.upload_fileobj(
+                            file, 
+                            BUCKET_NAME, 
+                            filename,
+                            ExtraArgs={'ContentType':'audio/mpeg'}
+                            )
 
                 except s3_client.exceptions.S3UploadFailedError as e:
                     print(f"File upload Error : {str(e)}")
