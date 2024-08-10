@@ -13,20 +13,16 @@ import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 import * as echarts from 'echarts';
 import 'echarts-wordcloud';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 import DiaryDetail from '../../components/diary-report/DiaryDetail';
-
-
+import PersonaChangeModal from '../../components/persona-change-modal/PersonaChangeModal'
 import artist from '../../assets/characters/art.png';
 import butler from '../../assets/characters/butler.png';
 import defaultPersona from '../../assets/characters/default.png';
 import soldier from '../../assets/characters/soldier.png';
 import steel from '../../assets/characters/steel.png';
 
-import { Modal } from 'react-bootstrap';
-
 const UserProfile = () => {
-  
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const happyReHello = [
     "당신의 마음을 편하게 해주는 작은 기쁨이 필요하다면 언제든지 말씀해 주세요. 함께 해결해 나갈 수 있을 거예요.",
@@ -53,17 +49,16 @@ const UserProfile = () => {
   const universal = useContext(universeVariable);
   const today = new Date();
   const monthAgo = new Date(today);
-  monthAgo.setMonth(today.getMonth()-1);
-  const [keyword, setKeyword] = useState([])
-  const [chatlog, setChatlog] = useState([])
+  monthAgo.setMonth(today.getMonth() - 1);
+  const [keyword, setKeyword] = useState([]);
+  const [chatlog, setChatlog] = useState([]);
   const [daySummary, setDaySummary] = useState('');
-  const [showDiary, setShowDiary] = useState(false); 
+  const [showDiary, setShowDiary] = useState(false);
   const [selectedDay, setSelectedDay] = useState(today);
   const [possibleList, setPossibleList] = useState([]);
   const [recentList, setRecentList] = useState([]);
   let possibleDates = [];
   let recentinfo = [];
-
 
   let navigate = useNavigate();
 
@@ -73,25 +68,24 @@ const UserProfile = () => {
   const handleShow = () => setShow(true);
   const balloonImage = new Image();
   balloonImage.src = '../../assets/wordimg.svg'; // 말풍선 이미지 경로
-  
-  const getRecentMonthDiary = ()=>{
+
+  const getRecentMonthDiary = () => {
     axios.get(
-      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth()+1}&day=${monthAgo.getDate()}&period=${31}`,
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${31}`,
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
         }
-      }).then((response)=>{
-        response.data.filter((element)=>{ return element.russellAvgX!=null && element.russellAvgY!=null}).forEach((element)=>{
-          recentinfo.push({x:element.russellAvgX, y:element.russellAvgY, value:0.8})
-        })
+      }).then((response) => {
+        response.data.filter((element) => { return element.russellAvgX != null && element.russellAvgY != null }).forEach((element) => {
+          recentinfo.push({ x: element.russellAvgX, y: element.russellAvgY, value: 0.8 })
+        });
         setRecentList(recentinfo);
+      });
+  };
 
-      })
-  }
-
-  const getDiary = (year, month, date)=>{
+  const getDiary = (year, month, date) => {
     axios.get(
       `${universal.defaultUrl}/api/diary/?year=${year}&month=${month}&day=${date}&period=1`,
       {
@@ -99,10 +93,8 @@ const UserProfile = () => {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
         }
-      }).then((response)=>{
-
-        if (response.data[0] != undefined){
-          // console.log(response.data);
+      }).then((response) => {
+        if (response.data[0] != undefined) {
           setDaySummary(response.data[0].summary);
           const example = response.data[0].diaryId;
 
@@ -113,52 +105,49 @@ const UserProfile = () => {
                 Authorization: `Bearer ${Cookies.get('Authorization')}`,
                 withCredentials: true,
               }
-            }).then((response)=>{
-              
-              console.log(response.data.messageEntities);
+            }).then((response) => {
               setKeyword(response.data.keywordEntities);
               setChatlog(response.data.messageEntities);
 
               setShowDiary(true);
-            })
-          } else {
-            Swal.fire({
-              title: '다이어리가 없습니다!',
-              text: '해파리가 열심히 찾아봤지만, 안타깝게도 해당 날짜에는 하루를 기록한 흔적이 없는 것 같아요.',
-              icon: "question",
-              iconColor: "#4B4E6D",
-              color: 'white',
-              background: '#292929',
-              confirmButtonColor: '#4B4E6D',
             });
-            
-          }
-      })
-  }
+        } else {
+          Swal.fire({
+            title: '다이어리가 없습니다!',
+            text: '해파리가 열심히 찾아봤지만, 안타깝게도 해당 날짜에는 하루를 기록한 흔적이 없는 것 같아요.',
+            icon: "question",
+            iconColor: "#4B4E6D",
+            color: 'white',
+            background: '#292929',
+            confirmButtonColor: '#4B4E6D',
+          });
+        }
+      });
+  };
 
-  const showDiaryModal = (date)=>{
-    getDiary(date.getFullYear(),date.getMonth()+1,date.getDate());
-  }
+  const showDiaryModal = (date) => {
+    getDiary(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  };
 
-  const getMonthlyDiary = (startDate)=>{
-    const last = new Date(startDate.getFullYear(),startDate.getMonth()+1,0);
+  const getMonthlyDiary = (startDate) => {
+    const last = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
     axios.get(
-      `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth()+1}&day=1&period=${last.getDate()}`,
+      `${universal.defaultUrl}/api/diary/?year=${startDate.getFullYear()}&month=${startDate.getMonth() + 1}&day=1&period=${last.getDate()}`,
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
         }
-      }).then((response)=>{
+      }).then((response) => {
         response.data.forEach(element => {
-          possibleDates.push(element.date.substring(0,10));
-          
+          possibleDates.push(element.date.substring(0, 10));
         });
-        if (possibleDates.length !== possibleList.length){
+        if (possibleDates.length !== possibleList.length) {
           setPossibleList(possibleDates);
         }
-      })
-  }
+      });
+  };
+
   useEffect(() => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
@@ -168,7 +157,6 @@ const UserProfile = () => {
     axios.get(`${universal.defaultUrl}/api/user/me`, {
       headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` }
     }).then((Response) => {
-      console.log(Response.data);
       setNickname(Response.data.name);
       setEmail(Response.data.email);
       localStorage.setItem("personaNumber", Response.data.myfrog);
@@ -181,81 +169,65 @@ const UserProfile = () => {
         const url = window.URL.createObjectURL(blobData);
         setImage(url);
       }).catch(() => {
-        console.log('이미지 파일이 존재하지 않습니다.');
         setImage(userProfileImage);
       });
+    }).catch(() => {
+      console.log('서버와통신불가');
+    });
 
-
-    }).catch(()=>{
-      console.log('서버와통신불가')
-    })
-
-
-    
     axios.get(`${universal.defaultUrl}/api/wordcloud/mywords`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`
       }
     })
-    .then((response) => {
-      const responseData = response.data; 
-      console.log(responseData);
+      .then((response) => {
+        const responseData = response.data;
+        const wordCloudData = responseData.map(item => ({
+          name: item.word,
+          value: item.frequency  // frequency에 대한 가중치 적용
+        }));
+        setData(wordCloudData);
 
-      // 데이터를 ECharts의 워드클라우드 형식으로 변환
-      const wordCloudData = responseData.map(item => ({
-        name: item.word,
-        value: item.frequency  // frequency에 대한 가중치 적용
-      }));
-      setData(wordCloudData);
-
-      // 차트를 초기화할 DOM 요소 선택
-      const chart = echarts.init(document.getElementById('wordCloud'));
-
-
-
-      // ECharts 옵션 설정
-      chart.setOption({
-        series: [{
-          type: 'wordCloud',
-          maskImage: balloonImage,
-          sizeRange: [12, 50], // 글자 크기 범위
-          rotationRange: [-90, 90], // 글자의 회전 범위
-          gridSize: 2, // 글자 간격
-          drawOutOfBound: false,
-          textStyle: {
-            normal: {
-              color: function() {
-                // 랜덤 색상 적용
-                return 'rgb(' + [
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160)
-                ].join(',') + ')';
-              }
+        const chart = echarts.init(document.getElementById('wordCloud'));
+        chart.setOption({
+          series: [{
+            type: 'wordCloud',
+            maskImage: balloonImage,
+            sizeRange: [12, 50], // 글자 크기 범위
+            rotationRange: [-90, 90], // 글자의 회전 범위
+            gridSize: 2, // 글자 간격
+            drawOutOfBound: false,
+            textStyle: {
+              normal: {
+                color: function () {
+                  return 'rgb(' + [
+                    Math.round(Math.random() * 160),
+                    Math.round(Math.random() * 160),
+                    Math.round(Math.random() * 160)
+                  ].join(',') + ')';
+                }
+              },
             },
-          },
-          data: wordCloudData
-        }]
+            data: wordCloudData
+          }]
+        });
+      })
+      .catch(error => {
+        if (error.response) {
+          console.error('Error status:', error.response.status);
+          console.error('Error data:', error.response.data);
+        } else if (error.request) {
+          console.error('No response received:', error.request);
+        } else {
+          console.error('Error setting up request:', error.message);
+        }
       });
-    })
-    .catch(error => {
-      if (error.response) {
-        console.error('Error status:', error.response.status);
-        console.error('Error data:', error.response.data);
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-      } else {
-        console.error('Error setting up request:', error.message);
-      }
-    });
 
-    // 이모션 데이터
     axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`
       }
     }).then((response) => {
-      console.log('요청 데이터', response.data)
       const { messageEntities } = response.data;
       const processedData = messageEntities
         .filter(message => message.russellX !== null && message.russellY !== null)
@@ -264,29 +236,23 @@ const UserProfile = () => {
           y: message.russellY,
           value: 0.8
         })
-      );
+        );
       setEmotionData(processedData);
-      console.log("이모션 데이터", emotionData)
     }).catch(error => {
-      // 에러가 발생했을 때 실행할 코드
       if (error.response) {
-        // 서버가 응답을 반환했을 때 (4xx, 5xx 응답 코드)
         console.error('Error status:', error.response.status);
         console.error('Error data:', error.response.data);
       } else if (error.request) {
-        // 요청이 만들어졌으나 서버로부터 응답이 없을 때
         console.error('No response received:', error.request);
       } else {
-        // 요청을 설정하는 중에 에러가 발생했을 때
         console.error('Error setting up request:', error.message);
       }
     });
   }, []);
 
-
   const showModal = () => {
-    setShow(show === 'show-modal' ? 'unshow-modal' : 'show-modal');
-  }
+    setShow(!show);
+  };
 
   const changePersona = (happyreNumber) => {
     localStorage.setItem("personaNumber", happyreNumber);
@@ -296,21 +262,20 @@ const UserProfile = () => {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`
       }
-    })
-    setShow(show === 'show-modal' ? 'unshow-modal' : 'show-modal');
-  }
+    });
+    setShow(false);
+  };
 
   const schemeCategory10ScaleOrdinal = scaleOrdinal(schemeCategory10);
 
-  
   return (
-    <>
+    <div>
       <div className='container-fluid user-profile-container'>
         <div className='row'>
           <div className='col-12 col-md-4 col-xxl-2 '>
             <div className='default-info'>
               <div className='user-avatar'>
-                <img className='profile-image' src={image} />
+                <img className='profile-image' src={image} alt='profile' />
               </div>
               <div className='default-info-container'>
                 <p className='nickname'>{nickname}</p>
@@ -324,23 +289,21 @@ const UserProfile = () => {
           <div className='col-12 col-md-8 col-xxl-10'>
             <div className='user-emotion-info-container row'>
               <div className='col-12 col-xxl-6'>
-              <div class='profile-mywords-title text-white'>
-                <p class='profile-mywords-title-text'>My Words</p>
-                <span class='profile-mywords-guide'>
-                  내가 자주 사용하는 어휘들을 통해서 나의 감정을 돌아볼 수 있어요
-                </span>
-              </div>
-              <div className='wordcloud-container'>
-                  <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
-                  {/* {data.length > 0 ? (
+                <div className='profile-mywords-title text-white'>
+                  <p className='profile-mywords-title-text'>My Words</p>
+                  <span className='profile-mywords-guide'>
+                    내가 자주 사용하는 어휘들을 통해서 나의 감정을 돌아볼 수 있어요
+                  </span>
+                </div>
+                <div className='wordcloud-container'>
+                  {data.length > 0 ? (
                     <div id="wordCloud" style={{ width: '600px', height: '400px' }}></div>
-         
                   ) : (
                     <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
-                  )} */}
+                  )}
                 </div>
                 <div className='my-5 calender-container'>
-                  <Calendar 
+                  <Calendar
                     possibleList={possibleList}
                     showDiaryModal={showDiaryModal}
                     getMonthlyDiary={getMonthlyDiary}
@@ -350,9 +313,9 @@ const UserProfile = () => {
               <div className='col-12 col-xxl-6'>
                 <div className='profile-emotion-title text-white'>
                   <p className='profile-emotion-title-text'>Emotion Graph</p>
-                  <span class='profile-mywords-guide'>
+                  <span className='profile-mywords-guide'>
                     최근 한 달 나의 감정을 그래프를 통해 알아볼 수 있어요
-                    <br/>
+                    <br />
                     X축은 긍정도, Y축은 각성도를 나타내요
                   </span>
                 </div>
@@ -361,13 +324,12 @@ const UserProfile = () => {
                 </div>
 
                 <div className='change-happyre-persona my-5'>
-                  {/* 해피리 페르소나 영역 */}
                   <div className='persona-chat-container'>
                     <div className='persona-chat'>
                       {keywordEntities == null ? happyReGoDiary[localStorage.getItem('personaNumber')] : happyReHello[localStorage.getItem('personaNumber')]}
                       {keywordEntities == null && (
                         <p className='persona-diary-add-btn m-0'>
-                        <Button className='btn dark-btn small' content='다이어리 작성하러 갈래!' onClick={() => navigate('/diary')} />
+                          <Button className='btn dark-btn small' content='다이어리 작성하러 갈래!' onClick={() => navigate('/diary')} />
                         </p>
                       )}
                     </div>
@@ -387,109 +349,22 @@ const UserProfile = () => {
         </div>
       </div>
 
-      <div className={show}>
-        <div className='happyre-persona-change-container'>
-          <div className='row row-cols-2 row-cols-lg-3 justify-content-center'>
-            <div className='col'>
-              <div className='happyre-persona-icon-container' onClick={() => { changePersona(0) }}>
-                <img src={happyRelist[0]} className='happyre-choice-preview' />
-                <div className='happyre-persona-info'>
-                  <div className='happyre-persona-info-title'>
-                    해피리
-                  </div>
-                  <div className='happyre-persona-info-description'>
-                    안녕하세요! 해피리예요.
-                    오늘은 어떤 일이 있으셨나요? 기분이나 마음이 무거우신가요?
-                    <br />
-                    제가 도와드릴 수 있는 게 있다면 말씀해 주세요.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='col'>
-              <div className='happyre-persona-icon-container' onClick={() => { changePersona(1) }}>
-                <img src={happyRelist[1]} className='happyre-choice-preview' />
-                <div className='happyre-persona-info'>
-                  <div className='happyre-persona-info-title'>
-                    해파린 장군
-                  </div>
-                  <div className='happyre-persona-info-description'>
-                    안녕하신가, 전사여. 오늘 그대의 마음이 무거운 듯하네. 어떤 고민이 있는지 말해보거라.
-                    <br />
-                    내가 도울 수 있는 방법을 찾아보겠네.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='col'>
-              <div className='happyre-persona-icon-container' onClick={() => { changePersona(2) }}>
-                <img src={happyRelist[2]} className='happyre-choice-preview' />
-                <div className='happyre-persona-info'>
-                  <div className='happyre-persona-info-title'>
-                    해파스찬
-                  </div>
-                  <div className='happyre-persona-info-description'>
-                    안녕하세요, 주인님! 오늘 하루는 어떻게 보내셨나요?
-                    <br />
-                    어떤 부분에서 어려움을 겪으셨는지 말씀해주시면
-                    <br />
-                    제가 도와드릴 수 있을 것 같아요.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='col'>
-              <div className='happyre-persona-icon-container' onClick={() => { changePersona(3) }}>
-                <img src={happyRelist[3]} className='happyre-choice-preview' />
-                <div className='happyre-persona-info'>
-                  <div className='happyre-persona-info-title'>
-                    해파라테스
-                  </div>
-                  <div className='happyre-persona-info-description'>
-                    안녕하신가. 오늘 하루는 어떠했나.
-                    <br />
-                    삶의 의미에 대해 생각하기 좋은 날이었나?
-                    <br />
-                    어떤 생각들이 그대의 마음을 채우고 있는지 궁금하네.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='col'>
-              <div className='happyre-persona-icon-container' onClick={() => { changePersona(4) }}>
-                <img src={happyRelist[4]} className='happyre-choice-preview' />
-                <div className='happyre-persona-info'>
-                  <div className='happyre-persona-info-title'>
-                    셰익스피리
-                  </div>
-                  <div className='happyre-persona-info-description'>
-                    (깊이 생각하며) 우리의 무대는 삶의 거울이라네.
-                    <br />
-                    그대의 영혼에 잠든 이야기를 깨워,
-                    <br />
-                    어떤 상념들이 그대를 사로잡고 있는지 들여다보게나!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Button className='btn light-btn small' content='Close' onClick={showModal} />
-        </div>
-      </div>
+      <PersonaChangeModal show={show} handleClose={handleClose} changePersona={changePersona} />
+
       <div className='modal-container'>
         {showDiary && (
-          <DiaryDetail 
+          <DiaryDetail
             daySummary={daySummary}
             chatlog={chatlog}
             keyword={keyword}
-            selectedDay={selectedDay} // 전체 날짜 정보 전달
+            selectedDay={selectedDay}
             onClose={() => setShowDiary(false)}
             hideplus={true}
           />
         )}
       </div>
-    </>
+    </div>
   );
-}
+};
 
 export default UserProfile;

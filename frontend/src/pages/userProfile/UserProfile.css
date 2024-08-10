@@ -304,3 +304,7 @@
 .happyre-persona-info-description {
   font-size: 12px;
 }
+
+.wordcloud-none-word {
+  opacity: 0.7;
+}

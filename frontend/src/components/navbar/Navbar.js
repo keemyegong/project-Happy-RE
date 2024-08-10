@@ -47,16 +47,16 @@ function Nav() {
             <ul className="navbar-nav ms-auto">
               <>
                 <li className="nav-item">
-                  <Link className='navbar-menu navbar-menu-font' to='/webrtc'>TALK</Link>
-                </li>
-                <li className="nav-item">
                   <Link className='navbar-menu navbar-menu-font' to='/diary'>DIARY</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className='navbar-menu navbar-menu-font' to='/archive'>ARCHIVE</Link>
+                  <Link className='navbar-menu navbar-menu-font' to='/message'>MESSAGE</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className='navbar-menu navbar-menu-font' to='/message'>MESSAGE</Link>
+                  <Link className='navbar-menu navbar-menu-font' to='/webrtc'>TALK</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className='navbar-menu navbar-menu-font' to='/archive'>ARCHIVE</Link>
                 </li>
                 <li className="nav-item">
                   <Link className='navbar-menu navbar-icon' to='/' onClick={logout}>

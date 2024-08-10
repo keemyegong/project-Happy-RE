@@ -1,4 +1,6 @@
-import React, { useState, useEffect,useContext, } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
+import Button from '../../components/Button/Button';
+import { useNavigate } from 'react-router-dom';
 import './Archive.css';
 import KeywordCard from '../../components/diary-report/KeywordCard';
 import Test from '../../components/emotion-graph/Test';
@@ -8,8 +10,9 @@ import Cookies from 'js-cookie';
 import MessageCard from '../../components/message-card/MessageCard';
 import Swal from 'sweetalert2'
 
-
 const Archive = () => {
+  
+  let navigate = useNavigate();
   const universal = useContext(universeVariable);
   const [messages, setMessages] = useState([]);
   const [keywords, setKeywords] = useState([]);
@@ -164,19 +167,28 @@ const Archive = () => {
             </span>
           </div>
           <div className="archive-mywords-content">
-            {keywords.map((keyword) => (
-              <div
-                className='archive-keyword'
-                key={keyword.id}
-                onClick={() => handleKeywordClick(keyword)}
-                style={{
-                  fontWeight: selectedKeyword?.keyword === keyword.keyword ? '800' : 'normal',
-                  opacity: selectedKeyword?.keyword === keyword.keyword ? '1' : '0.7'
-                }}
-              >
-                {keyword.keyword}
+            {keywords.length === 0 ? (
+              <div className="archive-none-keywords-text">
+                아직 다이어리를 기록하지 않으셨네요!
+                오늘의 하루를 기록해 볼까요?
+                <br />
+                <Button className='btn dark-btn small archive-godiary-btn' content='다이어리 작성하러 갈래!' onClick={() => navigate('/diary')} />
               </div>
-            ))}
+            ) : (
+              keywords.map((keyword) => (
+                <div
+                  className='archive-keyword'
+                  key={keyword.id}
+                  onClick={() => handleKeywordClick(keyword)}
+                  style={{
+                    fontWeight: selectedKeyword?.keyword === keyword.keyword ? '800' : 'normal',
+                    opacity: selectedKeyword?.keyword === keyword.keyword ? '1' : '0.7'
+                  }}
+                >
+                  {keyword.keyword}
+                </div>
+              ))
+            )}
           </div>
           {selectedKeyword && (
             <div className='row archive-myword-info-container'>
