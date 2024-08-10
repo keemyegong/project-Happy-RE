@@ -13,7 +13,7 @@ import Calendar from '../../components/calander/Calander';
 import EmotionGraph from '../../components/emotion-graph/EmotionGraph';
 import * as echarts from 'echarts';
 import 'echarts-wordcloud';
-import wordimg from '../../assets/wordimg.png'
+
 
 import artist from '../../assets/characters/art.png';
 import butler from '../../assets/characters/butler.png';
