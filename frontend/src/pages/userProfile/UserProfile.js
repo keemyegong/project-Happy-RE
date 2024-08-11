@@ -108,8 +108,7 @@ const UserProfile = () => {
             }).then((response) => {
               setKeyword(response.data.keywordEntities);
               setChatlog(response.data.messageEntities);
-
-              setShowDiary(true);
+              setShowDiary(true);            
             });
         } else {
           Swal.fire({
@@ -329,7 +328,7 @@ const UserProfile = () => {
 
                 <div className='change-happyre-persona my-5'>
                   <div className='persona-chat-container'>
-                    <div className='persona-chat'>
+\                    <div className='persona-chat'>
                       {keywordEntities == null ? happyReGoDiary[localStorage.getItem('personaNumber')] : happyReHello[localStorage.getItem('personaNumber')]}
                       {keywordEntities == null && (
                         <p className='persona-diary-add-btn m-0'>

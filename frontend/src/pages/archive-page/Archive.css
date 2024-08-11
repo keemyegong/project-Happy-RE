@@ -191,6 +191,12 @@
 
 @media (max-width: 1270px) {
   .archive-message-card {
+    width: 42%;
+  }
+}
+
+@media (max-width: 1170px) {
+  .archive-message-card {
     width: 100%;
   }
 }
@@ -234,3 +240,8 @@
   }
 }
 
+@media (max-width: 768px) {
+  .archive-message-card {
+    width: 100%;
+  }
+}
