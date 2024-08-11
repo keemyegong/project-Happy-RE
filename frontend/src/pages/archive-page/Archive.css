@@ -41,7 +41,7 @@
   margin: auto;
   display: flex;
   max-height: 20vh;
-  overflow-y: auto;
+  overflow-x : auto;
 }
 
 .archive-keyword {

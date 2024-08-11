@@ -31,6 +31,13 @@
   height: 80%;
 }
 
+.messages-none-text {
+  font-family: Pretendard;
+  color: white;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 .input-container {
   flex: 2;
   display: flex;

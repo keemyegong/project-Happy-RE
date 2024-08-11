@@ -16,12 +16,10 @@ const Message = () => {
   const [messages, setMessages] = useState([]);
   const [showContainer, setShowContainer] = useState('messages'); // 'messages' or 'input'
   const universal = useContext(universeVariable);
-  const [keywords,setKeywords] = useState([]);
+  const [keywords, setKeywords] = useState([]);
   const [modal, setModal] = useState(false);
   let navigate = useNavigate();
 
-
- 
   useEffect(() => {
     getMessage();
     getKeywords();
@@ -48,26 +46,13 @@ const Message = () => {
             setImage(userProfileImage);
           });
       });
-
-    // Fetch messages
-    // axios
-    //   .get(`${universal.defaultUrl}/api/messages`, {
-    //     headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
-    //   })
-    //   .then((response) => {
-    //     setMessages(response.data.messages);
-    //   });
-
-    // Dummy data for messages
-
-    // setMessages(dummyMessages);
   }, []);
 
   const toggleContainer = () => {
     setShowContainer(showContainer === 'messages' ? 'input' : 'messages');
   };
 
-  const getMessage = ()=>{
+  const getMessage = () => {
     axios
       .get(`${universal.defaultUrl}/api/usermsg/4`, {
         headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
@@ -75,33 +60,27 @@ const Message = () => {
       .then((response) => {
         console.log(response.data);
         setMessages(response.data);
-      })
-      
-  }
+      });
+  };
 
-
-  const getKeywords = ()=>{
-    axios.get(
-      `${universal.defaultUrl}/api/diary/detail/`,
-      {
+  const getKeywords = () => {
+    axios
+      .get(`${universal.defaultUrl}/api/diary/detail/`, {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
-        }
-      }).then((response)=>{
-        if (response.data.keywordEntities != undefined){
-          setKeywords(response.data.keywordEntities);
-        } 
+        },
       })
-  }
-
-
+      .then((response) => {
+        if (response.data.keywordEntities != undefined) {
+          setKeywords(response.data.keywordEntities);
+        }
+      });
+  };
 
   return (
     <main className="Message">
-      {modal && <div className='message-input-modal'>
-
-      </div>}
+      {modal && <div className="message-input-modal"></div>}
       <div className="message-profile-container">
         <div className="default-info">
           <div className="user-avatar">
@@ -122,18 +101,24 @@ const Message = () => {
       </div>
       <div className={`msg-container ${showContainer === 'messages' ? 'visible' : 'hidden'}`}>
         <div className="message-container">
-          {messages.map((message) => (
-            <MessageCard
-              key={message.userMessageId}
-              messageId={message.userMessageId}
-              profileImageUrl={message.userEntity.profileImageUrl}
-              userName={'익명의 해피리'}
-              content={message.content}
-              keyword={message.
-                userMessageAttachedKeywordEntityList[0]
-                }
-            />
-          ))}
+          {messages.length === 0 ? (
+            <div className="messages-none-text">
+              아직 도착한 메시지가 없어요!
+              <br />
+              해피리 친구들의 바쁜 하루를 조금만 더 기다려 볼까요?
+            </div>
+          ) : (
+            messages.map((message) => (
+              <MessageCard
+                key={message.userMessageId}
+                messageId={message.userMessageId}
+                profileImageUrl={message.userEntity.profileImageUrl}
+                userName={'익명의 해피리'}
+                content={message.content}
+                keyword={message.userMessageAttachedKeywordEntityList[0]}
+              />
+            ))
+          )}
         </div>
       </div>
       <div className={`msg-container ${showContainer === 'input' ? 'visible' : 'hidden'}`}>
