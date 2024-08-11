@@ -120,7 +120,7 @@
 .archive-message-content {
   display: flex;
   flex-wrap: wrap;
-  max-height: 75vh;
+  max-height: 70vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -171,8 +171,8 @@
 } */
 
 .archive-message-card {
-  width: 46%; /* fixed width */
-  height: 240px; /* fixed height */
+  width: 46%;
+  height: 240px;
   min-width: 200px;
 }
 .archive-none-keywords-text {
@@ -189,8 +189,21 @@
   margin-top: 20px;
 }
 
+@media (max-width: 1270px) {
+  .archive-message-card {
+    width: 100%;
+  }
+}
+
 /* 미디어 쿼리 추가 */
 @media (max-width: 1024px) {
+  .Archive {
+    margin-top: 100px;
+  }
+  .archive-message-card {
+    width: 46%;
+  }
+  
   .archive-container {
     display: flex;
     flex-direction: column;
@@ -201,9 +214,14 @@
   .archive-message-container {
     width: 100%;
   }
-.keywordcard-arrow-container{
-  margin: 0;
-}
+
+  .archive-message-content {
+    display: flex;
+    max-height: 30vh;
+  }
+  .keywordcard-arrow-container{
+    margin: 0;
+  }
   .archive-mywords-guide {
     display: none;
   }

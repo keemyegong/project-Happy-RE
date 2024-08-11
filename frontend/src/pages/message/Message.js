@@ -112,8 +112,9 @@ const Message = () => {
               <MessageCard
                 key={message.userMessageId}
                 messageId={message.userMessageId}
-                profileImageUrl={message.userEntity.profileImageUrl}
-                userName={'익명의 해피리'}
+                persona={message.userEntity.myfrog}
+                // profileImageUrl={message.userEntity.profileImageUrl}
+                // userName={'익명의 해피리'}
                 content={message.content}
                 keyword={message.userMessageAttachedKeywordEntityList[0]}
               />
