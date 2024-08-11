@@ -308,3 +308,15 @@
 .wordcloud-none-word {
   opacity: 0.7;
 }
+
+@media (max-width: 1024px) {
+  .user-avatar {
+    display: none;
+  }
+  .default-info-container {
+    display: none;
+  }
+  .user-profile-info-container {
+    width: 100%;
+  }
+}

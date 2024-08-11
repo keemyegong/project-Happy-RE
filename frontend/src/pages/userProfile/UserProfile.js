@@ -273,20 +273,24 @@ const UserProfile = () => {
       <div className='container-fluid user-profile-container'>
         <div className='row'>
           <div className='col-12 col-md-4 col-xxl-2 '>
-            <div className='default-info'>
-              <div className='user-avatar'>
-                <img className='profile-image' src={image} alt='profile' />
-              </div>
-              <div className='default-info-container'>
-                <p className='nickname'>{nickname}</p>
-                <p className='email'>{email}</p>
-                <Button className='profile-edit-btn btn light-btn small' content='Edit Profile' onClick={() => {
-                  navigate('/user/update')
-                }} />
-              </div>
+          <div className='default-info'>
+            <div className='user-avatar'>
+              <img className='profile-image' src={image} alt='profile' />
+            </div>
+            <div className='default-info-container'>
+              <p className='nickname'>{nickname}</p>
+              <p className='email'>{email}</p>
+              <Button
+                className='profile-edit-btn btn light-btn small'
+                content='Edit Profile'
+                onClick={() => {
+                  navigate('/user/update');
+                }}
+              />
             </div>
           </div>
-          <div className='col-12 col-md-8 col-xxl-10'>
+          </div>
+          <div className='user-profile-info-container col-12 col-md-8 col-xxl-10'>
             <div className='user-emotion-info-container row'>
               <div className='col-12 col-xxl-6'>
                 <div className='profile-mywords-title text-white'>

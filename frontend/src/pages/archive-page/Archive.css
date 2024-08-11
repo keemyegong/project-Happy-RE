@@ -6,8 +6,11 @@
   font-style: normal;
 }
 
+.Archive {
+  margin-top: 150px;
+}
 .archive-container {
-  padding: 100px 100px;
+  padding: 0px 100px;
 }
 
 .archive-mywords-header {
@@ -39,19 +42,21 @@
 
 .archive-mywords-content {
   margin: auto;
-  display: flex;
   max-height: 20vh;
-  overflow-x : auto;
+  overflow-y: auto;
 }
 
 .archive-keyword {
+  display: inline-block;
+  margin: auto;
   text-align: center;
   width: 130px;
+  height: 90px;
   padding: 30px;
   color: white;
   font-family: 'Pretendard-Regular';
   font-size: 13px;
-  cursor: pointer;
+  cursor: pointer;  
 }
 
 .archive-mywords-content::-webkit-scrollbar {
@@ -154,16 +159,8 @@
   padding-left: 10px;
 }
 
-/* 미디어 쿼리 추가 */
-@media (max-width: 768px) {
-  .archive-myword-graph {
-    display: none;
-  }
-  .archive-myword-keywordcard {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-}
+
+
 
 /* .archive-message-content .message-card{
   width: 46%;
@@ -181,8 +178,8 @@
 .archive-none-keywords-text {
   font-family: Pretendard;
   color: white;
-  font-size: 13px;
   font-weight: 100;
+  font-size: 13px;
   padding-top: 10px;
   padding-left: 10px;
   opacity: 0.8;
@@ -191,3 +188,31 @@
 .archive-godiary-btn {
   margin-top: 20px;
 }
+
+/* 미디어 쿼리 추가 */
+@media (max-width: 1024px) {
+  .archive-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .archive-mywords-container {
+    width: 100%;
+  }
+  .archive-message-container {
+    width: 100%;
+  }
+.keywordcard-arrow-container{
+  margin: 0;
+}
+  .archive-mywords-guide {
+    display: none;
+  }
+  .archive-myword-graph {
+    display: none;
+  }
+  .archive-myword-keywordcard {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
