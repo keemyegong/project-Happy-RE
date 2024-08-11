@@ -6,8 +6,11 @@
   font-style: normal;
 }
 
+.Archive {
+  margin-top: 150px;
+}
 .archive-container {
-  padding: 100px 100px;
+  padding: 0px 100px;
 }
 
 .archive-mywords-header {
@@ -39,20 +42,21 @@
 
 .archive-mywords-content {
   margin: auto;
-  display: flex;
-  flex-wrap: wrap;
   max-height: 20vh;
   overflow-y: auto;
 }
 
 .archive-keyword {
+  display: inline-block;
+  margin: auto;
   text-align: center;
   width: 130px;
+  height: 90px;
   padding: 30px;
   color: white;
   font-family: 'Pretendard-Regular';
   font-size: 13px;
-  cursor: pointer;
+  cursor: pointer;  
 }
 
 .archive-mywords-content::-webkit-scrollbar {
@@ -114,8 +118,9 @@
 }
 
 .archive-message-content {
-  padding-right: 20px;
-  max-height: 75vh;
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 70vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -154,13 +159,89 @@
   padding-left: 10px;
 }
 
+
+
+
+/* .archive-message-content .message-card{
+  width: 46%;
+  height: 47%;
+  padding-bottom: 10px;
+  min-width: 200px;
+  font-size: clamp(11px, 1.1vw, 14px);
+} */
+
+.archive-message-card {
+  width: 46%;
+  height: 240px;
+  min-width: 200px;
+}
+.archive-none-keywords-text {
+  font-family: Pretendard;
+  color: white;
+  font-weight: 100;
+  font-size: 13px;
+  padding-top: 10px;
+  padding-left: 10px;
+  opacity: 0.8;
+}
+
+.archive-godiary-btn {
+  margin-top: 20px;
+}
+
+@media (max-width: 1270px) {
+  .archive-message-card {
+    width: 42%;
+  }
+}
+
+@media (max-width: 1170px) {
+  .archive-message-card {
+    width: 100%;
+  }
+}
+
 /* 미디어 쿼리 추가 */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .Archive {
+    margin-top: 100px;
+  }
+  .archive-message-card {
+    width: 46%;
+  }
+  
+  .archive-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .archive-mywords-container {
+    width: 100%;
+  }
+  .archive-message-container {
+    width: 100%;
+  }
+
+  .archive-message-content {
+    display: flex;
+    max-height: 30vh;
+  }
+  .keywordcard-arrow-container{
+    margin: 0;
+  }
+  .archive-mywords-guide {
+    display: none;
+  }
   .archive-myword-graph {
     display: none;
   }
   .archive-myword-keywordcard {
     flex: 0 0 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .archive-message-card {
+    width: 100%;
   }
 }

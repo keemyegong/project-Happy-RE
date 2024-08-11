@@ -99,7 +99,7 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     
 # ----------------------------------라우팅 함수--------------------------------------------
 
-# POST 요청으로 chabot 사용
+# POST 요청으로 chatbot 사용
 # chatbot 처리와 함께 딕셔너리 형태로 감정 저장
 @router.post('/')
 async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depends(decode_jwt)):
@@ -220,7 +220,17 @@ async def session_delete(request:Request):
     }
     
     chatbot_instance = user_session[user_id]
-    prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과  긍정적인 감정이 느껴지는 3개 이하의 키워드와 부정적인 감정이 느껴지는 3개 이하의 키워드를 뽑아 유저 메세지와 함께 보여줘. 응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. "diary_summary"는 전체 대화를 짧게 요약하는 문장을 값으로 가져. "summary_detail"은 리스트를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로 , 딕셔너리는 키값으로 "keyword","summary","message"를 갖고, "keyword"에는 요약된 1 ~ 2단어짜리 키워드를, "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, 마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. 만약 요약할 내용이 없다면 "None"으로 응답해줘.'
+    prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과 \
+        긍정적인 감정이 느껴지는 3개 이하의 키워드와 부정적인 감정이 느껴지는 3개 이하의 키워드를 뽑아 유저 메세지와 함께 보여줘. \
+        Tips on Creating Keywords: 1. The keyword must NOT be emotion or thought. 2. pick most triggering keywords.\
+        응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. \
+        "diary_summary"는 전체 대화를 짧게 요약하는 문장을 값으로 가져. \
+        "summary_detail"은 list를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로, \
+        딕셔너리는 키값으로 "keyword","summary","message"를 갖고, \
+        "keyword"에는 요약된 1 단어짜리 키워드를, \
+        "summary"에는 키워드를 뽑은 유저 메세지를 사건 중심으로 짧게 요약한 문장을, \
+        마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. \
+        만약 요약할 내용이 없다면 "None"으로 응답해줘. The contents also should be korean, except proper nouns.'
     
     response = chatbot_instance.generateResponse(prompt)
     print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")

@@ -202,7 +202,6 @@ const Diary = () => {
   return (
     <div className='Diary'>
       <div className='diary-container'>
-
         <div className='diary-week-control-container'>
           <svg
             onClick={handlePreviousWeek}
