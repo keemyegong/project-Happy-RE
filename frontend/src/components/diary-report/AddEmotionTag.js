@@ -9,7 +9,7 @@ import Swal from 'sweetalert2'
 const AddEmotionTag = ({ props, setEmotionTagsRender, emotionTagsRender }) => {
   const universal = useContext(universeVariable);
   const { keyword, summary, keywordId } = props;
-  const emotionTags = ['아아'];
+  const emotionTags = ['키워드에 대한 감정 태그를 추가해 볼까요?'];
   const [newTag, setNewTag] = useState('');
   const [isFormValid, setIsFormValid] = useState(true);
 
