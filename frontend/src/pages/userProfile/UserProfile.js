@@ -114,7 +114,7 @@ const UserProfile = () => {
       chart.setOption({
         series: [{
           type: 'wordCloud',
-          maskImage: balloonImage,
+          shape: 'circle',
           sizeRange: [12, 50], // 글자 크기 범위
           rotationRange: [-90, 90], // 글자의 회전 범위
           gridSize: 2, // 글자 간격
