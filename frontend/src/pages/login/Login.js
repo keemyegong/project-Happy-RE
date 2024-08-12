@@ -8,6 +8,7 @@ import loginTitle from '../../assets/login_title.png'
 import axios from 'axios';
 import { useNavigate  } from "react-router-dom";
 import Cookies from 'js-cookie';
+import Swal from 'sweetalert2'
 
 axios.defaults.withCredentials = true;
 
@@ -32,6 +33,7 @@ function Login() {
       email,
       password,
     }
+    
 
     axios.post(
       `${universal.defaultUrl}/login`,
@@ -50,6 +52,34 @@ function Login() {
       navigate('/profile');
     }).catch(()=>{
       console.log('Login failed');
+      if (email === ''){
+        Swal.fire({
+          title:"Email이 비어있습니다.",
+          icon:"warning",
+          iconColor:"#4B4E6D",
+          color:"white",
+          background:"#292929",
+          confirmButtonColor:"#4B4E6D"
+        })
+      }else if (password === ''){
+        Swal.fire({
+          title:"Password가 비어있습니다.",
+          icon:"warning",
+          iconColor:"#4B4E6D",
+          color:"white",
+          background:"#292929",
+          confirmButtonColor:"#4B4E6D"
+        })
+      }else {
+        Swal.fire({
+          title:"아이디 혹은 비밀번호가 다릅니다",
+          icon:"error",
+          iconColor:"#4B4E6D",
+          color:"white",
+          background:"#292929",
+          confirmButtonColor:"#4B4E6D"
+        })
+      }
     }
     )
 
