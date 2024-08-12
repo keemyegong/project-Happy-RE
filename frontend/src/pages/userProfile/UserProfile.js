@@ -57,6 +57,8 @@ const UserProfile = () => {
   const [selectedDay, setSelectedDay] = useState(today);
   const [possibleList, setPossibleList] = useState([]);
   const [recentList, setRecentList] = useState([]);
+  const [changeClass,setChangeClass] = useState('valid-container')
+  const [renderCloud, setRenderCloud] = useState(true);
 
 
   const [classNamee, setClassName] = useState("nodata");
@@ -220,68 +222,75 @@ const UserProfile = () => {
         }));
         setData(wordCloudData);
         console.log("WordCloudData : ", wordCloudData);
+        if (wordCloudData.length==0){
+          // setChangeClass('wordcloud-container');
+          setRenderCloud(false);
+          console.log('aa')
+        } else{
+          const chartElement = document.getElementById("wordCloud");
+  
+          if (chartElement) {
+            // chartElement가 존재하는지 확인
+            const chart = echarts.init(chartElement);
+            setClassName("havedata");
+            // ECharts 옵션 설정
+            chart.setOption({
+              tooltip: {
+                show: true,  // 툴팁을 활성화
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                formatter: function (params) {
+                  return `<div class="echarts-tooltip">
+                        <strong>${params.name}</strong> : ${params.value}
+                      </div>`;
+                }
+              },
+              series: [
+                {
+                  type: "wordCloud",
+                  shape: "star",
+                  sizeRange: [12, 50], // 글자 크기 범위
+                  rotationRange: [-90, 90], // 글자의 회전 범위
+                  gridSize: 2, // 글자 간격
+                  drawOutOfBound: false,
+                  textStyle: {
+                    fontFamily: "sans-serif",
+                    fontWeight: "bold",
+                    // Color can be a callback function or a color string
+                    color: function () {
+                      // Random color
+                      return (
+                        "rgb(" +
+                        [
+                          Math.round(Math.random() * 50 + 50), // R: 중간 값 (50-100)
+                          Math.round(Math.random() * 50 + 100), // G: 중간-높은 값 (100-150)
+                          Math.round(Math.random() * 100 + 150), // B: 높은 값 (150-255)
+                        ].join(",") +
+                        ")"
+                      );
+                    },
+                  },
+                  emphasis: {
+                    focus: "self",
+  
+                    textStyle: {
+                      textShadowBlur: 10,
+                      textShadowColor: "#333",
+                    },
+                  },
+  
+                  data: wordCloudData,
+                },
+              ],
+            });
+            setData(wordCloudData)
+            
+  
+          } else {
+            console.error('DOM element with id "wordCloud" not found.');
+          }
+        }
 
         // 차트를 초기화할 DOM 요소 선택
-        const chartElement = document.getElementById("wordCloud");
-
-        if (chartElement) {
-          // chartElement가 존재하는지 확인
-          const chart = echarts.init(chartElement);
-          setClassName("havedata");
-          // ECharts 옵션 설정
-          chart.setOption({
-            tooltip: {
-              show: true,  // 툴팁을 활성화
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              formatter: function (params) {
-                return `<div class="echarts-tooltip">
-                      <strong>${params.name}</strong> : ${params.value}
-                    </div>`;
-              }
-            },
-            series: [
-              {
-                type: "wordCloud",
-                shape: "star",
-                sizeRange: [12, 50], // 글자 크기 범위
-                rotationRange: [-90, 90], // 글자의 회전 범위
-                gridSize: 2, // 글자 간격
-                drawOutOfBound: false,
-                textStyle: {
-                  fontFamily: "sans-serif",
-                  fontWeight: "bold",
-                  // Color can be a callback function or a color string
-                  color: function () {
-                    // Random color
-                    return (
-                      "rgb(" +
-                      [
-                        Math.round(Math.random() * 50 + 50), // R: 중간 값 (50-100)
-                        Math.round(Math.random() * 50 + 100), // G: 중간-높은 값 (100-150)
-                        Math.round(Math.random() * 100 + 150), // B: 높은 값 (150-255)
-                      ].join(",") +
-                      ")"
-                    );
-                  },
-                },
-                emphasis: {
-                  focus: "self",
-
-                  textStyle: {
-                    textShadowBlur: 10,
-                    textShadowColor: "#333",
-                  },
-                },
-
-                data: wordCloudData,
-              },
-            ],
-          });
-          setData(wordCloudData)
-
-        } else {
-          console.error('DOM element with id "wordCloud" not found.');
-        }
       })
       .catch((error) => {
         if (error.response) {
@@ -380,8 +389,8 @@ const UserProfile = () => {
                     있어요
                   </span>
                 </div>
-                <div className='wordcloud-container'>
-                  <div id="wordCloud" className='wordcloud-container'></div>
+                <div >
+                  {renderCloud && <div id="wordCloud" className={changeClass}></div>}
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
