@@ -206,12 +206,9 @@ const UserProfile = () => {
               textStyle: {
                 normal: {
                   color: function() {
-                    // 랜덤 색상 적용
-                    return 'rgb(' + [
-                      Math.round(Math.random() * 160),
-                      Math.round(Math.random() * 160),
-                      Math.round(Math.random() * 160)
-                    ].join(',') + ')';
+                    // 랜덤 회색 색상 적용
+                    const grayValue = Math.round(Math.random() * 255);
+                    return `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
                   }
                 }
               },
