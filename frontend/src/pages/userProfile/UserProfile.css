@@ -331,12 +331,22 @@
 }
 
 .nodata{
+  position: relative !important;
+  display: block !important;
   width:600px ;
   height: 400px;
 
 }
 .havedata{
+  position: relative !important;
+  display: block !important;
   width: 0px;
   height: 0px;
 
+}
+
+.wordcloud-container{
+  display: block;
+  width: 400px;
+  height: 600px;
 }
