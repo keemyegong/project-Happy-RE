@@ -186,36 +186,38 @@ const UserProfile = () => {
           value: item.frequency  // frequency에 대한 가중치 적용
         }));
         setData(wordCloudData);
-
-      // 차트를 초기화할 DOM 요소 선택
-      const chart = echarts.init(document.getElementById('wordCloud'));
-
-
-
-      // ECharts 옵션 설정
-      chart.setOption({
-        series: [{
-          type: 'wordCloud',
-          shape: 'circle',
-          sizeRange: [12, 50], // 글자 크기 범위
-          rotationRange: [-90, 90], // 글자의 회전 범위
-          gridSize: 2, // 글자 간격
-          drawOutOfBound: false,
-          textStyle: {
-            normal: {
-              color: function() {
-                // 랜덤 색상 적용
-                return 'rgb(' + [
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160)
-                ].join(',') + ')';
-              }
-
-            },
-            data: wordCloudData
-          }}]
-        });
+        console.log("WordCloudData : " , wordCloudData);
+    
+        // 차트를 초기화할 DOM 요소 선택
+        const chartElement = document.getElementById('wordCloud');
+    
+        if (chartElement) { // chartElement가 존재하는지 확인
+          const chart = echarts.init(chartElement);
+    
+          // ECharts 옵션 설정
+          chart.setOption({
+            series: [{
+              type: 'wordCloud',
+              shape: 'circle',
+              sizeRange: [12, 50], // 글자 크기 범위
+              rotationRange: [-90, 90], // 글자의 회전 범위
+              gridSize: 2, // 글자 간격
+              drawOutOfBound: false,
+              textStyle: {
+                normal: {
+                  color: function() {
+                    // 랜덤 회색 색상 적용
+                    const grayValue = Math.round(Math.random() * 255);
+                    return `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+                  }
+                }
+              },
+              data: wordCloudData
+            }]
+          });
+        } else {
+          console.error('DOM element with id "wordCloud" not found.');
+        }
       })
       .catch(error => {
         if (error.response) {
@@ -306,10 +308,11 @@ const UserProfile = () => {
                 </div>
                 <div className='wordcloud-container'>
                   <div id="wordCloud" style={{ width: '600px', height: '400px' }}>
-                    {data.length === 0 && (
+
+                  </div>
+                  {data.length === 0 && (
                       <p className='wordcloud-none-word'>아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?</p>
                     )}
-                  </div>
                 </div>
                 <div className='my-5 calender-container'>
                   <Calendar
