@@ -51,6 +51,7 @@ public class UserMessageController {
 
     @PostMapping("archive/{id}")
     public ResponseEntity<?> archiveUserMsg(HttpServletRequest request, @PathVariable Integer id) {
+        System.out.println("In Controller");
         try {
             UserEntity userEntity = userService.findByRequest(request);
             UserMessageEntity userMessageEntity = userMessageService.findById(id).orElseThrow(() -> new RuntimeException("id 를 pk 로 가지는 userMessageEntity를 찾을 수 없음."));
@@ -65,6 +66,8 @@ public class UserMessageController {
             userMessageArchivedService.insert(userMessageArchivedEntity);
             return ResponseEntity.ok("등록 완료");
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println(e.getStackTrace());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("UserMessage Archive화 도중 에러: " + e.getMessage());
         }
     }

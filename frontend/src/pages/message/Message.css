@@ -31,6 +31,13 @@
   height: 80%;
 }
 
+.messages-none-text {
+  font-family: Pretendard;
+  color: white;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 .input-container {
   flex: 2;
   display: flex;
@@ -55,6 +62,7 @@
 }
 
 .default-info-container {
+  font-family: Pretendard;
   text-align: center;
 }
 
@@ -84,6 +92,14 @@
 
 .visible{
   flex:3;
+}
+
+.message-input-keyword{
+  align-items: center;
+  justify-content: space-evenly;
+  display: flex;
+  margin: 10px;
+  gap: 10px;
 }
 
 /* 반응형 디자인을 위한 미디어 쿼리 */

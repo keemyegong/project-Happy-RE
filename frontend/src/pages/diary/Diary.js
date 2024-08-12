@@ -38,7 +38,8 @@ const Diary = () => {
           withCredentials: true,
         }
       }).then((response)=>{
-        if (response.data.keywordEntities == null){
+        console.log(response.data.keywordEntities);
+        if (response.data.keywordEntities == undefined){
           setShowButton(true);
         }
           axios.get(
@@ -93,9 +94,10 @@ const Diary = () => {
       }).then((response)=>{
 
         if (response.data[0] != undefined){
-          console.log(response.data);
+          // console.log(response.data);
           setDaySummary(response.data[0].summary);
-        
+          const example = response.data[0].diaryId;
+
           axios.get(
             `${universal.defaultUrl}/api/diary/detail/?diaryid=${response.data[0].diaryId}`,
             {
@@ -104,7 +106,8 @@ const Diary = () => {
                 withCredentials: true,
               }
             }).then((response)=>{
-              // console.log(response.data)
+              
+              console.log(response.data.messageEntities);
               setKeyword(response.data.keywordEntities);
               setChatlog(response.data.messageEntities);
 
@@ -223,6 +226,9 @@ const Diary = () => {
           >
             <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
           </svg>
+        </div>
+        <div className='diary-guide'>
+          날짜를 클릭하면 그날의 다이어리 레포트를 확인할 수 있어요
         </div>
         <div className='diary-week-info-container'>
           <div className='diary-week-line'></div>

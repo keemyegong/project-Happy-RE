@@ -16,9 +16,13 @@ const Message = () => {
   const [messages, setMessages] = useState([]);
   const [showContainer, setShowContainer] = useState('messages'); // 'messages' or 'input'
   const universal = useContext(universeVariable);
+  const [keywords, setKeywords] = useState([]);
+  const [modal, setModal] = useState(false);
   let navigate = useNavigate();
 
   useEffect(() => {
+    getMessage();
+    getKeywords();
     axios
       .get(`${universal.defaultUrl}/api/user/me`, {
         headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
@@ -42,53 +46,41 @@ const Message = () => {
             setImage(userProfileImage);
           });
       });
-
-    // Fetch messages
-    // axios
-    //   .get(`${universal.defaultUrl}/api/messages`, {
-    //     headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
-    //   })
-    //   .then((response) => {
-    //     setMessages(response.data.messages);
-    //   });
-
-    // Dummy data for messages
-    const dummyMessages = [
-      {
-        id: 1,
-        profileImageUrl: userProfileImage,
-        userName: 'John Doe',
-        content: 'This is the first message content.',
-      },
-      {
-        id: 2,
-        profileImageUrl: userProfileImage,
-        userName: 'Jane Smith',
-        content: 'This is the second message content.',
-      },
-      {
-        id: 3,
-        profileImageUrl: userProfileImage,
-        userName: 'Alice Johnson',
-        content: 'This is the third message content.',
-      },
-      {
-        id: 4,
-        profileImageUrl: userProfileImage,
-        userName: 'Bob Brown',
-        content: 'This is the fourth message content.',
-      },
-    ];
-
-    setMessages(dummyMessages);
   }, []);
 
   const toggleContainer = () => {
     setShowContainer(showContainer === 'messages' ? 'input' : 'messages');
   };
 
+  const getMessage = () => {
+    axios
+      .get(`${universal.defaultUrl}/api/usermsg/4`, {
+        headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setMessages(response.data);
+      });
+  };
+
+  const getKeywords = () => {
+    axios
+      .get(`${universal.defaultUrl}/api/diary/detail/`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
+        },
+      })
+      .then((response) => {
+        if (response.data.keywordEntities != undefined) {
+          setKeywords(response.data.keywordEntities);
+        }
+      });
+  };
+
   return (
     <main className="Message">
+      {modal && <div className="message-input-modal"></div>}
       <div className="message-profile-container">
         <div className="default-info">
           <div className="user-avatar">
@@ -109,27 +101,37 @@ const Message = () => {
       </div>
       <div className={`msg-container ${showContainer === 'messages' ? 'visible' : 'hidden'}`}>
         <div className="message-container">
-          {messages.map((message) => (
-            <MessageCard
-              key={message.id}
-              messageId={message.id}
-              profileImageUrl={message.profileImageUrl}
-              userName={message.userName}
-              content={message.content}
-            />
-          ))}
+          {messages.length === 0 ? (
+            <div className="messages-none-text">
+              아직 도착한 메시지가 없어요!
+              <br />
+              해피리 친구들의 바쁜 하루를 조금만 더 기다려 볼까요?
+            </div>
+          ) : (
+            messages.map((message) => (
+              <MessageCard
+                key={message.userMessageId}
+                messageId={message.userMessageId}
+                persona={message.userEntity.myfrog}
+                // profileImageUrl={message.userEntity.profileImageUrl}
+                // userName={'익명의 해피리'}
+                content={message.content}
+                keyword={message.userMessageAttachedKeywordEntityList[0]}
+              />
+            ))
+          )}
         </div>
       </div>
       <div className={`msg-container ${showContainer === 'input' ? 'visible' : 'hidden'}`}>
         <div className="input-container">
-          <MessageInput />
+          <MessageInput keywords={keywords} />
         </div>
       </div>
       <Button
-              className="toggle-btn btn dark-btn small"
-              content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
-              onClick={toggleContainer}
-            />
+        className="toggle-btn btn dark-btn small"
+        content={showContainer === 'messages' ? 'Show Input' : 'Show Messages'}
+        onClick={toggleContainer}
+      />
     </main>
   );
 };

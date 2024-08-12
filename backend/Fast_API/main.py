@@ -44,7 +44,7 @@ async def JWTFilter(request: Request, call_next):
         except HTTPException as e:
             print(e)
             print("rejected")
-            raise HTTPException(status_code=401, detail="Could not validate credential")
+            raise HTTPException(status_code=401, detail=f"Rejected in Filter : {str(e)}")
             
     #postprocessing
     response = await call_next(request)

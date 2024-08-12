@@ -55,18 +55,27 @@ const AIChat = () => {
     "제 4사분면 이벤트 끝 코멘트",
   ]
 
+  const recognitionFaileComment = [
+    "정말 죄송하지만, 혹시 다시 한 번 말씀해주시겠어요?",
+    "제 1사분면 인지 못함 코멘트",
+    "제 2사분면 인지 못함 코멘트",
+    "제 3사분면 인지 못함 코멘트",
+    "제 4사분면 인지 못함 코멘트",
+
+  ]
+
 
 
   // 처음 인삿말 받아오기
   useEffect(() => {
-    eventStart();
+    // eventStart();
     setIsButtonDisabled(true);
-    eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
         {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}
       ).then((Response)=>{
+        console.log(Response.data);
         localStorage.setItem("personaNumber", Response.data.myfrog);
 
       }).then((response)=>{
@@ -78,7 +87,7 @@ const AIChat = () => {
 
   }, [universal.fastUrl]);
 
-  const sendStart = (persona)=>{
+  const sendStart = (Startpersona)=>{
     axios.post(
       `${universal.fastUrl}/fastapi/chatbot/`,
       { user_input: '안녕하세요', audio: '', request: 'chatbot' },
@@ -86,7 +95,7 @@ const AIChat = () => {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
           withCredentials: true,
-          persona,
+          persona:Startpersona,
         }
       }
     ).then((response) => {
@@ -207,6 +216,14 @@ const AIChat = () => {
           }
         }
       ).then((response) => {
+
+        if (response.data.text === "Recognition Failed"){
+        setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: recognitionFaileComment[Number(localStorage.getItem("personaNumber"))] }]);
+        // console.log(localStorage.getItem("personaNumber"));
+        startRecording();
+
+        }else {
+          
         const { text: recognizedText, audio } = response.data;
         setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'user', content: recognizedText }]);
         setAudioData(audio);
@@ -244,7 +261,7 @@ const AIChat = () => {
           setIsBotTyping(false); // 챗봇 입력 중 상태 해제
           startRecording(); // 녹음 재시작
         });
-
+        }
       }).catch((error) => {
         console.error("Error recognizing speech: ", error);
         setIsBotTyping(false); // 챗봇 입력 중 상태 해제
@@ -343,7 +360,7 @@ const AIChat = () => {
 
       setUserInputCount(prevCount => {
         const newCount = prevCount + 1;
-        if (newCount >= 3 && !isEventDone) {
+        if (newCount >= 3 && !isEventDone && response.data.trigger) {
           eventStart();
           setIsEventDone(true);
         }

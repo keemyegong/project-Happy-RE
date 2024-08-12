@@ -33,7 +33,8 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
   return (
     <div className='DiaryReport'>
       <div className='diary-report-header'>
-        {`${year}-${month}-${date} report`}
+        <p className='diary-report-header-text'>{`${year}-${month}-${date} report`}</p>
+
       </div>
       {loading &&
       <div className='modal-loading-container'> 
@@ -43,7 +44,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
         <p className='modal-loading-label'>
           Loading...
         </p>
-        <h5 className='modal-loading-text my-4 text-center'>해파리들이 당신의 소중한 오늘을<br></br> 열심히 정리하고 있어요.</h5>
+        <h5 className='modal-loading-text my-4 text-center'>해파리들이 당신의 소중한 오늘을<br></br> 열심히 정리하고 있어요</h5>
       </div>
       }
 
@@ -90,9 +91,9 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
             GRAPH
           </div>
           <div className='diary-report-graph-body'>
-            <Test data={emotionData} />
+            <EmotionGraph data={emotionData} />
             <div className='diary-report-graph-label'>
-              <p className='diary-report-header'>
+              <p className='diary-report-header diary-report-header-kr'>
                 요약
               </p>
               <div className='diary-report-border my-2' />
@@ -100,7 +101,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
                 {daySummary}
               </p>
               <p className='diary-report-header'>
-                russell Number Avg
+                Russell Number Avg
               </p>
               <div className='diary-report-border my-2' />
               <p>
@@ -109,12 +110,10 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
               <p>
                 Arousel : {russellY.toFixed(3)}
               </p>
-              
-
             </div>
           </div>
         </div>
-        <div className='mt-5 text-center diary-report-explain-label'>*Arousel은 흥분도를, valance는 긍정도를 나타내요</div>
+        <div className='mt-5 text-center diary-report-explain-label'>*Arousel은 각성도를, valance는 긍정도를 나타내요</div>
       </div>}
     </div>
   );

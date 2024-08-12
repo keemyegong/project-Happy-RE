@@ -12,7 +12,7 @@ const DiaryChat = ({ chatHistory }) => {
             {[...chatHistory].reverse().map((chat, index) => {
               if (chat) {
                 if (chat.speaker === 'user') {
-                  return <UserResponse key={index} content={chat.content} />
+                  return <UserResponse key={index} content={chat.content} isAudio={chat.audioKey} isRender={true} />
                 } else {
                   return <AIResponse key={index} content={chat.content} />
                 }
