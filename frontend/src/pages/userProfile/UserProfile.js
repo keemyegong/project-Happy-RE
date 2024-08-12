@@ -186,36 +186,42 @@ const UserProfile = () => {
           value: item.frequency  // frequency에 대한 가중치 적용
         }));
         setData(wordCloudData);
-
-      // 차트를 초기화할 DOM 요소 선택
-      console.log("NotDom")
-      const chart = echarts.init(document.getElementById('wordCloud'));
-      console.log("InDom")
-
-      // ECharts 옵션 설정
-      chart.setOption({
-        series: [{
-          type: 'wordCloud',
-          shape: 'circle',
-          sizeRange: [12, 50], // 글자 크기 범위
-          rotationRange: [-90, 90], // 글자의 회전 범위
-          gridSize: 2, // 글자 간격
-          drawOutOfBound: false,
-          textStyle: {
-            normal: {
-              color: function() {
-                // 랜덤 색상 적용
-                return 'rgb(' + [
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160),
-                  Math.round(Math.random() * 160)
-                ].join(',') + ')';
-              }
-
-            },
-            data: wordCloudData
-          }}]
-        });
+    
+        // 차트를 초기화할 DOM 요소 선택
+        console.log("NotDom");
+        const chartElement = document.getElementById('wordCloud');
+    
+        if (chartElement) { // chartElement가 존재하는지 확인
+          console.log("InDom");
+          const chart = echarts.init(chartElement);
+    
+          // ECharts 옵션 설정
+          chart.setOption({
+            series: [{
+              type: 'wordCloud',
+              shape: 'circle',
+              sizeRange: [12, 50], // 글자 크기 범위
+              rotationRange: [-90, 90], // 글자의 회전 범위
+              gridSize: 2, // 글자 간격
+              drawOutOfBound: false,
+              textStyle: {
+                normal: {
+                  color: function() {
+                    // 랜덤 색상 적용
+                    return 'rgb(' + [
+                      Math.round(Math.random() * 160),
+                      Math.round(Math.random() * 160),
+                      Math.round(Math.random() * 160)
+                    ].join(',') + ')';
+                  }
+                }
+              },
+              data: wordCloudData
+            }]
+          });
+        } else {
+          console.error('DOM element with id "wordCloud" not found.');
+        }
       })
       .catch(error => {
         if (error.response) {
@@ -227,7 +233,7 @@ const UserProfile = () => {
           console.error('Error setting up request:', error.message);
         }
       });
-
+      
     axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`
