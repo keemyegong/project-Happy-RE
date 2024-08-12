@@ -71,7 +71,7 @@ const UserProfile = () => {
 
   const getRecentMonthDiary = () => {
     axios.get(
-      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${31}`,
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${32}`,
       {
         headers: {
           Authorization: `Bearer ${Cookies.get('Authorization')}`,
