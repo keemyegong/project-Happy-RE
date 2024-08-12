@@ -15,6 +15,7 @@ const Archive = () => {
   const universal = useContext(universeVariable);
   const [messages, setMessages] = useState([]);
   const [keywords, setKeywords] = useState([]);
+  const [originalKeywords, setOriginalKeywords] = useState([]);
   const [dummyKeywords, setDummyKeywords] = useState([]);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
   const [emotionData, setEmotionData] = useState([]);
@@ -31,6 +32,7 @@ const Archive = () => {
       })
       .then((response) => {
         setKeywords(response.data);
+        setOriginalKeywords(response.data);
         keywordLoad(response.data);
         const tmp_emotionData = [];
         response.data.forEach((element) => {
@@ -116,18 +118,19 @@ const Archive = () => {
 
     if (keywords.length > 0) {
       setSelectedKeyword(keywords[0]);
-      setFilteredKeywords(keywords.filter((kw) => kw.keyword === keywords[0].keyword));
+      setFilteredKeywords(originalKeywords.filter((kw) => kw.keyword === keywords[0].keyword));
     }
   };
 
   useEffect(() => {
     getMessage();
     getKeyword();
+    
   }, []);
 
   const handleKeywordClick = (keyword) => {
     setSelectedKeyword(keyword);
-    const filtered = keywords.filter((kw) => kw.keyword === keyword.keyword);
+    const filtered = originalKeywords.filter((kw) => kw.keyword === keyword.keyword);
     setFilteredKeywords(filtered);
     setCurrentKeywordIndex(0);
   };
