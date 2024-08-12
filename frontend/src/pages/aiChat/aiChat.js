@@ -72,7 +72,7 @@ const AIChat = () => {
 
   // 처음 인삿말 받아오기
   useEffect(() => {
-    eventStart();
+    // eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
