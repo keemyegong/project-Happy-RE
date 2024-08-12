@@ -51,9 +51,11 @@ personas = PERSONAS
 
 # -------------------------------사용자 정의 함수-------------------------------
 
+# 텍스트 러셀 감정 좌표 생성 함수
 async def emotion_analysis(text : str):
     return (round(kobert_x(text),3), round(kobert_y(text),3))
 
+# 텍스트와 러셀 감정 좌표 매칭 함수
 async def emotion_tagging(user_id: str, text: str):
     '''
     user_emotion_russell 딕셔너리에 문장과 추출된 러셀 감정 좌표를 매칭
@@ -64,7 +66,6 @@ async def emotion_tagging(user_id: str, text: str):
         "text": "(0,0)"
     }
     '''
-    print("Emotion tagging start")
     trigger = False
     
     russell_coord = await emotion_analysis(text)
@@ -76,16 +77,13 @@ async def emotion_tagging(user_id: str, text: str):
         trigger = True
         
     user_emotion_russell[user_id][text.strip()] = russell_coord
-    print(f"{text} : {user_emotion_russell[user_id][text.strip()]}")
-    print("Emotion tagging End")
     return trigger
 
-
+# 유저 메세지 세션 업데이트 함수
 def message_session_update(user_id:str, text:str, speaker:str, audio:str="None"):
     '''
     유저의 메세지 세션에 유저의 대화와 챗봇의 대화를 업데이트
     '''
-    print("Message session update start")
     if user_id not in user_message:
         user_message[user_id] = []
     user_message[user_id].append({
@@ -93,7 +91,6 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
         "speaker":speaker,
         "audioKey":audio
     })
-    print(f"Message session update End")
     
 # ----------------------------------라우팅 함수--------------------------------------------
 
@@ -106,7 +103,6 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     들어온 텍스트를 OpenAI에 보내고 유저 메세지 세션 업데이트
     응답온 텍스트를 메세지 세션에 업데이트하고 반환
     '''
-    print("Chatbot Post Start")
     
     # front에서 header에 담긴 페르소나 정보 받기
     persona_number = int(requestforP.headers["persona"])
@@ -139,8 +135,6 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
         "content":response,
         "trigger":trigger
     }
-    print(f"Content 확인 \n {content}")
-    print("Chatbot Post End")
     return JSONResponse(content=content, status_code=200)
 
 # spring 메세지 저장 요청 함수
@@ -150,12 +144,12 @@ async def post_message_request(request:Request):
     Spring 서버로 메세지 세션 저장 요청
     
     '''
-    print("--------------------------------------------------메세지 포스트 시작--------------------------------------------------------------")
-    
+    # 토큰에서 user_id 추출
     header = request.headers
     token = header["authorization"].split(" ")[-1]
     user_id = decode_jwt(token)
     message_item = []
+    # 포스팅 용 메세지 로그 처리
     try:
         for idx, data in enumerate(user_message[user_id]):
             data = user_message[user_id][idx]
@@ -174,7 +168,6 @@ async def post_message_request(request:Request):
                 data["russellX"] = None
                 data["russellY"] = None
             message_item.append(data)
-        print("메세지 만들기 완료")
         try:
             new_headers = {
                 "authorization": header["authorization"],
@@ -192,13 +185,12 @@ async def post_message_request(request:Request):
     except Exception as e:
         print(f"Message Posting Error : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    print("----------------------------------------------------메시지 포스트 완료 -------------------------------------------")
     
     return user_message
 # 세션에서 삭제
+# 다이어리 요약 본 스프링 전송
 @router.delete('/')
 async def session_delete(request:Request):
-    print("# ------------------------------------------------섹션 삭제 시작 --------------------------------------------------")
     header = request.headers["authorization"]
     user_id = decode_jwt(header.split(" ")[-1])
     
@@ -221,10 +213,9 @@ async def session_delete(request:Request):
         마지막으로 "message"에는 사용한 유저의 메시지를 매칭시켜줘. \
         만약 요약할 내용이 없다면 "None"으로 응답해줘. The contents also should be korean, except proper nouns.'
     
+    # 요약 결과
     response = chatbot_instance.generateResponse(prompt)
-    print(f"Summary Response : \n {response}")
     try:
-        # result = json.loads(response.strip())
         file = response.replace("`", "").strip()
         temp = file.replace("json","").strip()
         result = json.loads(temp)
@@ -239,9 +230,11 @@ async def session_delete(request:Request):
         total_russell_y = 0
         user_message_count = len(list(filter(lambda x: x["speaker"]=="user", user_message[user_id])))
 
+        # 요약할 내용이 없는 경우
         if diary_summary=="None" and summary_detail=="None" :
             diary["russellAvgX"] = None
             diary["russellAvgY"] = None
+        # 요약할 내용이 있는 경우
         else:
             for idx, data in enumerate(summary_detail):
                 if data["message"] not in user_emotion_russell[user_id]:
@@ -260,40 +253,27 @@ async def session_delete(request:Request):
             else:
                 diary["russellAvgX"] = 0
                 diary["russellAvgY"] = 0
-        print(f"Summary List : {summary_list}")
-        print(f"Diary : \n {diary}")
+                
     except Exception as e:
             print(f"Error while summarize : {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+    # 스프링으로 전송
     try:
         async with httpx.AsyncClient() as client:
             diary_summary_response = await client.put(SPRING_DIARY_SUMMARY_URL, json=diary, headers=new_header)
-            print(f"returned diary summary resposne : {diary_summary_response}")
             
             summary_detail_response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
-            print(f"returned summary detail response : {summary_detail_response}")
             
             if user_id in user_session:
                 del user_session[user_id]
-                print('User Session Deleted')
 
             if user_id in user_emotion_russell:
                 del user_emotion_russell[user_id]
-                print('User Emotion Russel Deleted')
                 
             if user_id in user_message:
                 del user_message[user_id]
-                print("User Message Deleted")
-            print(f'''
-                    삭제 확인
-                    User Session : {user_session}
-                    ----------------------------------------
-                    User Emotion Russel : {user_emotion_russell}
-                    ---------------------------------------
-                    User Message : {user_message}
-                ''')
-            print("------------------------------------------------ 섹션 삭제 완료 ----------------------------------------")
             return response
+        
     except Exception as e:
         print(f"Error While Summary Posting: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

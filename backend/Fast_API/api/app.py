@@ -38,7 +38,6 @@ async def clova(file_location : str):
     Clova API를 이용하여 음성 파일을 텍스트로 변환
     파일 경로를 인자로 받음
     '''
-    print('Clova start')
     try:
         response = ClovaSpeechClient().req_upload(file=file_location, completion='sync').json()["text"]
         if not response:
@@ -46,7 +45,6 @@ async def clova(file_location : str):
     except KeyError as e:
         print(f"Clova Error : {str(e)}")
         return 'Recognition Failed'
-    print(f"Clova End")
     return response
 
 # 파일 업로드
@@ -55,7 +53,6 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
     Amazon s3 서버로 오디오 파일을 업로드
     s3에 유저의 폴더가 없으면 유저 폴더 생성
     '''
-    print("File Upload Start")
     try:
         user_audio_dir = os.path.abspath(os.path.join(AUDIO_DIR, str(user_id)))
         for root, dirs, files in os.walk(user_audio_dir):
@@ -75,7 +72,6 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
                 except s3_client.exceptions.S3UploadFailedError as e:
                     print(f"File upload Error : {str(e)}")
                     raise HTTPException(status_code=500, detail=f"Could not upload file: {e}")
-        print("File Upload End")
     except KeyError as ke:
         print(f"Key Error in File Upload : {str(e)}")
         raise HTTPException(status_code=500, detail="Could not find user audio directory")
@@ -89,13 +85,11 @@ async def speech_to_text(user_id:str=Depends(decode_jwt), file: UploadFile = Fil
     요청이 들어온 파일을 로컬에 업로드 하고,
     텍스트로 변환하여 반환
     '''
-    print(f"Speech to Text Start")
     AUDIO_DIR = os.path.abspath(os.path.join(BASE_DIR,"audio",str(user_id)))
 
     # 해당 유저의 폴더가 없는 경우 폴더 생성
     if not os.path.exists(AUDIO_DIR):
         os.makedirs(AUDIO_DIR)
-        print('폴더 생성됨')
     
     file_extension = file.filename.split('.')[-1]
     
@@ -107,12 +101,10 @@ async def speech_to_text(user_id:str=Depends(decode_jwt), file: UploadFile = Fil
         buffer.write(file.file.read())
     
     response = await clova(file_location=file_location)
-    print(f"response : {response}")
     result = {
         "text":response,
         "audio":uuid_file
         }
-    print("Speech to Text End")
     return JSONResponse(result)
 
 @router.post("/s3_upload")
@@ -122,7 +114,6 @@ async def s3_upload(user_id: str=Depends(decode_jwt)):
     '''
 
     AUDIO_DIR = os.path.abspath(os.path.join(BASE_DIR, "audio"))
-    print("--------------------------------------------------------파일 업로드 시작 -----------------------------------------------------------")
     
     # S3 파일 업로드 로직
     try:
@@ -130,6 +121,6 @@ async def s3_upload(user_id: str=Depends(decode_jwt)):
     except Exception as e:
         print(f"Error Occured in 'file upload' : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    print("-------------------------------------------------------업로드 완료--------------------------------------------------------")
+    
     return JSONResponse(content="File uploaded", status_code=200)
 
