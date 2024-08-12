@@ -1,11 +1,14 @@
-import React, { useEffect, useState, useContext} from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import Swal from 'sweetalert2';
 import './ChatBox.css';
 import Button from '../Button/Button';
 import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession,persona }) => {
+const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession, persona }) => {
+
+
   const ChatType = Number(persona);
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
 
@@ -15,32 +18,31 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
         return {
           imageSrc: require('../../assets/characters/default.png'),
           titleName: '해피리',
-          titleType: '기본 해파리'
+          titleType: '우리들의 친구 해피리'
         };
       case 1:
         return {
           imageSrc: require('../../assets/characters/soldier.png'),
-          titleName: '장군',
-          titleType: '장군 해파리'
+          titleName: '해파린 장군',
+          titleType: '용맹한 장군 해파린'
         };
       case 2:
         return {
           imageSrc: require('../../assets/characters/butler.png'),
-          titleName: '집사',
-          titleType: '집사 해파리'
+          titleName: '해파스찬',
+          titleType: '맞춤형 집사 해파스찬'
         };
       case 3:
         return {
           imageSrc: require('../../assets/characters/steel.png'),
-          titleName: '철학자',
-          titleType: '철학자 해파리'
+          titleName: '해파라테스',
+          titleType: '고뇌하는 철학자 해파라테스'
         };
-
       case 4:
         return {
           imageSrc: require('../../assets/characters/art.png'),
-          titleName: '셰익스피어',
-          titleType: '셰익스피어 해파리'
+          titleName: '셰익스피리',
+          titleType: '예술가의 영혼 셰익스피리'
         };
       default:
         return {};
@@ -48,6 +50,27 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
   };
 
   const chatData = getChatData(ChatType);
+
+  const handleQuit = () => {
+    Swal.fire({
+      title: '정말 나가시겠습니까?',
+      html: "다이어리는 하루에 한 번만 등록할 수 있어요! <br/> 한번 나가면 오늘의 다이어리는 다시 기록할 수 없습니다......",
+      icon: 'warning',
+      iconColor: '#D35E5E',
+      color: 'white',
+      background: '#292929',
+      confirmButtonColor: '#4B4E6D',
+      showCancelButton: true,
+      cancelButtonColor: '#D35E5E',
+      confirmButtonText: '나갈래요!',
+      cancelButtonText: 'CANCEL'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        endChatSession();
+      }
+    });
+  };
+
 
   return (
     <div className='container chat-box-container'>
@@ -59,7 +82,7 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
           <p className='chat-title-name'>{chatData.titleName}</p>
           <p className='chat-title-type'>{chatData.titleType}</p>
         </div>
-        <div className='col-3 chat-quit' onClick={endChatSession}>
+        <div className='col-3 chat-quit' onClick={handleQuit}>
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
