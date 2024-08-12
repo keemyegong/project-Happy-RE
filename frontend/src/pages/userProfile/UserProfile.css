@@ -307,6 +307,7 @@
 
 .wordcloud-none-word {
   opacity: 0.7;
+  
 }
 
 @media (max-width: 1024px) {
@@ -348,5 +349,11 @@
 .wordcloud-container{
   display: block;
   width: 600px;
-  height: 350px;
+  height: 0px;
+}
+
+.valid-container{
+  display: block;
+  width: 600px;
+  height: 400px;
 }
