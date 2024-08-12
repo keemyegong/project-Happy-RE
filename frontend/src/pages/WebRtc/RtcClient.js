@@ -1,5 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef , useContext} from "react";
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 import CharacterList from "../../components/CharacterList/CharacterList";
@@ -9,15 +9,18 @@ import butler from "../../assets/characters/butler.png";
 import defaultPersona from "../../assets/characters/default.png";
 import soldier from "../../assets/characters/soldier.png";
 import steel from "../../assets/characters/steel.png";
+import { universeVariable } from "../../App";
+import Cookies from "js-cookie";
+import axios from "axios";
 
 import "./ChatRoomContainer.css";
 
 const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/webrtc");
 
-const RtcClient = ({ initialPosition, characterImage }) => {
+const RtcClient = ({ characterImage }) => {
   const [peerConnections, setPeerConnections] = useState({});
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
-  const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const positionRef = useRef(position);
   const [users, setUsers] = useState([]);
   const [clientId, setClientId] = useState(null);
@@ -30,7 +33,7 @@ const RtcClient = ({ initialPosition, characterImage }) => {
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
-
+  const universal = useContext(universeVariable);
   useEffect(() => {
     positionRef.current = position;
     console.log("NearbyUsers", nearbyUsers);
@@ -117,6 +120,36 @@ const RtcClient = ({ initialPosition, characterImage }) => {
         break;
     }
   };
+
+
+  useEffect(() => {
+    axios
+    .get(`${universal.defaultUrl}/api/useravg`, {
+      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+    })
+    .then((response) => {
+      console.log("useravg")
+      console.log(response.data)
+      if(response.data.cnt == 0 ){
+        setPosition({
+          x: response.data.russellSumX,
+          y: response.data.russellSumY,
+        });
+      }else{
+        setPosition({
+          x: response.data.russellSumX/response.data.cnt,
+          y: response.data.russellSumY/response.data.cnt,
+        });      
+      }
+
+    })
+    .catch(() => {
+      console.log("서버와통신불가");
+    });
+
+  },[])
+
+
 
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") return;

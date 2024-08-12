@@ -43,7 +43,7 @@ const PublicRoute = ({ children }) => {
 const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
   const location = useLocation();
   const isUserProfile = location.pathname === '/profile';
-  const initialPosition = { x: 0, y: 0 };
+
   const characterImage = defaultImage;
 
   return (
@@ -67,7 +67,6 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
             element={
               <PrivateRoute>
                 <RtcClient
-                  initialPosition={initialPosition}
                   characterImage={characterImage}
                 />
               </PrivateRoute>
@@ -100,7 +99,7 @@ const App = () => {
   return (
     <universeVariable.Provider
       value={{
-        defaultUrl: 'https://i11b204.p.ssafy.io',
+        defaultUrl: 'http://192.168.31.216:8080',
         // defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: '',
         fastUrl: 'https://i11b204.p.ssafy.io',

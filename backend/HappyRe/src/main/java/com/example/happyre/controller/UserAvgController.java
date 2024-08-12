@@ -18,6 +18,7 @@ public class UserAvgController {
 
     @GetMapping
     public ResponseEntity<?> getUserAvg(HttpServletRequest request) {
+        System.out.println("GET UserAvgController");
         return ResponseEntity.ok().body(userAvgService.getUserAvgEntityByReq(request));
 
     }
