@@ -320,3 +320,12 @@
     width: 100%;
   }
 }
+
+
+/* 툴팁의 스타일 정의 */
+.echarts-tooltip {
+  color: aliceblue;
+  
+  border-radius: 5px !important;   /* 둥근 모서리 */
+
+}
