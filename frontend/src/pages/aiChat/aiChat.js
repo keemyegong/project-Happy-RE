@@ -443,6 +443,7 @@ const AIChat = () => {
               isButtonDisabled={isButtonDisabled}
               endChatSession={endChatSession} // 채팅 종료 함수 전달
               persona={persona}
+              eventEnd={eventEnd}
             />
 
           </div>
