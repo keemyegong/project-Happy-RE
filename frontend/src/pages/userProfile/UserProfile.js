@@ -72,32 +72,17 @@ const UserProfile = () => {
   balloonImage.src = "../../assets/wordimg.svg"; // 말풍선 이미지 경로
 
   const getRecentMonthDiary = () => {
-    axios
-      .get(
-        `${
-          universal.defaultUrl
-        }/api/diary/?year=${monthAgo.getFullYear()}&month=${
-          monthAgo.getMonth() + 1
-        }&day=${monthAgo.getDate()}&period=${31}`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("Authorization")}`,
-            withCredentials: true,
-          },
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${32}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
         }
-      )
-      .then((response) => {
-        response.data
-          .filter((element) => {
-            return element.russellAvgX != null && element.russellAvgY != null;
-          })
-          .forEach((element) => {
-            recentinfo.push({
-              x: element.russellAvgX,
-              y: element.russellAvgY,
-              value: 0.8,
-            });
-          });
+      }).then((response) => {
+        response.data.filter((element) => { return element.russellAvgX != null && element.russellAvgY != null }).forEach((element) => {
+          recentinfo.push({ x: element.russellAvgX, y: element.russellAvgY, value: 0.8 })
+        });
         setRecentList(recentinfo);
       });
   };
