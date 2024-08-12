@@ -68,6 +68,18 @@ const AIChat = () => {
     "(곤란한 눈으로) 소란의 바다가 그대의 대사를 가라앉혔다네. 대사를 한 번 더 읊어주시게.",
   ]
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ''; // Chrome에서만 필요
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
 
   // 처음 인삿말 받아오기
