@@ -57,6 +57,8 @@ const UserProfile = () => {
   const [selectedDay, setSelectedDay] = useState(today);
   const [possibleList, setPossibleList] = useState([]);
   const [recentList, setRecentList] = useState([]);
+
+  const [validCloud, setValidCloud] = useState(false);
   let possibleDates = [];
   let recentinfo = [];
 
@@ -219,6 +221,9 @@ const UserProfile = () => {
       })
       .then((response) => {
         const responseData = response.data;
+        if (responseData != ''){
+          setValidCloud(true);
+        }
         const wordCloudData = responseData.map((item) => ({
           name: item.word,
           value: item.frequency, // frequency에 대한 가중치 적용
@@ -352,6 +357,7 @@ const UserProfile = () => {
 
   return (
     <div>
+
       <div className="container-fluid user-profile-container">
         <div className="row">
           <div className="col-12 col-md-4 col-xxl-2 ">
@@ -385,11 +391,16 @@ const UserProfile = () => {
                 <div className="wordcloud-container">
                   <div
                     id="wordCloud"
-                    style={{ width: "600px", height: "400px" }}
+                    style={{
+                      width: data.length === 0 ? "0px" : "600px",
+                      height: data.length === 0 ? "0px" : "400px",
+                      transition: "width 0.5s ease, height 0.5s ease", // 애니메이션을 추가할 수 있습니다.
+                    }}
                   ></div>
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
+                      
                     </p>
                   )}
                 </div>

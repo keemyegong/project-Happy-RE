@@ -3,6 +3,7 @@ package com.example.happyre.controller;
 import com.example.happyre.dto.user.JoinUserDTO;
 import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
+import com.example.happyre.service.UserAvgService;
 import com.example.happyre.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,8 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
+    private final UserAvgService userAvgService;
+
 
     @GetMapping("/test")
     public ResponseEntity<?> me(HttpServletRequest request) {
@@ -142,6 +145,7 @@ public class UserController {
     public ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String, Double> body) {
         try {
             userService.fistRussell(request, body);
+            userAvgService.setAvgByReq(request , body.get("x"), body.get("y"));
             return ResponseEntity.ok("First russell setting successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
