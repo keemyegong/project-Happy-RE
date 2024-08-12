@@ -1,6 +1,6 @@
 # Happy: Re
 ---
-![[readme%20resource/Happyre.png]]
+[Happyre](readme%20resource/Happyre.png)
 
 # 목차
 1. [기획 배경](#기획%20배경)
