@@ -188,9 +188,9 @@ const UserProfile = () => {
         setData(wordCloudData);
 
       // 차트를 초기화할 DOM 요소 선택
+      console.log("NotDom")
       const chart = echarts.init(document.getElementById('wordCloud'));
-
-
+      console.log("InDom")
 
       // ECharts 옵션 설정
       chart.setOption({
