@@ -59,7 +59,7 @@ const UserProfile = () => {
   const [recentList, setRecentList] = useState([]);
 
 
-  const [className, setClassName] = useState("nodata");
+  const [classNamee, setClassName] = useState("nodata");
 
   const [validCloud, setValidCloud] = useState(false);
   let possibleDates = [];
@@ -74,7 +74,7 @@ const UserProfile = () => {
   const balloonImage = new Image();
   balloonImage.src = "../../assets/wordimg.svg"; // 말풍선 이미지 경로
   const getClassName = () => {
-    return className;
+    return classNamee;
   };
   const getRecentMonthDiary = () => {
     axios.get(
@@ -278,9 +278,7 @@ const UserProfile = () => {
             ],
           });
           setData(wordCloudData)
-          console.log(className)
-          console.log(className)
-          console.log(className)
+
         } else {
           console.error('DOM element with id "wordCloud" not found.');
         }
@@ -382,8 +380,8 @@ const UserProfile = () => {
                     있어요
                   </span>
                 </div>
-                <div className="wordcloud-container">
-                  <div id="wordCloud" className={getClassName()}></div>
+                <div className='wordcloud-container'>
+                  <div id="wordCloud" className='wordcloud-container'></div>
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
