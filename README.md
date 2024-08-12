@@ -1,9 +1,9 @@
 # Happy: Re
 ---
-![[readme resource/Happyre.png]]
+![[readme%20resource/Happyre.png]]
 
 # 목차
-1. [[#기획 배경]]
+1. [기획 배경](#기획%20배경)
 2. 서비스 소개
 3. 기능 소개
 4. 시연
