@@ -198,20 +198,33 @@ const UserProfile = () => {
           chart.setOption({
             series: [{
               type: 'wordCloud',
-              shape: 'circle',
+              shape: 'star',
               sizeRange: [12, 50], // 글자 크기 범위
               rotationRange: [-90, 90], // 글자의 회전 범위
               gridSize: 2, // 글자 간격
               drawOutOfBound: false,
               textStyle: {
-                normal: {
-                  color: function() {
-                    // 랜덤 회색 색상 적용
-                    const grayValue = Math.round(Math.random() * 255);
-                    return `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
-                  }
+                fontFamily: 'sans-serif',
+                fontWeight: 'bold',
+                // Color can be a callback function or a color string
+                color: function () {
+                    // Random color
+                    return 'rgb(' + [
+                        Math.round(Math.random() * 160),
+                        Math.round(Math.random() * 160),
+                        Math.round(Math.random() * 160)
+                    ].join(',') + ')';
                 }
-              },
+            },
+            emphasis: {
+              focus: 'self',
+  
+              textStyle: {
+                  textShadowBlur: 10,
+                  textShadowColor: '#333'
+              }
+          },
+    
               data: wordCloudData
             }]
           });
