@@ -186,13 +186,12 @@ const UserProfile = () => {
           value: item.frequency  // frequency에 대한 가중치 적용
         }));
         setData(wordCloudData);
+        console.log("WordCloudData : " , wordCloudData);
     
         // 차트를 초기화할 DOM 요소 선택
-        console.log("NotDom");
         const chartElement = document.getElementById('wordCloud');
     
         if (chartElement) { // chartElement가 존재하는지 확인
-          console.log("InDom");
           const chart = echarts.init(chartElement);
     
           // ECharts 옵션 설정
@@ -233,7 +232,7 @@ const UserProfile = () => {
           console.error('Error setting up request:', error.message);
         }
       });
-      
+
     axios.get(`${universal.defaultUrl}/api/diary/detail/`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('Authorization')}`
