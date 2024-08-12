@@ -40,11 +40,41 @@ const SignUp = () => {
           setNickname={setNickname} 
           setPassword={setPassword} 
           setPassword2={setPassword2}
-           />
+          />
 				</div>
 				<hr className='border-light border-1' />
 				<Button className='ms-0 btn dark-btn big' content='Sign Up' onClick={()=>{
-          if (password !== password2){
+          if (email === ''){
+            Swal.fire({
+              title:'Email은 비워둘 수 없습니다!',
+              icon:"warning",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            })
+          }
+          else if (nickname === ''){
+            Swal.fire({
+              title:'Nickname은 비워둘 수 없습니다!',
+              icon:"warning",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            })
+          }
+          else if (password === ''){
+            Swal.fire({
+              title:'Password은 비워둘 수 없습니다!',
+              icon:"warning",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            })
+          }
+          else if (password !== password2){
             Swal.fire({
               title: '비밀번호가 다릅니다!',
               icon: "warning",

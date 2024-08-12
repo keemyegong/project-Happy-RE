@@ -1,18 +1,19 @@
-import React, { useState, useContext } from 'react';
-import './MessageInput.css';
-import Button from '../Button/Button';
-import axios from 'axios';
-import { universeVariable } from '../../App';
-import Cookies from 'js-cookie';
-import KeywordCard from '../diary-report/KeywordCard';
-import Swal from 'sweetalert2';
+import React, { useState, useContext } from "react";
+import "./MessageInput.css";
+import Button from "../Button/Button";
+import axios from "axios";
+import { universeVariable } from "../../App";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import KeywordCard from "../diary-report/KeywordCard";
+import Swal from "sweetalert2";
 
 const MessageInput = ({ keywords }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [keywordId, setKeywordId] = useState(0);
   const [leftdisable, setLeftdisable] = useState(true);
   const [rightdisable, setRightdisable] = useState(false);
-
+  const navigate = useNavigate();
   const universal = useContext(universeVariable);
   const goLeftKeyword = () => {
     if (keywordId > 0) {
@@ -23,6 +24,7 @@ const MessageInput = ({ keywords }) => {
       }
     }
   };
+
   const goRightKeyword = () => {
     if (keywordId < keywords.length - 1) {
       setKeywordId(keywordId + 1);
@@ -40,38 +42,34 @@ const MessageInput = ({ keywords }) => {
   const handleSendMessage = () => {
     const data = {
       content: message,
-      keywordEntityDTOList: [keywords[keywordId]]
+      keywordEntityDTOList:
+        keywords[keywordId] !== undefined ? [keywords[keywordId]] : [],
     };
-
     axios
-      .post(
-        `${universal.defaultUrl}/api/usermsg`,
-        data,
-        { headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` } }
-      )
+      .post(`${universal.defaultUrl}/api/usermsg`, data, {
+        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+      })
       .then((response) => {
-        console.log('Message sent successfully:', response.data);
+        console.log("Message sent successfully:", response.data);
         Swal.fire({
-          title: '메시지를 보내는 데 성공했습니다!',
-          text: '해피리가 책임지고 다른분들께 전달해드릴게요!',
+          title: "메시지를 보내는 데 성공했습니다!",
+          text: "해피리가 책임지고 다른분들께 전달해드릴게요!",
           icon: "success",
           iconColor: "#4B4E6D",
-          color: 'white',
-          background: '#292929',
-          confirmButtonColor: '#4B4E6D',
+          color: "white",
+          background: "#292929",
+          confirmButtonColor: "#4B4E6D",
         });
-        setMessage(''); // Clear the input after sending
+        setMessage(""); // Clear the input after sending
       })
       .catch((error) => {
-        console.error('Error sending message:', error);
+        console.error("Error sending message:", error);
       });
   };
 
   return (
     <div className="message-input">
-      <h2 className="message-input-title">
-        해피리 친구들에게
-      </h2>
+      <h2 className="message-input-title">해피리 친구들에게</h2>
       <h2 className="message-input-title">
         <strong>오늘 하루</strong>를 공유해 볼까요?
       </h2>
@@ -86,13 +84,13 @@ const MessageInput = ({ keywords }) => {
           value={message}
           onChange={handleInputChange}
         ></textarea>
-        <div className='message-input-keyword'>
+        <div className="message-input-keyword">
           {keywords.length > 0 ? (
             <>
               <button
                 onClick={goLeftKeyword}
                 disabled={leftdisable}
-                className='message-input-keyword-left-btn'
+                className="message-input-keyword-left-btn"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +100,7 @@ const MessageInput = ({ keywords }) => {
                   className="bi bi-chevron-compact-left"
                   viewBox="0 0 16 16"
                   style={{
-                    cursor: leftdisable ? 'default' : 'pointer',
+                    cursor: leftdisable ? "default" : "pointer",
                     opacity: leftdisable ? 0.5 : 1,
                   }}
                 >
@@ -112,13 +110,15 @@ const MessageInput = ({ keywords }) => {
                   />
                 </svg>
               </button>
-              <div className='message-keyword-card'>
-                {keywords[keywordId] !== undefined && <KeywordCard props={keywords[keywordId]} />}
+              <div className="message-keyword-card">
+                {keywords[keywordId] !== undefined && (
+                  <KeywordCard props={keywords[keywordId]} />
+                )}
               </div>
               <button
                 onClick={goRightKeyword}
                 disabled={rightdisable}
-                className='message-input-keyword-left-btn'
+                className="message-input-keyword-left-btn"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -128,28 +128,43 @@ const MessageInput = ({ keywords }) => {
                   className="bi bi-chevron-compact-left"
                   viewBox="0 0 16 16"
                   style={{
-                    cursor: rightdisable ? 'default' : 'pointer',
+                    cursor: rightdisable ? "default" : "pointer",
                     opacity: rightdisable ? 0.5 : 1,
                   }}
                 >
-                  <path fillRule="evenodd" d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671" />
+                  <path
+                    fillRule="evenodd"
+                    d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671"
+                  />
                 </svg>
               </button>
             </>
           ) : (
-            <p className='message-keyword-none-text'>
+            <p className="message-keyword-none-text">
               아직 오늘 하루를 기록하지 않으셨네요!
-              <br/>
-              다이어리를 작성하러 갈까요?</p>
+              <br />
+              다이어리를 작성하러 갈까요?
+            </p>
+          )}
+        </div>
+        {}
+        <hr className="divider" />
+        <div>
+          {keywords.length > 0 ? (
+            <Button
+              className="message-send-btn btn middle dark-btn"
+              content="Share"
+              onClick={handleSendMessage}
+            />
+          ) : (
+            <Button
+              className="message-send-btn btn middle dark-btn"
+              content="Diary→"
+              onClick={() => navigate("/diary")}
+            />
           )}
         </div>
       </div>
-      <hr className="divider" />
-      <Button
-        className="message-send-btn btn middle dark-btn"
-        content="Share"
-        onClick={handleSendMessage}
-      />
     </div>
   );
 };

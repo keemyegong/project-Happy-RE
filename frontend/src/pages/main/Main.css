@@ -41,7 +41,7 @@ html, body {
 .main-happyre-text {
   font-size: 5vw; /* 전체 화면 너비의 5% */
   letter-spacing: 8px;
-  margin-top: calc(19vh + 11 * ((100vw - 320px) / 880)); /* 자연스럽게 조절 */
+  margin-top : 10%;
   margin-left: 51.2vw; /* 전체 화면 너비의 42.5% */
   transform: translateX(-50%); /* 수평 중앙 정렬 보정 */
   text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #EAE7B1,
@@ -71,11 +71,6 @@ html, body {
   border-radius: 10px;
 }
 
-@media (max-width: 1048px) {
-  .main-happyre-text {
-    display: none;
-  }
-}
 
 .main-navbar {
   padding-top: 30px;
@@ -277,7 +272,7 @@ html, body {
 
 @media (max-width: 1024px) {
   .char-section-1, .container-3 .characters {
-    display: none;
+    display: block;
   }
   .information {
     margin: auto;

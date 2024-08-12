@@ -167,6 +167,7 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
     margin-right: 3px;
     align-items: center; /* 세로 가운데 정렬 */
     justify-content: center; /* 가로 가운데 정렬 */
+    cursor: pointer;
 }
 .login-logo-container{
     display: flex;
