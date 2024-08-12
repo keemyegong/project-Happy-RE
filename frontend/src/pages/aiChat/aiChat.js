@@ -292,6 +292,7 @@ const AIChat = () => {
       }, 91000);
     } else if (eventNumber === 2) {
       event3();
+      
     } else if (eventNumber === 3) {
       event4();
     }
@@ -459,6 +460,7 @@ const AIChat = () => {
               isButtonDisabled={isButtonDisabled}
               endChatSession={endChatSession} // 채팅 종료 함수 전달
               persona={persona}
+              eventEnd={eventEnd}
             />
 
           </div>
