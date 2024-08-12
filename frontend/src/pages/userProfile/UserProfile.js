@@ -317,6 +317,7 @@ const UserProfile = () => {
                     possibleList={possibleList}
                     showDiaryModal={showDiaryModal}
                     getMonthlyDiary={getMonthlyDiary}
+                    setSelectedDay={setSelectedDay}
                   />
                 </div>
               </div>
@@ -335,7 +336,7 @@ const UserProfile = () => {
 
                 <div className='change-happyre-persona my-5'>
                   <div className='persona-chat-container'>
-\                    <div className='persona-chat'>
+                    <div className='persona-chat'>
                       {keywordEntities == null ? happyReGoDiary[localStorage.getItem('personaNumber')] : happyReHello[localStorage.getItem('personaNumber')]}
                       {keywordEntities == null && (
                         <p className='persona-diary-add-btn m-0'>
@@ -367,7 +368,13 @@ const UserProfile = () => {
             daySummary={daySummary}
             chatlog={chatlog}
             keyword={keyword}
-            selectedDay={selectedDay}
+            selectedDay={
+              {year:selectedDay.getFullYear(),
+              month:selectedDay.getMonth()+1,
+              date:selectedDay.getDate()
+            }
+
+            }
             onClose={() => setShowDiary(false)}
             hideplus={true}
           />

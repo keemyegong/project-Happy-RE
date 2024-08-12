@@ -19,19 +19,12 @@ const SignUp = () => {
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
-  const googleSignIn = ()=>{
-
-    window.location.href = `${universal.defaultUrl}/api/oauth2/authorization/naver`
-    
-  }
 
   return (
     <div className='signup'>
       <div className='signup-container'>
 				<div className='signup-title'>
 	      	<img src={signUpTitle} width={450} className='mb-3' />
-          <Button className='ms-0 btn light-btn big' content='Sign Up with Google'
-          onClick={googleSignIn}/>
 				</div>
 				<hr className='border-light border-1' />
 				<div className='signup-content'>
