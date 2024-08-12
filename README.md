@@ -44,8 +44,12 @@
 ### 유저 간 채팅 시퀀스
 ![](readme%20resource/유저%20채팅%20시퀀스.png)
 # 기능 소개
-## AI 채팅 다이어리
-### 해피리 페르소나
+## 메인 화면
+## 다이어리 및 AI 채팅
+## 유저 메세지 공유
+## 마인드 톡
+## 아카이브
+<!-- ### 해피리 페르소나
 - 해피리
 ![](readme%20resource/default.PNG)
 - 셰익스피리
@@ -55,10 +59,7 @@
 - 해파스찬
 ![](readme%20resource/butler.PNG)
 - 해파라테스
-![](readme%20resource/philosopher.PNG)
-## 유저 편지
-## 아카이브
-## 유저 간 채팅
+![](readme%20resource/philosopher.PNG) -->
 # 기술 스택
 (아키텍처 다이어그램)
 ## Front-End
