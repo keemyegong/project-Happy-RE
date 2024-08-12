@@ -347,7 +347,7 @@ const AIChat = () => {
 
     const payload = {
       user_input: userInput,
-      audio: audioData,
+      audio: '',
       request: 'user'
     };
 
@@ -387,8 +387,10 @@ const AIChat = () => {
 
   const handleSendClick = () => {
     if (isMicMuted) {
+      console.log('텍스트 전송입니다.')
       sendText();
     } else {
+      console.log('음성전송입니다.')
       sendRecording();
     }
   };

@@ -10,6 +10,7 @@ const UserResponse = ({ content, isAudio, isRender }) => {
   useEffect(()=>{
     if (isAudio !== '' && isAudio!==null  && isRender ){
       getVideo();
+      console.log(isAudio);
     }
   },[])
 

@@ -4,7 +4,7 @@ import UserResponse from '../ai-chat/UserResponse';
 import AIResponse from '../ai-chat/AIResponse';
 
 const DiaryChat = ({ chatHistory }) => {
-
+    
     return (
         <div className='container diary-chat-box-container '>
     
