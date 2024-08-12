@@ -58,7 +58,6 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
     print("File Upload Start")
     try:
         user_audio_dir = os.path.abspath(os.path.join(AUDIO_DIR, str(user_id)))
-        print(f"user_audio_dir : {user_audio_dir}")
         for root, dirs, files in os.walk(user_audio_dir):
             for filename in files:
                 local_path = os.path.join(root, filename)

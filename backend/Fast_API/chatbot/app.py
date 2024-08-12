@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from typing import List
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from .Chatbot import Chatbot, DiarySummarizeChatbot, SummarizeChatbot
+from .Chatbot import Chatbot
 from packages.dependencies import decode_jwt
 from models import ChatRequest, TestMod
 import httpx
@@ -68,17 +68,15 @@ async def emotion_tagging(user_id: str, text: str):
     trigger = False
     
     russell_coord = await emotion_analysis(text)
-    print(f"러셀 좌표 테스트 : {text, russell_coord[0]}")
     
     if user_id not in user_emotion_russell:
         user_emotion_russell[user_id] = {}
         
     if russell_coord[0] <= -0.75:
-        print("--------------------------------트리거 터졌숑-----------------------------------------")
-        print(f"트리거 켜졌숑!\n {text}")
         trigger = True
         
     user_emotion_russell[user_id][text.strip()] = russell_coord
+    print(f"{text} : {user_emotion_russell[user_id][text.strip()]}")
     print("Emotion tagging End")
     return trigger
 
@@ -137,14 +135,6 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     if request.request == "user":
         trigger = await emotion_tagging(user_id, user_input)
     
-    # print(f"response : {response}")
-    # print("---------------------------------------")
-    # print(f"user session: {user_session}")
-    # print("---------------------------------------")
-    # pprint(f"user message: {user_message}")
-    if trigger == True:
-        print(f"-----------------------트리거 터진 텍스트 {user_input}----------------------")
-    
     content = {
         "content":response,
         "trigger":trigger
@@ -161,7 +151,6 @@ async def post_message_request(request:Request):
     
     '''
     print("--------------------------------------------------메세지 포스트 시작--------------------------------------------------------------")
-    print(f"{SPRING_MESSAGE_POST_URL}")
     
     header = request.headers
     token = header["authorization"].split(" ")[-1]
@@ -186,7 +175,6 @@ async def post_message_request(request:Request):
                 data["russellY"] = None
             message_item.append(data)
         print("메세지 만들기 완료")
-        print(f"Message Item : \n {message_item}")
         try:
             new_headers = {
                 "authorization": header["authorization"],
@@ -222,7 +210,7 @@ async def session_delete(request:Request):
     chatbot_instance = user_session[user_id]
     prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과 \
         긍정적인 감정이 느껴지는 3개 이하의 키워드와 부정적인 감정이 느껴지는 3개 이하의 키워드를 뽑아 유저 메세지와 함께 보여줘.\
-        이때 너에게 설정된 persona를 무시하고 키워드를 생성, 응답해줘.\
+        이때 너에게 설정된 persona를 무시하고, 오로지 유저의 입력에서만 키워드를 생성, 응답해줘.\
         Tips on Creating Keywords: 1. The keyword must NOT be emotion or thought. 2. pick most triggering keywords.\
         응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. \
         "diary_summary"는 전체 대화를 짧게 요약하는 주제 문장을 값으로 가져. \
@@ -234,7 +222,6 @@ async def session_delete(request:Request):
         만약 요약할 내용이 없다면 "None"으로 응답해줘. The contents also should be korean, except proper nouns.'
     
     response = chatbot_instance.generateResponse(prompt)
-    print(f"SPRING_KEYWORD_SUMMARY_URL : {SPRING_KEYWORD_SUMMARY_URL}")
     print(f"Summary Response : \n {response}")
     try:
         # result = json.loads(response.strip())
@@ -252,26 +239,27 @@ async def session_delete(request:Request):
         total_russell_y = 0
         user_message_count = len(list(filter(lambda x: x["speaker"]=="user", user_message[user_id])))
 
-        for idx, data in enumerate(summary_detail):
-            if data["message"] not in user_emotion_russell[user_id]:
-                continue
-            print(f"data : \n {data}")
-            print(f"user emotion russell : \n {user_emotion_russell[user_id]}")
-            data["russellX"], data["russellY"] = user_emotion_russell[user_id][data["message"]]
-            data["sequence"] = idx+1
-            if data["russellX"]:
-                total_russell_x += data["russellX"]
-            if data["russellY"]:
-                total_russell_y += data["russellY"]
-            del data["message"]
-            summary_list.append(data)
-            print(f"data after russell: \n {data}")
-        if user_message_count != 0:
-            diary["russellAvgX"] = round(total_russell_x/user_message_count, 3)
-            diary["russellAvgY"] = round(total_russell_y/user_message_count, 3)
+        if diary_summary=="None" and summary_detail=="None" :
+            diary["russellAvgX"] = None
+            diary["russellAvgY"] = None
         else:
-            diary["russellAvgX"] = 0
-            diary["russellAvgY"] = 0
+            for idx, data in enumerate(summary_detail):
+                if data["message"] not in user_emotion_russell[user_id]:
+                    continue
+                data["russellX"], data["russellY"] = user_emotion_russell[user_id][data["message"]]
+                data["sequence"] = idx+1
+                if data["russellX"]:
+                    total_russell_x += data["russellX"]
+                if data["russellY"]:
+                    total_russell_y += data["russellY"]
+                del data["message"]
+                summary_list.append(data)
+            if user_message_count != 0:
+                diary["russellAvgX"] = round(total_russell_x/user_message_count, 3)
+                diary["russellAvgY"] = round(total_russell_y/user_message_count, 3)
+            else:
+                diary["russellAvgX"] = 0
+                diary["russellAvgY"] = 0
         print(f"Summary List : {summary_list}")
         print(f"Diary : \n {diary}")
     except Exception as e:
