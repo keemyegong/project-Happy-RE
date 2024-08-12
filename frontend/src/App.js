@@ -43,7 +43,7 @@ const PublicRoute = ({ children }) => {
 const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
   const location = useLocation();
   const isUserProfile = location.pathname === '/profile';
-  const initialPosition = { x: 0, y: 0 };
+
   const characterImage = defaultImage;
 
   return (
@@ -67,7 +67,6 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
             element={
               <PrivateRoute>
                 <RtcClient
-                  initialPosition={initialPosition}
                   characterImage={characterImage}
                 />
               </PrivateRoute>

@@ -6,7 +6,7 @@ import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession, persona }) => {
+const ChatBox = ({ setIsInputDisabled, isInputDisabled, setIsButtonDisabled, chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession, persona }) => {
 
 
   const ChatType = Number(persona);
@@ -103,7 +103,7 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
             if (chat.type === 'user') {
               return <UserResponse key={index} content={chat.content} />
             } else if (chat.type === 'event') {
-              return <ChatEvent key={index} content={chat.content} eventStoping={eventStoping} eventProceeding={eventProceeding} eventEnd={eventEnd} />
+              return <ChatEvent key={index} content={chat.content} eventStoping={eventStoping} eventProceeding={eventProceeding} eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
             } else {
               return <AIResponse key={index} content={chat.content} />
             }
@@ -122,8 +122,8 @@ const ChatBox = ({ chatHistory, isBotTyping, onSendClick, isMicMuted, userInput,
               value={isMicMuted ? userInput : 'Enter를 누르거나 SEND 버튼을 누르면 음성이 전송돼요!'}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyPress={(e) => { if (e.key === 'Enter') onSendClick(); }}
-              disabled={!isMicMuted}
-              placeholder='음성 대화를 원하면 REC 버튼을 눌러 주세요!'
+              disabled={!isMicMuted || isInputDisabled}
+              placeholder={isInputDisabled && isMicMuted? '이벤트가 진행중이에요...' :'음성 대화를 원하면 REC 버튼을 눌러 주세요!'}
             />
           </div>
           <div className='chat-box-send-btn col-2 p-0'>

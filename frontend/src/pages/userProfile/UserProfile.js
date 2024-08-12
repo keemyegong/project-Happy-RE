@@ -58,6 +58,9 @@ const UserProfile = () => {
   const [possibleList, setPossibleList] = useState([]);
   const [recentList, setRecentList] = useState([]);
 
+
+  const [classNamee, setClassName] = useState("nodata");
+
   const [validCloud, setValidCloud] = useState(false);
   let possibleDates = [];
   let recentinfo = [];
@@ -70,7 +73,9 @@ const UserProfile = () => {
   const handleShow = () => setShow(true);
   const balloonImage = new Image();
   balloonImage.src = "../../assets/wordimg.svg"; // 말풍선 이미지 경로
-
+  const getClassName = () => {
+    return classNamee;
+  };
   const getRecentMonthDiary = () => {
     axios.get(
       `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${32}`,
@@ -222,7 +227,7 @@ const UserProfile = () => {
         if (chartElement) {
           // chartElement가 존재하는지 확인
           const chart = echarts.init(chartElement);
-
+          setClassName("havedata");
           // ECharts 옵션 설정
           chart.setOption({
             tooltip: {
@@ -272,6 +277,8 @@ const UserProfile = () => {
               },
             ],
           });
+          setData(wordCloudData)
+
         } else {
           console.error('DOM element with id "wordCloud" not found.');
         }
@@ -373,15 +380,8 @@ const UserProfile = () => {
                     있어요
                   </span>
                 </div>
-                <div className="wordcloud-container">
-                  <div
-                    id="wordCloud"
-                    style={{
-                      width: data.length === 0 ? "0px" : "600px",
-                      height: data.length === 0 ? "0px" : "400px",
-                      transition: "width 0.5s ease, height 0.5s ease", // 애니메이션을 추가할 수 있습니다.
-                    }}
-                  ></div>
+                <div className='wordcloud-container'>
+                  <div id="wordCloud" className='wordcloud-container'></div>
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
