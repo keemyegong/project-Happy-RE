@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
@@ -14,16 +14,15 @@ import AIChat from './pages/aiChat/aiChat';
 import RtcClient from './pages/WebRtc/RtcClient';
 import Message from './pages/message/Message';
 import Diary from './pages/diary/Diary';
-import Archive from './pages/archive-page/Archive'
+import Archive from './pages/archive-page/Archive';
 
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
-import defaultImage from './assets/characters/default.png'
+import defaultImage from './assets/characters/default.png';
 
 import './App.css';
 
 export const universeVariable = createContext();
-
 
 const PrivateRoute = ({ children }) => {
   const token = Cookies.get('Authorization');
@@ -41,21 +40,14 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-const AppContent = (setHappyreNumber) => {
+const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
   const location = useLocation();
-
-  // 현재 경로가 '/profile'인지 확인
   const isUserProfile = location.pathname === '/profile';
   const initialPosition = { x: 0, y: 0 };
   const characterImage = defaultImage;
 
   return (
-    <div
-      className="App"
-      // style={{
-      //   overflow: isUserProfile ? 'auto' : 'hidden',
-      // }}
-    >
+    <div className="App">
       <StarryBackground />
       <Nav />
       <div className="content">
@@ -69,7 +61,8 @@ const AppContent = (setHappyreNumber) => {
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
-          <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} />
+          {/* <Route path="/with-happyre" element={<PrivateRoute>{withHappyreAccessedToday ? <Navigate to="/profile" /> : <AIChat />}</PrivateRoute>} /> */}
+          <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>}/>
           <Route path="/webrtc"
             element={
               <PrivateRoute>
@@ -90,29 +83,39 @@ const AppContent = (setHappyreNumber) => {
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [todayDone, setTodayDone] = useState(false);
+  const [withHappyreAccessedToday, setWithHappyreAccessedToday] = useState(false);
 
+  useEffect(() => {
+    const lastAccessDate = Cookies.get('withHappyreAccessDate');
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (lastAccessDate === today) {
+      setWithHappyreAccessedToday(true);
+    } else {
+      Cookies.set('withHappyreAccessDate', today, { expires: 1 });
+      setWithHappyreAccessedToday(false);
+    }
+  }, []);
 
   return (
     <universeVariable.Provider
       value={{
         defaultUrl: 'https://i11b204.p.ssafy.io',
+        // defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: '',
         fastUrl: 'https://i11b204.p.ssafy.io',
+        // fastUrl: 'http://192.168.31.229:8000',
         // defaultUrl: 'http://192.168.31.216:8080',
         // defaultUrl: 'http://192.168.31.48:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
-        // fastUrl: 'http://192.168.31.229:8000', 
-        // fastUrl: 'http://168.126.63.1:8000',
-        // defaultUrl: 'http://180.228.3.53:8080',
         isAuthenticated,
         setIsAuthenticated,
         todayDone,
         setTodayDone,
-        
       }}
     >
       <Router>
-        <AppContent/>
+        <AppContent withHappyreAccessedToday={withHappyreAccessedToday} />
       </Router>
     </universeVariable.Provider>
   );

@@ -17,8 +17,134 @@ const Main = () => {
   const jumpDuration = 1000;
   const [showUpButton, setShowUpButton] = useState(false);
   const [showDownButton, setShowDownButton] = useState(true);
+  const animationIntervals = useRef([]);
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
+
+  const calculateCharacterSize = () => {
+    const minWidth = 375; // 최소 너비
+    const maxWidth = 1920; // 최대 너비
+    const minSize = 75; // 최소 크기
+    const maxSize = 200; // 최대 크기
+
+    const currentWidth = window.innerWidth;
+    const characterSize = minSize + ((maxSize - minSize) * ((currentWidth - minWidth) / (maxWidth - minWidth)));
+
+    return Math.min(maxSize, Math.max(minSize, characterSize));
+  };
+
+  const calculateCharacterPosition = (initialPositions, characterSize) => {
+    const minWidth = 375; // 최소 너비
+    const maxWidth = 1920; // 최대 너비
+
+    const currentWidth = window.innerWidth;
+    const widthRatio = (currentWidth - minWidth) / (maxWidth - minWidth);
+
+    return initialPositions.map(pos => ({
+      x: pos.minX + (pos.maxX - pos.minX) * widthRatio,
+      y: pos.minY + (pos.maxY - pos.minY) * widthRatio,
+      width: characterSize,
+      height: characterSize
+    }));
+  };
+
+  const initializeCanvas = (canvasRef, characters) => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+
+      const drawCharacters = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        characters.forEach(character => {
+          ctx.drawImage(character.img, character.x, character.y, character.width, character.height);
+        });
+      };
+
+      const jump = (character, delay) => {
+        const startY = character.y;
+        const startTime = performance.now() + delay;
+
+        const animateJump = (time) => {
+          const elapsed = time - startTime;
+          if (elapsed > 0) {
+            const progress = elapsed / jumpDuration;
+            if (progress < 1) {
+              character.y = startY - (jumpHeight * Math.sin(progress * Math.PI));
+              drawCharacters();
+              requestAnimationFrame(animateJump);
+            } else {
+              character.y = startY;
+              drawCharacters();
+            }
+          } else {
+            requestAnimationFrame(animateJump);
+          }
+        };
+
+        requestAnimationFrame(animateJump);
+      };
+
+      characters.forEach((character, index) => {
+        character.img.onload = () => {
+          drawCharacters();
+          const interval = setInterval(() => jump(character, index * 500), 5000);
+          animationIntervals.current.push(interval);
+        };
+      });
+
+      drawCharacters(); // Initial draw to avoid delay
+    }
+  };
+
+  const clearAnimationIntervals = () => {
+    animationIntervals.current.forEach(interval => clearInterval(interval));
+    animationIntervals.current = [];
+  };
+
+  const resizeCanvas = () => {
+    clearAnimationIntervals();
+    const characterSize = calculateCharacterSize(); // 반응형 캐릭터 크기
+
+    const initialPositions1 = [
+      { minX: 40, maxX: 350, minY: 50, maxY: 100 },
+      { minX: 100, maxX: 550, minY: 50, maxY: 100 },
+    ];
+
+    const initialPositions2 = [
+      { minX: 0, maxX: 230, minY: 150, maxY: 550 },
+      { minX: 60, maxX: 370, minY: 150, maxY: 400 },
+      { minX: 120, maxX: 550, minY: 150, maxY: 500 },
+    ];
+
+    const characters1 = calculateCharacterPosition(initialPositions1, characterSize).map((pos, index) => {
+      const img = new Image();
+      img.src = characterImages[index];
+      return {
+        img,
+        x: pos.x,
+        y: pos.y,
+        width: pos.width,
+        height: pos.height
+      };
+    });
+
+    const characters2 = calculateCharacterPosition(initialPositions2, characterSize).map((pos, index) => {
+      const img = new Image();
+      img.src = characterImages[index + 2];
+      return {
+        img,
+        x: pos.x,
+        y: pos.y,
+        width: pos.width,
+        height: pos.height
+      };
+    });
+
+    initializeCanvas(canvasRef1, characters1);
+    initializeCanvas(canvasRef2, characters2);
+  };
 
   useEffect(() => {
     const containerWrap = containerWrapRef.current;
@@ -31,6 +157,7 @@ const Main = () => {
       containerWrap.style.height = height;
       html.style.height = height;
       body.style.height = height;
+      resizeCanvas();
     };
 
     if (containerWrap) {
@@ -45,11 +172,11 @@ const Main = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = document.documentElement.clientHeight;
-      
+
       setShowUpButton(scrollTop > 0);
       setShowDownButton(scrollTop + clientHeight < scrollHeight);
     };
-  
+
     window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleScrollButtons);
     handleScrollButtons(); // 초기 상태 설정
@@ -60,94 +187,7 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
-    const initializeCanvas = (canvasRef, characters, initialPositions) => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-
-        const drawCharacters = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          characters.forEach(character => {
-            ctx.drawImage(character.img, character.x, character.y, character.width, character.height);
-          });
-        };
-
-        const jump = (character, delay) => {
-          const startY = character.y;
-          const startTime = performance.now() + delay;
-
-          const animateJump = (time) => {
-            const elapsed = time - startTime;
-            if (elapsed > 0) {
-              const progress = elapsed / jumpDuration;
-              if (progress < 1) {
-                character.y = startY - (jumpHeight * Math.sin(progress * Math.PI));
-                drawCharacters();
-                requestAnimationFrame(animateJump);
-              } else {
-                character.y = startY;
-                drawCharacters();
-              }
-            } else {
-              requestAnimationFrame(animateJump);
-            }
-          };
-
-          requestAnimationFrame(animateJump);
-        };
-
-        characters.forEach((character, index) => {
-          character.img.onload = () => {
-            drawCharacters();
-            setInterval(() => jump(character, index * 500), 5000);
-          };
-        });
-
-        drawCharacters(); // Initial draw to avoid delay
-      }
-    };
-
-    const initialPositions1 = [
-      { x: 1.5, y: 0.5 },
-      { x: 2.5, y: 0.5 },
-    ];
-
-    const initialPositions2 = [
-      { x: 0.5, y: 2.5 },
-      { x: 1.5, y: 2.5 },
-      { x: 2.5, y: 2.5 },
-    ];
-
-    const characterSize = 150; // Fixed size for characters to maintain image quality
-
-    const characters1 = characterImages.slice(0, 2).map((src, index) => {
-      const img = new Image();
-      img.src = src;
-      return {
-        img,
-        x: initialPositions1[index].x * characterSize,
-        y: initialPositions1[index].y * characterSize,
-        width: characterSize,
-        height: characterSize,
-      };
-    });
-
-    const characters2 = characterImages.slice(2, 5).map((src, index) => {
-      const img = new Image();
-      img.src = src;
-      return {
-        img,
-        x: initialPositions2[index].x * characterSize,
-        y: initialPositions2[index].y * characterSize,
-        width: characterSize,
-        height: characterSize,
-      };
-    });
-
-    initializeCanvas(canvasRef1, characters1, initialPositions1);
-    initializeCanvas(canvasRef2, characters2, initialPositions2);
+    resizeCanvas();
 
     const observerOptions = {
       root: null,
@@ -177,6 +217,7 @@ const Main = () => {
     return () => {
       if (characterBox1) observer.unobserve(characterBox1);
       if (container3) observer.unobserve(container3);
+      clearAnimationIntervals();
     };
   }, []);
 
@@ -203,22 +244,21 @@ const Main = () => {
     window.scrollTo({ top: scrollAmount, behavior: 'smooth' });
   };
 
+  const handleWheel = (event) => {
+    event.preventDefault();
+    const direction = event.deltaY > 0 ? 'down' : 'up';
+    handleScroll(direction);
+  };
+
+  useEffect(() => {
+    window.addEventListener('wheel', handleWheel);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   return (
     <div className="container-wrap" ref={containerWrapRef} data-bs-spy="scroll" data-bs-target="#navbar-example">
-      {showUpButton && (
-        <button className="scroll-button up" onClick={() => handleScroll('up')}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-chevron-compact-up" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894z"/>
-          </svg>
-        </button>
-      )}
-      {showDownButton && (
-        <button className="scroll-button down" onClick={() => handleScroll('down')}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"/>
-          </svg>
-        </button>
-      )}
       <div id="container-1" className="container-1">
         <p className='main-happyre-text'>Happy:Re</p>
         <div className='to-login'>
