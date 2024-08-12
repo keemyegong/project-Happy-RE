@@ -54,7 +54,7 @@ const Diary = () => {
               possibleDates.push(element.date.substring(0,10));
               
             });
-            if (possibleDates.length !== possibleList.length){
+            if (possibleDates !== possibleList){
               setPossibleList(possibleDates);
             }
             
@@ -66,15 +66,18 @@ const Diary = () => {
         // console.log(response.data);
 
       })
-  },[startDate])
+  },[currentWeek])
   // 이전 주 이동
   const handlePreviousWeek = () => {
     setCurrentWeek(subWeeks(currentWeek, 1));
+    // setStartDate(startOfWeek(subWeeks(currentWeek, 1)),{ weekStartsOn: 1 })
   };
 
   // 다음 주 이동
   const handleNextWeek = () => {
     setCurrentWeek(addWeeks(currentWeek, 1));
+    // setStartDate(startOfWeek(addWeeks(currentWeek, 1)),{ weekStartsOn: 1 })
+
   };
 
   // 다이어리 작성 페이지 이동
@@ -137,7 +140,7 @@ const Diary = () => {
       const year = format(day, 'yyyy');
       const month = format(day, 'MM');
       const date = format(day, 'dd');
-      const isPossible = possibleList.includes(`${year}-${month}-${date}`);
+      // console.log(isPossible);
       // const isPossible = true;
 
       days.push(
@@ -168,15 +171,15 @@ const Diary = () => {
             }}
           >
             <div
-              className={`diary-day-dot ${isCurrentDay ? 'diary-day-dot-today' : ''} ${isPossible ? 'diary-day-possible-dot' : ''}` }
+              className={`diary-day-dot ${isCurrentDay ? 'diary-day-dot-today' : ''} ${possibleList.includes(`${year}-${month}-${date}`) ? 'diary-day-possible-dot' : ''}` }
             ></div>
             <div
-              className={`diary-day-label ${isCurrentDay ? 'diary-day-label-today' : ''} ${isPossible ? 'diary-day-possible' : ''}`}
+              className={`diary-day-label ${isCurrentDay ? 'diary-day-label-today' : ''} ${possibleList.includes(`${year}-${month}-${date}`) ? 'diary-day-possible' : ''}`}
             >
               {dayLabel}
             </div>
             <div
-              className={`diary-day-number ${isCurrentDay ? 'diary-day-number-today' : ''} ${isPossible ? 'diary-day-possible' : ''}`}
+              className={`diary-day-number ${isCurrentDay ? 'diary-day-number-today' : ''} ${possibleList.includes(`${year}-${month}-${date}`) ? 'diary-day-possible' : ''}`}
             >
               {format(day, 'dd')}
             </div>

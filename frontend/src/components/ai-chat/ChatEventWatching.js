@@ -10,7 +10,7 @@ const textList = [
     "마음을 비우세요"
 ]
 
-const ChatEventWatching = ({eventEnd})=>{
+const ChatEventWatching = ({eventEnd,setIsInputDisabled})=>{
     const [balls, setBalls] = useState([]);
     const [numberOfBall, setNumberOfBalls] = useState(Math.floor(Math.random() * 5) + 3);
     const [currentText, setCurrentText] = useState(textList[0]);
@@ -80,6 +80,7 @@ const ChatEventWatching = ({eventEnd})=>{
     const handleEventEndClick = () => {
         setTimeout(()=>{
             eventEnd();
+            setIsInputDisabled(false);
         }, 0)
     }
 

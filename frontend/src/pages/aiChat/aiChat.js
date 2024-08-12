@@ -36,43 +36,55 @@ const AIChat = () => {
   const [daySummary, setDaySummary] = useState('');
   const navigate = useNavigate();
   const currDate = new Date();
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
+
   const today = {
     year:currDate.getFullYear(),
     month:currDate.getMonth()+1,
     date:currDate.getDate(),
   };
   const [keyword,setKeyword] = useState([]);
+
   const eventStopComment = [
     "그렇군요. 그럼 다시 이야기로 돌아가볼까요?",
-    "제 1사분면 이벤트 중단 코멘트",
-    "제 2사분면 이벤트 중단 코멘트",
-    "제 3사분면 이벤트 중단 코멘트",
-    "제 4사분면 이벤트 중단 코멘트",
-
+    "그런가. 그렇다면 다시 이야기로 돌아가도록 하지.",
+    "알겠습니다, 주인님. 주인님의 결정에 따르겠습니다.",
+    "이 또한 그대를 위한 선택일 것이니, 그대의 선택을 존중하네. ",
+    "(옅은 웃음을 띄며) 순간의 갈림길에서 그대를 위한 발걸음을 떼었는가",
   ]
   const eventEndComment = [
     "기분 전환이 되셨을까요? 그럼 다시 얘기해봐요.",
-    "제 1사분면 이벤트 끝 코멘트",
-    "제 2사분면 이벤트 끝 코멘트",
-    "제 3사분면 이벤트 끝 코멘트",
-    "제 4사분면 이벤트 끝 코멘트",
+    "가득 찬 찻잔에는 차를 채울수 없으니, 좋은 전략을 위해서는 머리를 비우는 것도 중요하다네.",
+    "주인님께 도움이 되었길 바랍니다. 하시고 싶은 이야기가 있으시다면 얘기해주세요.",
+    "마음을 비우고 그대를 돌아보는 시간이 되었기를 바란다네. 그대가 논하고자 하는 주제가 있다면 말해주시게.",
+    "(기쁜 얼굴로) 오랜 비극의 막이 내리고 새로운 희극의 막이 오를 시간이군. 그대가 써내려갈 새로운 이야기를 알려주게.",
   ]
 
   const recognitionFaileComment = [
     "정말 죄송하지만, 혹시 다시 한 번 말씀해주시겠어요?",
-    "제 1사분면 인지 못함 코멘트",
-    "제 2사분면 인지 못함 코멘트",
-    "제 3사분면 인지 못함 코멘트",
-    "제 4사분면 인지 못함 코멘트",
-
+    "전장의 소란에 그대의 목소리가 묻힌 모양이군. 다시 한 번 말해주게나.",
+    "죄송합니다 주인님. 주인님께서 하신 말씀을 이해하지 못했습니다. 다시 한 번 말씀해주시겠습니까.",
+    "오늘따라 아고라가 소란스러운 모양이네. 다시 한 번 말해주시게.",
+    "(곤란한 눈으로) 소란의 바다가 그대의 대사를 가라앉혔다네. 대사를 한 번 더 읊어주시게.",
   ]
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ''; // Chrome에서만 필요
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
 
   // 처음 인삿말 받아오기
   useEffect(() => {
-    // eventStart();
-    setIsButtonDisabled(true);
+    eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
@@ -284,7 +296,11 @@ const AIChat = () => {
 
   // 이벤트 허가에서 yes를 누른 경우 실행되는 함수
   const eventProceeding = () => {
-    const eventNumber = 2;
+    setIsInputDisabled(true);
+
+    const eventNumber = Math.floor(Math.random() * 3);
+    if (eventNumber === 0 ) eventNumber+=1;
+    
 
     if (eventNumber === 0) {
       event1();
@@ -292,8 +308,10 @@ const AIChat = () => {
     } else if (eventNumber === 1) {
       event2();
       setTimeout(() => {
-        eventEnd()
-      }, 91000);
+        eventEnd();
+        setIsInputDisabled(false);
+      }, 90500);
+
     } else if (eventNumber === 2) {
       event3();
       
@@ -341,7 +359,7 @@ const AIChat = () => {
 
     const payload = {
       user_input: userInput,
-      audio: audioData,
+      audio: '',
       request: 'user'
     };
 
@@ -381,8 +399,10 @@ const AIChat = () => {
 
   const handleSendClick = () => {
     if (isMicMuted) {
+      console.log('텍스트 전송입니다.')
       sendText();
     } else {
+      console.log('음성전송입니다.')
       sendRecording();
     }
   };
@@ -465,6 +485,9 @@ const AIChat = () => {
               endChatSession={endChatSession} // 채팅 종료 함수 전달
               persona={persona}
               eventEnd={eventEnd}
+              setIsButtonDisabled={setIsButtonDisabled}
+              setIsInputDisabled={setIsInputDisabled}
+              isInputDisabled={isInputDisabled}
             />
 
           </div>
