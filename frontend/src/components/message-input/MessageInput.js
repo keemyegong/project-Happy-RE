@@ -3,6 +3,7 @@ import "./MessageInput.css";
 import Button from "../Button/Button";
 import axios from "axios";
 import { universeVariable } from "../../App";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import KeywordCard from "../diary-report/KeywordCard";
 import Swal from "sweetalert2";
@@ -12,7 +13,7 @@ const MessageInput = ({ keywords }) => {
   const [keywordId, setKeywordId] = useState(0);
   const [leftdisable, setLeftdisable] = useState(true);
   const [rightdisable, setRightdisable] = useState(false);
-
+  const navigate = useNavigate();
   const universal = useContext(universeVariable);
   const goLeftKeyword = () => {
     if (keywordId > 0) {
@@ -23,6 +24,7 @@ const MessageInput = ({ keywords }) => {
       }
     }
   };
+
   const goRightKeyword = () => {
     if (keywordId < keywords.length - 1) {
       setKeywordId(keywordId + 1);
@@ -136,12 +138,6 @@ const MessageInput = ({ keywords }) => {
                   />
                 </svg>
               </button>
-              <hr className="divider" />
-              <Button
-                className="message-send-btn btn middle dark-btn"
-                content="Share"
-                onClick={handleSendMessage}
-              />
             </>
           ) : (
             <p className="message-keyword-none-text">
@@ -149,6 +145,23 @@ const MessageInput = ({ keywords }) => {
               <br />
               다이어리를 작성하러 갈까요?
             </p>
+          )}
+        </div>
+        {}
+        <hr className="divider" />
+        <div>
+          {keywords.length > 0 ? (
+            <Button
+              className="message-send-btn btn middle dark-btn"
+              content="Share"
+              onClick={handleSendMessage}
+            />
+          ) : (
+            <Button
+              className="message-send-btn btn middle dark-btn"
+              content="Diary→"
+              onClick={() => navigate("/diary")}
+            />
           )}
         </div>
       </div>
