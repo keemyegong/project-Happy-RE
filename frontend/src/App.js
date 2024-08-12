@@ -99,7 +99,7 @@ const App = () => {
   return (
     <universeVariable.Provider
       value={{
-        defaultUrl: 'http://192.168.31.216:8080',
+        defaultUrl: 'https://i11b204.p.ssafy.io',
         // defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: '',
         fastUrl: 'https://i11b204.p.ssafy.io',
