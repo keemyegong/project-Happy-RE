@@ -36,6 +36,8 @@ const AIChat = () => {
   const [daySummary, setDaySummary] = useState('');
   const navigate = useNavigate();
   const currDate = new Date();
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
+
   const today = {
     year:currDate.getFullYear(),
     month:currDate.getMonth()+1,
@@ -70,8 +72,7 @@ const AIChat = () => {
 
   // 처음 인삿말 받아오기
   useEffect(() => {
-    // eventStart();
-    setIsButtonDisabled(true);
+    eventStart();
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,
@@ -283,7 +284,11 @@ const AIChat = () => {
 
   // 이벤트 허가에서 yes를 누른 경우 실행되는 함수
   const eventProceeding = () => {
-    const eventNumber = 2;
+    setIsInputDisabled(true);
+
+    const eventNumber = Math.floor(Math.random() * 3);
+    if (eventNumber === 0 ) eventNumber+=1;
+    
 
     if (eventNumber === 0) {
       event1();
@@ -291,8 +296,10 @@ const AIChat = () => {
     } else if (eventNumber === 1) {
       event2();
       setTimeout(() => {
-        eventEnd()
-      }, 91000);
+        eventEnd();
+        setIsInputDisabled(false);
+      }, 90500);
+
     } else if (eventNumber === 2) {
       event3();
       
@@ -464,6 +471,9 @@ const AIChat = () => {
               endChatSession={endChatSession} // 채팅 종료 함수 전달
               persona={persona}
               eventEnd={eventEnd}
+              setIsButtonDisabled={setIsButtonDisabled}
+              setIsInputDisabled={setIsInputDisabled}
+              isInputDisabled={isInputDisabled}
             />
 
           </div>

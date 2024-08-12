@@ -8,7 +8,7 @@ import ChatEventClicking from './ChatEventClicking';
 import ChatEventStretching from './ChatEventStretching';
 import ChatEventWatching from './ChatEventWatching';
 
-const ChatEvent = ({ content, eventProceeding, eventStoping, eventEnd }) => {
+const ChatEvent = ({ content, eventProceeding, eventStoping, eventEnd,setIsInputDisabled }) => {
 	
 	const universal = useContext(universeVariable);
 	const example_event = [
@@ -27,13 +27,13 @@ const ChatEvent = ({ content, eventProceeding, eventStoping, eventEnd }) => {
 				}
 
 				{content === '스트레칭' && 
-				<ChatEventStretching eventEnd={eventEnd} />
+				<ChatEventStretching eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
 				}
 				{content === '공 세기' && 
-				<ChatEventWatching eventEnd={eventEnd} />
+				<ChatEventWatching eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
 				}
 				{content === '해파리 누르기' && 
-				<ChatEventClicking eventEnd={eventEnd} />
+				<ChatEventClicking eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
 				}
 			</p>}
 			{content === '이벤트 허가' &&
