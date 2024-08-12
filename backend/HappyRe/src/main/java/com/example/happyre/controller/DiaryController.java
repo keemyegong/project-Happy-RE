@@ -38,6 +38,8 @@ public class DiaryController {
     private final UserService userService;
     private final MessageService messageService;
     private final KeywordService keywordService;
+    private final UserAvgService userAvgService;
+
 
     @Operation(summary = "새 Diary 생성", description = "date를 null(빈 string 아님!) 로 설정하면 오늘 날짜로 생성을 시도합니다.\n date format은 yyyy-mm-dd hh:mm:ss 입니다.")
     @PostMapping("/")
@@ -172,6 +174,7 @@ public class DiaryController {
                 diaryEntity.setRussellAvgX(diaryContentDTO.getRussellAvgX());
                 diaryEntity.setRussellAvgY(diaryContentDTO.getRussellAvgY());
                 diaryService.update(diaryEntity);
+                userAvgService.setAvg(userEntity.getId(),diaryContentDTO.getRussellAvgX(),diaryContentDTO.getRussellAvgY());
             }
             return ResponseEntity.ok("업데이트 완료");
         } catch (AccessDeniedException ade) {

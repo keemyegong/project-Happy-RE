@@ -57,6 +57,8 @@ const UserProfile = () => {
   const [selectedDay, setSelectedDay] = useState(today);
   const [possibleList, setPossibleList] = useState([]);
   const [recentList, setRecentList] = useState([]);
+
+  const [validCloud, setValidCloud] = useState(false);
   let possibleDates = [];
   let recentinfo = [];
 
@@ -70,32 +72,17 @@ const UserProfile = () => {
   balloonImage.src = "../../assets/wordimg.svg"; // 말풍선 이미지 경로
 
   const getRecentMonthDiary = () => {
-    axios
-      .get(
-        `${
-          universal.defaultUrl
-        }/api/diary/?year=${monthAgo.getFullYear()}&month=${
-          monthAgo.getMonth() + 1
-        }&day=${monthAgo.getDate()}&period=${31}`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("Authorization")}`,
-            withCredentials: true,
-          },
+    axios.get(
+      `${universal.defaultUrl}/api/diary/?year=${monthAgo.getFullYear()}&month=${monthAgo.getMonth() + 1}&day=${monthAgo.getDate()}&period=${32}`,
+      {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('Authorization')}`,
+          withCredentials: true,
         }
-      )
-      .then((response) => {
-        response.data
-          .filter((element) => {
-            return element.russellAvgX != null && element.russellAvgY != null;
-          })
-          .forEach((element) => {
-            recentinfo.push({
-              x: element.russellAvgX,
-              y: element.russellAvgY,
-              value: 0.8,
-            });
-          });
+      }).then((response) => {
+        response.data.filter((element) => { return element.russellAvgX != null && element.russellAvgY != null }).forEach((element) => {
+          recentinfo.push({ x: element.russellAvgX, y: element.russellAvgY, value: 0.8 })
+        });
         setRecentList(recentinfo);
       });
   };
@@ -219,6 +206,9 @@ const UserProfile = () => {
       })
       .then((response) => {
         const responseData = response.data;
+        if (responseData != ''){
+          setValidCloud(true);
+        }
         const wordCloudData = responseData.map((item) => ({
           name: item.word,
           value: item.frequency, // frequency에 대한 가중치 적용
@@ -352,6 +342,7 @@ const UserProfile = () => {
 
   return (
     <div>
+
       <div className="container-fluid user-profile-container">
         <div className="row">
           <div className="col-12 col-md-4 col-xxl-2 ">
@@ -385,11 +376,16 @@ const UserProfile = () => {
                 <div className="wordcloud-container">
                   <div
                     id="wordCloud"
-                    style={{ width: "600px", height: "400px" }}
+                    style={{
+                      width: data.length === 0 ? "0px" : "600px",
+                      height: data.length === 0 ? "0px" : "400px",
+                      transition: "width 0.5s ease, height 0.5s ease", // 애니메이션을 추가할 수 있습니다.
+                    }}
                   ></div>
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
+                      
                     </p>
                   )}
                 </div>
@@ -398,6 +394,7 @@ const UserProfile = () => {
                     possibleList={possibleList}
                     showDiaryModal={showDiaryModal}
                     getMonthlyDiary={getMonthlyDiary}
+                    setSelectedDay={setSelectedDay}
                   />
                 </div>
               </div>
@@ -416,7 +413,7 @@ const UserProfile = () => {
 
                 <div className="change-happyre-persona my-5">
                   <div className="persona-chat-container">
-                    \{" "}
+                    {" "}
                     <div className="persona-chat">
                       {keywordEntities == null
                         ? happyReGoDiary[localStorage.getItem("personaNumber")]
@@ -461,7 +458,13 @@ const UserProfile = () => {
             daySummary={daySummary}
             chatlog={chatlog}
             keyword={keyword}
-            selectedDay={selectedDay}
+            selectedDay={
+              {year:selectedDay.getFullYear(),
+              month:selectedDay.getMonth()+1,
+              date:selectedDay.getDate()
+            }
+
+            }
             onClose={() => setShowDiary(false)}
             hideplus={true}
           />
