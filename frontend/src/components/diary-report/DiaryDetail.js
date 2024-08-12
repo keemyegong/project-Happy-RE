@@ -8,6 +8,7 @@ const DiaryDetail = ({ selectedDay, onClose, dropChat, loading, keyword, chatlog
   if (!selectedDay) return null; // selectedDay가 없으면 아무것도 렌더링하지 않음
 
   const { year, month, date, dayLabel } = selectedDay;
+  console.log(selectedDay);
 
   return (
     <div className='diary-detail-container'>
