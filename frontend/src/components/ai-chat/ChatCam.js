@@ -6,6 +6,7 @@ const ChatCam = ({ isCamEnabled, persona }) => {
   const ChatType = Number(persona);
   const UserProfile = '../../assets/characters/default.png'
 
+
   const getChatData = (type) => {
     switch (type) {
       case 0:
@@ -61,7 +62,7 @@ const ChatCam = ({ isCamEnabled, persona }) => {
       <div className='chat-cam-container'>
         <div className='chat-cam-date'>{formattedDate}</div>
         <img className='chat-cam-ai-profile-img' src={chatData.imageSrc} alt="AI profile" />
-        {isCamEnabled ? (
+        {isCamEnabled && userVideoStream ? (
           userVideoStream && (
             <video 
               className='chat-cam-user-video' 
@@ -82,6 +83,7 @@ const ChatCam = ({ isCamEnabled, persona }) => {
             alt="User Jellyfish" 
           />
         )}
+
       </div>
     </div>
   );

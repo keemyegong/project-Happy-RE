@@ -101,7 +101,7 @@ const App = () => {
         defaultUrl: 'http://192.168.31.216:8080',
         // defaultUrl: 'http://192.168.31.48:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
-        fastUrl: 'http://192.168.31.229:8000', 
+        // fastUrl: 'http://192.168.31.229:8000', 
         // fastUrl: 'http://168.126.63.1:8000',
         // defaultUrl: 'http://180.228.3.53:8080',
         isAuthenticated,
