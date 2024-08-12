@@ -22,7 +22,7 @@ const Diary = () => {
   const [daySummary, setDaySummary] = useState('');
   const hideplus = true;
 
-
+  
   const navigate = useNavigate();
 
   const startDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -242,7 +242,10 @@ const Diary = () => {
             chatlog={chatlog}
             keyword={keyword}
             selectedDay={selectedDay} // 전체 날짜 정보 전달
-            onClose={() => setShowModal(false)}
+            onClose={() => {
+              setShowModal(false)
+              
+            }}
             hideplus={hideplus}
           />
         )}

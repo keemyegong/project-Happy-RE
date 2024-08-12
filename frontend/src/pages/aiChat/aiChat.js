@@ -10,8 +10,11 @@ import ChatEvent from "../../components/ai-chat/ChatEvent";
 import DiaryReport from "../../components/diary-report/DiaryReport";
 import DiaryDetail from "../../components/diary-report/DiaryDetail";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2'
 
 const AIChat = () => {
+
+
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false); // 챗봇 입력 중 상태 추가
   const universal = useContext(universeVariable);
@@ -85,6 +88,7 @@ const AIChat = () => {
       sendStart(localStorage.getItem("personaNumber"));
     }
 
+    
   }, [universal.fastUrl]);
 
   const sendStart = (Startpersona)=>{
