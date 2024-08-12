@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
+@Table(name = "user_avg")
 public class UserAvgEntity {
     @Id
     @Column(name = "user_id") // 컬럼 이름 지정
