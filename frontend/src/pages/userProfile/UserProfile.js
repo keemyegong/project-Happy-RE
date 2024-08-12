@@ -272,6 +272,7 @@ const UserProfile = () => {
               },
             ],
           });
+          setData(wordCloudData)
         } else {
           console.error('DOM element with id "wordCloud" not found.');
         }
