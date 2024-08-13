@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import './ChatCam.css';
-import Button from '../Button/Button';
 
 const ChatCam = ({ isCamEnabled, persona }) => {
   const ChatType = Number(persona);
-  const UserProfile = '../../assets/characters/default.png'
-
 
   const getChatData = (type) => {
     switch (type) {
@@ -45,9 +42,9 @@ const ChatCam = ({ isCamEnabled, persona }) => {
   const formattedDate = `${year}.${month}.${date}.${day}`;
 
   const [userVideoStream, setUserVideoStream] = useState(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    console.log(persona);
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         setUserVideoStream(stream);
@@ -57,36 +54,35 @@ const ChatCam = ({ isCamEnabled, persona }) => {
       });
   }, []);
 
+  useEffect(() => {
+    if (videoRef.current && userVideoStream) {
+      videoRef.current.srcObject = userVideoStream;
+    }
+  }, [userVideoStream]);
+
   return (
     <div className='ChatCam'>
       <div className='chat-cam-container'>
         <div className='chat-cam-date'>{formattedDate}</div>
         <img className='chat-cam-ai-profile-img' src={chatData.imageSrc} alt="AI profile" />
         {isCamEnabled && userVideoStream ? (
-          userVideoStream && (
-            <video 
-              className='chat-cam-user-video' 
-              autoPlay 
-              muted 
-              playsInline 
-              ref={video => {
-                if (video) {
-                  video.srcObject = userVideoStream;
-                }
-              }}
-            />
-          )
+          <video
+            className='chat-cam-user-video'
+            autoPlay
+            muted
+            playsInline
+            ref={videoRef}
+          />
         ) : (
-          <img 
-            className='chat-cam-user-video' 
-            src={require('../../assets/images/chatcam-user2.gif')} 
-            alt="User Jellyfish" 
+          <img
+            className='chat-cam-user-video'
+            src={require('../../assets/images/chatcam-user2.gif')}
+            alt="User Jellyfish"
           />
         )}
-
       </div>
     </div>
   );
 };
 
-export default ChatCam;
+export default memo(ChatCam);
