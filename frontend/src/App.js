@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import bgm from './assets/bgm.mp3';
 
 import Nav from './components/navbar/Navbar';
 import Main from './pages/main/Main';
@@ -43,6 +44,8 @@ const PublicRoute = ({ children }) => {
 const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
   const location = useLocation();
   const isUserProfile = location.pathname === '/profile';
+  const [playing,setPlaying] = useState(false);
+  const audioRef = useRef(null);
 
   const characterImage = defaultImage;
 
@@ -50,6 +53,31 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
     <div className="App">
       <StarryBackground />
       <Nav />
+      <audio loop preload={true} ref={audioRef} src={bgm}>
+
+      </audio>
+      <div onClick={()=>{
+        if (playing){
+          audioRef.current.pause(); setPlaying(false); audioRef.current.currentTime=0;
+        } else{
+          audioRef.current.play(); setPlaying(true);
+        } 
+      }}>
+      {!playing && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+      fill="grey" class="bi bi-play-fill" viewBox="0 0 16 16"
+      className='audio-paly-button-main-page'
+      >
+        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+      </svg>}
+      {playing && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+      fill="grey" class="bi bi-pause-fill" viewBox="0 0 16 16"
+      className='audio-paly-button-main-page'>
+        <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
+      </svg>}
+      <p className='audio-paly-button-main-page-label'>음악을 들으며 마음을 진정시켜보세요</p>
+      
+      </div>
+      
       <div className="content">
         <Routes>
           <Route path="/" element={<PublicRoute><Main /></PublicRoute>} />
@@ -115,6 +143,7 @@ const App = () => {
     >
       <Router>
         <AppContent withHappyreAccessedToday={withHappyreAccessedToday} />
+
       </Router>
     </universeVariable.Provider>
   );
