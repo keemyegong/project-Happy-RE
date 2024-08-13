@@ -66,9 +66,9 @@ const RtcClient = ({ characterImage }) => {
       createPeerConnection,
       attemptOffer,
       setPeerConnections,
-      clientId,  // 여기서 clientId를 전달합니다
-      position,  // 여기서 position을 전달합니다
-      userImage  // 여기서 userImage를 전달합니다
+      () => clientId,  // 함수로 변경
+      () => positionRef.current,  // 함수로 변경
+      () => userImage  // 함수로 변경
     );
   
     return () => {

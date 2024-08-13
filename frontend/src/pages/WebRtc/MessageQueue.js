@@ -1,5 +1,21 @@
 class MessageQueue {
-    constructor(setClientId, setUsers, setCoolTime, setNearbyUsers, handleOffer, handleAnswer, handleCandidate, handleRtcDisconnect, setTalkingUsers, createPeerConnection, attemptOffer, setPeerConnections, clientId, position, userImage) {
+    constructor(
+      setClientId,
+      setUsers,
+      setCoolTime,
+      setNearbyUsers,
+      handleOffer,
+      handleAnswer,
+      handleCandidate,
+      handleRtcDisconnect,
+      setTalkingUsers,
+      createPeerConnection,
+      attemptOffer,
+      setPeerConnections,
+      getClientId,  // 함수로 변경
+      getPosition,  // 함수로 변경
+      getUserImage  // 함수로 변경
+    ) {
       this.queue = [];
       this.isProcessing = false;
       this.setClientId = setClientId;
@@ -14,9 +30,9 @@ class MessageQueue {
       this.createPeerConnection = createPeerConnection;
       this.attemptOffer = attemptOffer;
       this.setPeerConnections = setPeerConnections;
-      this.clientId = clientId;
-      this.position = position;
-      this.userImage = userImage;
+      this.getClientId = getClientId;  // 함수로 변경
+      this.getPosition = getPosition;  // 함수로 변경
+      this.getUserImage = getUserImage;  // 함수로 변경
     }
   
     enqueue(message) {
@@ -51,10 +67,14 @@ class MessageQueue {
           createPeerConnection,
           attemptOffer,
           setPeerConnections,
-          clientId,
-          position,
-          userImage
+          getClientId,
+          getPosition,
+          getUserImage
         } = this;
+  
+        const clientId = getClientId();
+        const position = getPosition();
+        const userImage = getUserImage();
   
         switch (message.type) {
           case 'assign_id':
