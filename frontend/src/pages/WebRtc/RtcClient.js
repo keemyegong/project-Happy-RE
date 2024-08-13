@@ -12,6 +12,7 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
+import MessageQueue from "./MessageQueue";  
 
 import "./ChatRoomContainer.css";
 
@@ -34,6 +35,8 @@ const RtcClient = ({ characterImage }) => {
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
   const universal = useContext(universeVariable);
+  const messageQueue = useRef(new MessageQueue());  // 메시지 큐 인스턴스 생성
+
   useEffect(() => {
     positionRef.current = position;
     //console.log("NearbyUsers", nearbyUsers);
@@ -121,35 +124,28 @@ const RtcClient = ({ characterImage }) => {
     }
   };
 
-
   useEffect(() => {
     axios
-    .get(`${universal.defaultUrl}/api/useravg`, {
-      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
-    })
-    .then((response) => {
-      //console.log("useravg")
-      //console.log(response.data)
-      if(response.data.cnt == 0 ){
-        setPosition({
-          x: response.data.russellSumX,
-          y: response.data.russellSumY,
-        });
-      }else{
-        setPosition({
-          x: response.data.russellSumX/response.data.cnt,
-          y: response.data.russellSumY/response.data.cnt,
-        });      
-      }
-
-    })
-    .catch(() => {
-      //console.log("서버와통신불가");
-    });
-
+      .get(`${universal.defaultUrl}/api/useravg`, {
+        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+      })
+      .then((response) => {
+        if(response.data.cnt == 0 ){
+          setPosition({
+            x: response.data.russellSumX,
+            y: response.data.russellSumY,
+          });
+        }else{
+          setPosition({
+            x: response.data.russellSumX/response.data.cnt,
+            y: response.data.russellSumY/response.data.cnt,
+          });      
+        }
+      })
+      .catch(() => {
+        //console.log("서버와통신불가");
+      });
   },[])
-
-
 
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") return;
@@ -168,73 +164,8 @@ const RtcClient = ({ characterImage }) => {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
-      //console.log("Received message from server:", dataFromServer);
-    
-      if (dataFromServer.type === "assign_id") {
-        setClientId(dataFromServer.id);
-        client.send(
-          JSON.stringify({
-            type: "connect",
-            position,
-            characterImage: userImage,
-          })
-        );
-      } else if (dataFromServer.type === "update") {
-        const filteredUsers = dataFromServer.clients.map((user) => ({
-          ...user,
-          position: user.position || { x: 0, y: 0 },
-          connectedAt: user.connectedAt || 0,
-        }));
-    
-        // 자기 자신 정보를 제외하고 users를 설정
-        setUsers(
-          filteredUsers
-            .filter((user) => user.id !== clientId)
-            .map((user) => ({
-              ...user,
-              image: user.characterImage,
-            }))
-        );
-    
-        // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
-        const currentUser = filteredUsers.find((user) => user.id === clientId);
-        if (currentUser) {
-          setCoolTime(currentUser.coolTime); // coolTime 상태 설정
-          const nearbyUsersData = (currentUser.connectedUsers || []).map(
-            (connectedUser) => ({
-              id: connectedUser.id,
-              image: connectedUser.characterImage,
-            })
-          );
-          setNearbyUsers(nearbyUsersData);
-          //console.log("Nearby Users:", nearbyUsersData);
-        } else {
-          setNearbyUsers([]);
-        }
-      } else if (dataFromServer.type === "offer") {
-        handleOffer(dataFromServer.offer, dataFromServer.sender);
-      } else if (dataFromServer.type === "answer") {
-        handleAnswer(dataFromServer.answer, dataFromServer.sender);
-      } else if (dataFromServer.type === "candidate") {
-        handleCandidate(dataFromServer.candidate, dataFromServer.sender);
-      } else if (dataFromServer.type === "rtc_disconnect") {
-        handleRtcDisconnect(dataFromServer.targetId);
-      } else if (dataFromServer.type === "talking") {
-        setTalkingUsers(dataFromServer.talkingUsers);
-      } else if (dataFromServer.type === "start_webrtc") {
-        if (dataFromServer.role === "offer") {
-          const peerConnection = createPeerConnection(dataFromServer.targetId);
-          attemptOffer(peerConnection, dataFromServer.targetId);
-        } else if (dataFromServer.role === "answer") {
-          const peerConnection = createPeerConnection(dataFromServer.targetId);
-          setPeerConnections((prevConnections) => ({
-            ...prevConnections,
-            [dataFromServer.targetId]: { peerConnection },
-          }));
-        }
-      }
+      messageQueue.current.enqueue(dataFromServer);  // 메시지 큐에 추가
     };
-    
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
@@ -251,11 +182,9 @@ const RtcClient = ({ characterImage }) => {
   }, [position, userImage, clientId]);
 
   const createPeerConnection = (userId) => {
-    //console.log(`Creating PeerConnection for user ${userId}`);
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
-    //console.log("WebRTC 연결 객체 생성 완료");
   
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
   
@@ -275,7 +204,6 @@ const RtcClient = ({ characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
-        // AudioEffect에 스트림 추가
         if (audioEffectRef.current) {
           audioEffectRef.current.addStream(userId, event.streams[0]);
         }
@@ -289,8 +217,7 @@ const RtcClient = ({ characterImage }) => {
         //console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
       if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
-        //console.log("WebRTC 연결이 끊어졌습니다.");
-        handleRtcDisconnect(userId); // 연결이 끊어질 때 handleRtcDisconnect 호출
+        handleRtcDisconnect(userId);
       }
     };
   
@@ -302,7 +229,6 @@ const RtcClient = ({ characterImage }) => {
   
     return peerConnection;
   };
-  
 
   const attemptOffer = (peerConnection, recipientId) => {
     if (!peerConnection) return;
@@ -336,8 +262,6 @@ const RtcClient = ({ characterImage }) => {
       return;
     }
 
-    //console.log(`Handling offer from sender ${sender}`);
-
     let peerConnection = peerConnections[sender]?.peerConnection;
 
     if (!peerConnection || peerConnection.signalingState === "closed") {
@@ -363,7 +287,6 @@ const RtcClient = ({ characterImage }) => {
           recipient: sender,
         })
       );
-      //console.log(`Answer sent to ${sender}`);
 
       if (peerConnections[sender]?.pendingCandidates.length > 0) {
         for (const candidate of peerConnections[sender].pendingCandidates) {
@@ -381,8 +304,6 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for answer");
       return;
     }
-
-    //console.log(`Handling answer from sender ${sender}`);
 
     const peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -430,7 +351,6 @@ const RtcClient = ({ characterImage }) => {
       );
     }
   };
-  
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
@@ -439,15 +359,11 @@ const RtcClient = ({ characterImage }) => {
         peerConnections;
       setPeerConnections(restConnections);
       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
-      //console.log(`WebRTC connection closed with user ${userId}`);
-      // AudioEffect에서도 제거
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
       
-      // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
       if (Object.keys(restConnections).length === 0) {
-        //console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
         client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
       }
     }
@@ -486,7 +402,7 @@ const RtcClient = ({ characterImage }) => {
               movePosition={movePosition}
               localAudioRef={localAudioRef}
               userImage={userImage}
-              coolTime={coolTime} // coolTime 상태 추가
+              coolTime={coolTime}
             />
           </div>
           <div className="audio-effect-container">
