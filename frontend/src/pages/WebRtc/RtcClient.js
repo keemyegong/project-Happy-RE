@@ -176,7 +176,7 @@ const RtcClient = ({ characterImage }) => {
       client.send(JSON.stringify({ type: "move", position: newPosition }));
     }
   };
-  
+
   const handleKeyDown = (event) => {
     switch (event.key) {
       case "ArrowUp":
@@ -200,9 +200,9 @@ const RtcClient = ({ characterImage }) => {
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
-  
+
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-  
+
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         client.send(
@@ -215,7 +215,7 @@ const RtcClient = ({ characterImage }) => {
         );
       }
     };
-  
+
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -224,22 +224,27 @@ const RtcClient = ({ characterImage }) => {
         }
       }
     };
-  
+
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "connected") {
         console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
+        console.log(
+          `WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`
+        );
       }
-      if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
+      if (
+        peerConnection.connectionState === "disconnected" ||
+        peerConnection.connectionState === "closed"
+      ) {
         handleRtcDisconnect(userId);
       }
     };
-  
+
     if (stream) {
       stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
     }
-  
+
     return peerConnection;
   };
 
@@ -262,9 +267,7 @@ const RtcClient = ({ characterImage }) => {
             );
             console.log(`Offer sent to ${recipientId}`);
           })
-          .catch((error) =>
-            console.error("Error setting local description:", error)
-          );
+          .catch((error) => console.error("Error setting local description:", error));
       })
       .catch((error) => console.error("Error creating offer:", error));
   };
@@ -339,14 +342,14 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for candidate");
       return;
     }
-  
+
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-  
+
     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -368,14 +371,13 @@ const RtcClient = ({ characterImage }) => {
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
-      const { [userId]: removedConnection, ...restConnections } =
-        peerConnections;
+      const { [userId]: removedConnection, ...restConnections } = peerConnections;
       setPeerConnections(restConnections);
       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
-      
+
       if (Object.keys(restConnections).length === 0) {
         client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
       }
@@ -386,9 +388,7 @@ const RtcClient = ({ characterImage }) => {
     if (direction === "up") {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
     } else {
-      setDisplayStartIndex(
-        Math.min(displayStartIndex + 1, nearbyUsers.length - 4)
-      );
+      setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
     }
   };
 
