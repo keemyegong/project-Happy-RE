@@ -444,6 +444,7 @@ const UserProfile = () => {
                       alt="해파리 페르소나"
                       src={happyRelist[localStorage.getItem("personaNumber")]}
                     />
+                    <span className="happyre-change-guid">펜 모양의 버튼을 클릭하면 다른 해파리와 대화할 수 있어요!</span>
                     <div className="persona-change-button" onClick={showModal}>
                       <span className="material-symbols-outlined">edit</span>
                     </div>

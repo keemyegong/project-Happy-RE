@@ -46,6 +46,16 @@ const SignUp = () => {
               background: '#292929',
               confirmButtonColor: '#4B4E6D',
             })
+          } else if (!(email.includes('@')&&email.includes('.'))){
+            Swal.fire({
+              title:'Email 형식을 지켜주세요!',
+              text:"email에는 @와 .이 포함되어야 합니다.",
+              icon:"warning",
+              iconColor: "#4B4E6D",
+              color: 'white',
+              background: '#292929',
+              confirmButtonColor: '#4B4E6D',
+            })
           }
           else if (nickname === ''){
             Swal.fire({

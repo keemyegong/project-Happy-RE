@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext,useRef,  } from "react";
 import { universeVariable } from '../../App';
 import Cookies from 'js-cookie';
 import MicRecorder from 'mic-recorder-to-mp3';
@@ -9,12 +9,12 @@ import ChatBox from '../../components/ai-chat/ChatBox';
 import ChatEvent from "../../components/ai-chat/ChatEvent";
 import DiaryReport from "../../components/diary-report/DiaryReport";
 import DiaryDetail from "../../components/diary-report/DiaryDetail";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation  } from "react-router-dom";
 import Swal from 'sweetalert2'
+import useBackListener from './useBackListener';
+
 
 const AIChat = () => {
-
-
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false); // 챗봇 입력 중 상태 추가
   const universal = useContext(universeVariable);
@@ -37,6 +37,53 @@ const AIChat = () => {
   const navigate = useNavigate();
   const currDate = new Date();
   const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const location = useLocation();
+  const [key,setKey] = useState('');
+
+
+  window.onpopstate = ()=>{
+    // // eslint-disable-next-line no-restricted-globals
+
+    // eslint-disable-next-line no-restricted-globals
+    if (window.history.idx == key){
+      // 해결...
+      // 여전히 남은 문제... 뒤로가기가 아니라 nav bar등으로 이동하는 경우엔 방어가 안됨
+      // 근데 그건 내일 고치겠습니다(이것보단 쉬울듯)
+      Swal.fire({
+        title: '정말 나가시겠습니까?',
+        // html: "다이어리는 하루에 한 번만 등록할 수 있어요! <br/> 한번 나가면 오늘의 다이어리는 다시 기록할 수 없습니다......",
+        icon: 'warning',
+        iconColor: '#D35E5E',
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+        showCancelButton: true,
+        cancelButtonColor: '#D35E5E',
+        confirmButtonText: '나갈래요!',
+        cancelButtonText: 'CANCEL'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.delete(
+            `${universal.fastUrl}/fastapi/chatbot/initialize-session/`,
+            {
+              headers: {
+                Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                withCredentials: true,
+              }
+            }).then(()=>{
+              navigate('/diary');
+
+            }).catch((err)=>{
+              console.log(err);
+            })
+        } else{
+          
+         // eslint-disable-next-line no-restricted-globals
+          history.pushState({ page: 1 }, "title 1", "?page=1");
+        }
+      });
+    }
+  }
 
   const today = {
     year:currDate.getFullYear(),
@@ -68,23 +115,16 @@ const AIChat = () => {
     "(곤란한 눈으로) 소란의 바다가 그대의 대사를 가라앉혔다네. 대사를 한 번 더 읊어주시게.",
   ]
 
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      event.preventDefault();
-      event.returnValue = ''; // Chrome에서만 필요
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-
   // 처음 인삿말 받아오기
   useEffect(() => {
     // eventStart();
+    // eslint-disable-next-line no-restricted-globals
+    history.pushState({ page: 1 }, "title 1", "?page=1");
+    // eventStart();
+
+    // eslint-disable-next-line no-restricted-globals
+    setKey(window.history.idx);
+    // eslint-disable-next-line no-restricted-globals
 
     if (persona === null){
       axios.get(`${universal.defaultUrl}/api/user/me`,

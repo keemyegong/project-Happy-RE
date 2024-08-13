@@ -357,3 +357,16 @@
   width: 600px;
   height: 400px;
 }
+
+.happyre-change-guid{
+  font-family: "Poiret One", sans-serif;
+  font-weight: 100;
+  opacity: 0.7;
+  color: white;
+  font-size: 11px;
+  position: absolute;
+  width: 300px;
+  left: -120px;
+  top:200px
+
+}
