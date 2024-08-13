@@ -53,6 +53,24 @@ const RtcClient = ({ characterImage }) => {
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("keydown", handleKeyDown);
   
+    messageQueue.current = new MessageQueue(
+      setClientId,
+      setUsers,
+      setCoolTime,
+      setNearbyUsers,
+      handleOffer,
+      handleAnswer,
+      handleCandidate,
+      handleRtcDisconnect,
+      setTalkingUsers,
+      createPeerConnection,
+      attemptOffer,
+      setPeerConnections,
+      clientId,  // 여기서 clientId를 전달합니다
+      position,  // 여기서 position을 전달합니다
+      userImage  // 여기서 userImage를 전달합니다
+    );
+  
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -62,7 +80,7 @@ const RtcClient = ({ characterImage }) => {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [stream, clientId, position, userImage]);
 
   useEffect(() => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
