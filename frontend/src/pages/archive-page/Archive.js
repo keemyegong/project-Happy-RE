@@ -118,7 +118,7 @@ const Archive = () => {
 
     if (keywords.length > 0) {
       setSelectedKeyword(keywords[0]);
-      setFilteredKeywords(originalKeywords.filter((kw) => kw.keyword === keywords[0].keyword));
+      setFilteredKeywords(keywords.filter((kw) => kw.keyword === keywords[0].keyword));
     }
   };
 
