@@ -54,31 +54,13 @@ class MessageQueue {
   
     handleMessage(message) {
       return new Promise((resolve) => {
-        const {
-          setClientId,
-          setUsers,
-          setCoolTime,
-          setNearbyUsers,
-          handleOffer,
-          handleAnswer,
-          handleCandidate,
-          handleRtcDisconnect,
-          setTalkingUsers,
-          createPeerConnection,
-          attemptOffer,
-          setPeerConnections,
-          getClientId,
-          getPosition,
-          getUserImage
-        } = this;
-  
-        const clientId = getClientId();
-        const position = getPosition();
-        const userImage = getUserImage();
+        const clientId = this.getClientId();
+        const position = this.getPosition();
+        const userImage = this.getUserImage();
   
         switch (message.type) {
           case 'assign_id':
-            setClientId(message.id);
+            this.setClientId(message.id);
             client.send(JSON.stringify({
               type: 'connect',
               position,
@@ -91,43 +73,43 @@ class MessageQueue {
               position: user.position || { x: 0, y: 0 },
               connectedAt: user.connectedAt || 0,
             }));
-            setUsers(filteredUsers.filter(user => user.id !== clientId).map(user => ({
+            this.setUsers(filteredUsers.filter(user => user.id !== clientId).map(user => ({
               ...user,
               image: user.characterImage,
             })));
             const currentUser = filteredUsers.find(user => user.id === clientId);
             if (currentUser) {
-              setCoolTime(currentUser.coolTime);
-              setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
+              this.setCoolTime(currentUser.coolTime);
+              this.setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
                 id: connectedUser.id,
                 image: connectedUser.characterImage,
               })));
             } else {
-              setNearbyUsers([]);
+              this.setNearbyUsers([]);
             }
             break;
           case 'offer':
-            handleOffer(message.offer, message.sender);
+            this.handleOffer(message.offer, message.sender);
             break;
           case 'answer':
-            handleAnswer(message.answer, message.sender);
+            this.handleAnswer(message.answer, message.sender);
             break;
           case 'candidate':
-            handleCandidate(message.candidate, message.sender);
+            this.handleCandidate(message.candidate, message.sender);
             break;
           case 'rtc_disconnect':
-            handleRtcDisconnect(message.targetId);
+            this.handleRtcDisconnect(message.targetId);
             break;
           case 'talking':
-            setTalkingUsers(message.talkingUsers);
+            this.setTalkingUsers(message.talkingUsers);
             break;
           case 'start_webrtc':
             if (message.role === 'offer') {
-              const peerConnection = createPeerConnection(message.targetId);
-              attemptOffer(peerConnection, message.targetId);
+              const peerConnection = this.createPeerConnection(message.targetId);
+              this.attemptOffer(peerConnection, message.targetId);
             } else if (message.role === 'answer') {
-              const peerConnection = createPeerConnection(message.targetId);
-              setPeerConnections(prevConnections => ({
+              const peerConnection = this.createPeerConnection(message.targetId);
+              this.setPeerConnections(prevConnections => ({
                 ...prevConnections,
                 [message.targetId]: { peerConnection },
               }));
@@ -143,68 +125,3 @@ class MessageQueue {
   
   export default MessageQueue;
   
-MessageQueue.prototype.handleMessage = function(message) {
-return new Promise((resolve) => {
-    switch (message.type) {
-    case 'assign_id':
-        setClientId(message.id);
-        client.send(JSON.stringify({
-        type: 'connect',
-        position,
-        characterImage: userImage,
-        }));
-        break;
-    case 'update':
-        const filteredUsers = message.clients.map(user => ({
-        ...user,
-        position: user.position || { x: 0, y: 0 },
-        connectedAt: user.connectedAt || 0,
-        }));
-        setUsers(filteredUsers.filter(user => user.id !== clientId).map(user => ({
-        ...user,
-        image: user.characterImage,
-        })));
-        const currentUser = filteredUsers.find(user => user.id === clientId);
-        if (currentUser) {
-        setCoolTime(currentUser.coolTime);
-        setNearbyUsers((currentUser.connectedUsers || []).map(connectedUser => ({
-            id: connectedUser.id,
-            image: connectedUser.characterImage,
-        })));
-        } else {
-        setNearbyUsers([]);
-        }
-        break;
-    case 'offer':
-        handleOffer(message.offer, message.sender);
-        break;
-    case 'answer':
-        handleAnswer(message.answer, message.sender);
-        break;
-    case 'candidate':
-        handleCandidate(message.candidate, message.sender);
-        break;
-    case 'rtc_disconnect':
-        handleRtcDisconnect(message.targetId);
-        break;
-    case 'talking':
-        setTalkingUsers(message.talkingUsers);
-        break;
-    case 'start_webrtc':
-        if (message.role === 'offer') {
-        const peerConnection = createPeerConnection(message.targetId);
-        attemptOffer(peerConnection, message.targetId);
-        } else if (message.role === 'answer') {
-        const peerConnection = createPeerConnection(message.targetId);
-        setPeerConnections(prevConnections => ({
-            ...prevConnections,
-            [message.targetId]: { peerConnection },
-        }));
-        }
-        break;
-    default:
-        console.error('Unrecognized message type:', message.type);
-    }
-    resolve();
-});
-};
