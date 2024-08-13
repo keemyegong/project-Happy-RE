@@ -6,6 +6,8 @@ import './UserTest.css';
 import Button from '../../components/Button/Button';
 import { useNavigate  } from "react-router-dom";
 import Swal from 'sweetalert2'
+import '../../components/UserTestPersona/UserTestPersonaModal'
+
 
 const UserTest = () => {
   const universal = useContext(universeVariable);
@@ -74,8 +76,8 @@ const UserTest = () => {
     console.log(`Average coordinates: [${averageCoordinates[0].toFixed(2)}, ${averageCoordinates[1].toFixed(2)}]`);
 
     const data = {
-      x: averageCoordinates[0].toFixed(2),
-      y: averageCoordinates[1].toFixed(2),
+      'x': averageCoordinates[0].toFixed(2),
+      'y': averageCoordinates[1].toFixed(2),
     };
 
     setData(data);
@@ -84,12 +86,13 @@ const UserTest = () => {
     if(data.x < 0 && data.y >= 0) setResultnumber(2);
     if(data.x < 0 && data.y < 0) setResultnumber(3);
     if(data.x >= 0 && data.y < 0) setResultnumber(4);
-
+    
+    submit(data)
   };
 
   useEffect(()=>{
     localStorage.setItem("personaNumber", resultnumber);
-    submit(data);
+    // submit(data);
   },[resultnumber])
 
   const submit = (data)=>{
