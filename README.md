@@ -73,18 +73,6 @@
 
 ## 아카이브
 
-<!-- ### 해피리 페르소나
-- 해피리
-![](readme%20resource/default.PNG)
-- 셰익스피리
-![](readme%20resource/shakespeare.PNG)
--  해파린 장군
-![](readme%20resource/general.PNG)
-- 해파스찬
-![](readme%20resource/butler.PNG)
-- 해파라테스
-![](readme%20resource/philosopher.PNG) -->
-
 # 기술 스택
 
 (아키텍처 다이어그램)
