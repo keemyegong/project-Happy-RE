@@ -124,6 +124,8 @@ const App = () => {
     }
   }, []);
 
+
+
   return (
     <universeVariable.Provider
       value={{
