@@ -194,15 +194,15 @@ const Archive = () => {
             <div className="row archive-myword-info-container">
               <div className="col-7 archive-myword-keywordcard">
                 <div className="archive-myword-keywordcard-header">Report</div>
-                {filteredKeywords.length > 1 && (
+                {filteredKeywords && (
                   <div className="keywordcard-arrow-container">
                     <div className="keywordcard-arrow-button" onClick={handlePrevClick}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
-                        fill="currentColor"
-                        className="bi bi-chevron-compact-left"
+                        fill={filteredKeywords.length > 1 ? "white" : "transparent"}
+                        className={`bi bi-chevron-compact-left ${filteredKeywords.length<1?'disabled-arrow-archive-button':''}`}
                         viewBox="0 0 16 16"
                       >
                         <path
@@ -211,13 +211,16 @@ const Archive = () => {
                         />
                       </svg>
                     </div>
-                    <KeywordCard props={selectedKeyword} />
+                    <div className='archive-keywordcard-container'>
+                      <KeywordCard props={selectedKeyword} />
+                    </div>
+
                     <div className="keywordcard-arrow-button" onClick={handleNextClick}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
-                        fill="currentColor"
+                        fill={filteredKeywords.length > 1 ? "white" : "transparent"}
                         className="bi bi-chevron-compact-right"
                         viewBox="0 0 16 16"
                       >
@@ -229,7 +232,7 @@ const Archive = () => {
                     </div>
                   </div>
                 )}
-                {filteredKeywords.length <= 1 && <KeywordCard props={selectedKeyword} />}
+                {/* {filteredKeywords.length <= 1 && <KeywordCard props={selectedKeyword} />} */}
               </div>
               <div className="col-5 archive-myword-graph">
                 <div className="archive-myword-graph-header">Emotion Graph</div>
