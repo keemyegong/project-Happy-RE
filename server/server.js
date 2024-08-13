@@ -1,9 +1,10 @@
+// server.js
+
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-const amqp = require('amqplib/callback_api');
 
 const app = express();
 const server = https.createServer({
@@ -37,82 +38,59 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
-amqp.connect('amqp://localhost', (error0, connection) => {
-  if (error0) {
-    throw error0;
+wss.on('connection', (ws, req) => {
+  if (req.url !== '/webrtc') {
+    ws.close(1008, 'Unauthorized path');
+    return;
   }
-  
-  connection.createChannel((error1, channel) => {
-    if (error1) {
-      throw error1;
-    }
 
-    const queue = 'webrtc_messages';
-    channel.assertQueue(queue, { durable: false });
+  const userId = uuidv4();
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
-    wss.on('connection', (ws, req) => {
-      if (req.url !== '/webrtc') {
-        ws.close(1008, 'Unauthorized path');
-        return;
-      }
+  const roomId = getRoomWithSpace();
+  rooms[roomId].push({ ws, ...userInfo });
 
-      const userId = uuidv4();
-      const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
 
-      const roomId = getRoomWithSpace();
-      rooms[roomId].push({ ws, ...userInfo });
+  ws.on('message', async (message) => {
+    const data = JSON.parse(message);
 
-      ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
+    switch (data.type) {
+      case 'connect':
+        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
+        updateClients(roomId);
+        break;
 
-      ws.on('message', (message) => {
-        const data = JSON.parse(message);
+      case 'move':
+        handleMove(roomId, userId, data.position);
+        break;
 
-        // 메시지를 큐에 추가
-        channel.sendToQueue(queue, Buffer.from(JSON.stringify({ data, roomId, userId })));
-      });
+      case 'offer':
+      case 'answer':
+      case 'candidate':
+        forwardToRecipient(data, roomId, userId);
+        break;
 
-      ws.on('close', () => {
+      case 'disconnect':
         removeClient(roomId, userId);
         updateClients(roomId);
-      });
-    });
+        break;
 
-    // 메시지 큐에서 메시지를 소비하고 처리
-    channel.consume(queue, (msg) => {
-      const { data, roomId, userId } = JSON.parse(msg.content.toString());
+      case 'rtc_disconnect_all':
+        setCoolTime(roomId, data.userId, true);
+        setTimeout(() => {
+          setCoolTime(roomId, data.userId, false);
+        }, 10000);
+        break;
 
-      switch (data.type) {
-        case 'connect':
-          rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
-          updateClients(roomId);
-          break;
+      default:
+        console.error('Unrecognized message type:', data.type);
+    }
+  });
 
-        case 'move':
-          handleMove(roomId, userId, data.position);
-          break;
-
-        case 'offer':
-        case 'answer':
-        case 'candidate':
-          forwardToRecipient(data, roomId, userId);
-          break;
-
-        case 'disconnect':
-          removeClient(roomId, userId);
-          updateClients(roomId);
-          break;
-
-        case 'rtc_disconnect_all':
-          setCoolTime(roomId, data.userId, true);
-          setTimeout(() => {
-            setCoolTime(roomId, data.userId, false);
-          }, 10000);
-          break;
-
-        default:
-          console.error('Unrecognized message type:', data.type);
-      }
-    }, { noAck: true });
+  ws.on('close', () => {
+    removeClient(roomId, userId);
+    updateClients(roomId);
   });
 });
 
@@ -212,3 +190,4 @@ const setCoolTime = (roomId, userId, state) => {
 server.listen(5001, () => {
   console.log('Server is running on port 5001');
 });
+//
