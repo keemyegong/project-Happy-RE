@@ -1,5 +1,6 @@
 class MessageQueue {
     constructor(
+      client,  // client 추가
       setClientId,
       setUsers,
       setCoolTime,
@@ -16,6 +17,7 @@ class MessageQueue {
       getPosition,  // 함수로 변경
       getUserImage  // 함수로 변경
     ) {
+      this.client = client;  // this.client에 client 설정
       this.queue = [];
       this.isProcessing = false;
       this.setClientId = setClientId;
@@ -61,7 +63,7 @@ class MessageQueue {
         switch (message.type) {
           case 'assign_id':
             this.setClientId(message.id);
-            client.send(JSON.stringify({
+            this.client.send(JSON.stringify({  // this.client 사용
               type: 'connect',
               position,
               characterImage: userImage,
