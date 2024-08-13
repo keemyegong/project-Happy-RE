@@ -1,5 +1,5 @@
 // import { w3cwebsocket as W3CWebSocket } from "websocket";
-// import React, { useEffect, useState, useRef , useContext} from "react";
+// import React, { useEffect, useState, useRef } from "react";
 // import defaultImg from "../../assets/characters/default.png";
 // import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 // import CharacterList from "../../components/CharacterList/CharacterList";
@@ -9,18 +9,15 @@
 // import defaultPersona from "../../assets/characters/default.png";
 // import soldier from "../../assets/characters/soldier.png";
 // import steel from "../../assets/characters/steel.png";
-// import { universeVariable } from "../../App";
-// import Cookies from "js-cookie";
-// import axios from "axios";
 
 // import "./ChatRoomContainer.css";
 
 // const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/webrtc");
 
-// const RtcClient = ({ characterImage }) => {
+// const RtcClient = ({ initialPosition, characterImage }) => {
 //   const [peerConnections, setPeerConnections] = useState({});
 //   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
-//   const [position, setPosition] = useState({ x: 0, y: 0 });
+//   const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
 //   const positionRef = useRef(position);
 //   const [users, setUsers] = useState([]);
 //   const [clientId, setClientId] = useState(null);
@@ -33,10 +30,10 @@
 //   const containerRef = useRef(null);
 //   const audioEffectRef = useRef(null);
 //   const [coolTime, setCoolTime] = useState(false);
-//   const universal = useContext(universeVariable);
+
 //   useEffect(() => {
 //     positionRef.current = position;
-//     //console.log("NearbyUsers", nearbyUsers);
+//     console.log("NearbyUsers", nearbyUsers);
 //   }, [position, nearbyUsers]);
 
 //   useEffect(() => {
@@ -121,55 +118,25 @@
 //     }
 //   };
 
-
-//   useEffect(() => {
-//     axios
-//     .get(`${universal.defaultUrl}/api/useravg`, {
-//       headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
-//     })
-//     .then((response) => {
-//       //console.log("useravg")
-//       //console.log(response.data)
-//       if(response.data.cnt == 0 ){
-//         setPosition({
-//           x: response.data.russellSumX,
-//           y: response.data.russellSumY,
-//         });
-//       }else{
-//         setPosition({
-//           x: response.data.russellSumX/response.data.cnt,
-//           y: response.data.russellSumY/response.data.cnt,
-//         });      
-//       }
-
-//     })
-//     .catch(() => {
-//       //console.log("서버와통신불가");
-//     });
-
-//   },[])
-
-
-
 //   useEffect(() => {
 //     if (window.location.pathname !== "/webrtc") return;
 
 //     client.onopen = () => {
-//       //console.log("WebSocket Client Connected");
+//       console.log("WebSocket Client Connected");
 //     };
 
 //     client.onclose = () => {
-//       //console.log("WebSocket Client Disconnected");
+//       console.log("WebSocket Client Disconnected");
 //     };
 
 //     client.onerror = (error) => {
-//       //console.error("WebSocket Error: ", error);
+//       console.error("WebSocket Error: ", error);
 //     };
 
 //     client.onmessage = (message) => {
 //       const dataFromServer = JSON.parse(message.data);
 //       //console.log("Received message from server:", dataFromServer);
-
+    
 //       if (dataFromServer.type === "assign_id") {
 //         setClientId(dataFromServer.id);
 //         client.send(
@@ -185,7 +152,7 @@
 //           position: user.position || { x: 0, y: 0 },
 //           connectedAt: user.connectedAt || 0,
 //         }));
-
+    
 //         // 자기 자신 정보를 제외하고 users를 설정
 //         setUsers(
 //           filteredUsers
@@ -195,7 +162,7 @@
 //               image: user.characterImage,
 //             }))
 //         );
-
+    
 //         // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
 //         const currentUser = filteredUsers.find((user) => user.id === clientId);
 //         if (currentUser) {
@@ -234,6 +201,7 @@
 //         }
 //       }
 //     };
+    
 
 //     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 //       navigator.mediaDevices
@@ -242,19 +210,19 @@
 //           setStream(currentStream);
 //         })
 //         .catch((error) => {
-//           //console.error("Error accessing media devices.", error);
+//           console.error("Error accessing media devices.", error);
 //         });
 //     } else {
-//       //console.error("getUserMedia is not supported in this browser.");
+//       console.error("getUserMedia is not supported in this browser.");
 //     }
 //   }, [position, userImage, clientId]);
 
 //   const createPeerConnection = (userId) => {
-//     //console.log(`Creating PeerConnection for user ${userId}`);
+//     console.log(`Creating PeerConnection for user ${userId}`);
 //     const peerConnection = new RTCPeerConnection({
 //       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 //     });
-//     //console.log("WebRTC 연결 객체 생성 완료");
+//     console.log("WebRTC 연결 객체 생성 완료");
   
 //     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
   
@@ -283,12 +251,12 @@
   
 //     peerConnection.onconnectionstatechange = () => {
 //       if (peerConnection.connectionState === "connected") {
-//         //console.log(`WebRTC connection established with user ${userId}`);
+//         console.log(`WebRTC connection established with user ${userId}`);
 //       } else {
-//         //console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
+//         console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
 //       }
 //       if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
-//         //console.log("WebRTC 연결이 끊어졌습니다.");
+//         console.log("WebRTC 연결이 끊어졌습니다.");
 //         handleRtcDisconnect(userId); // 연결이 끊어질 때 handleRtcDisconnect 호출
 //       }
 //     };
@@ -320,7 +288,7 @@
 //                 sender: clientId,
 //               })
 //             );
-//             //console.log(`Offer sent to ${recipientId}`);
+//             console.log(`Offer sent to ${recipientId}`);
 //           })
 //           .catch((error) =>
 //             console.error("Error setting local description:", error)
@@ -335,7 +303,7 @@
 //       return;
 //     }
 
-//     //console.log(`Handling offer from sender ${sender}`);
+//     console.log(`Handling offer from sender ${sender}`);
 
 //     let peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -362,7 +330,7 @@
 //           recipient: sender,
 //         })
 //       );
-//       //console.log(`Answer sent to ${sender}`);
+//       console.log(`Answer sent to ${sender}`);
 
 //       if (peerConnections[sender]?.pendingCandidates.length > 0) {
 //         for (const candidate of peerConnections[sender].pendingCandidates) {
@@ -381,7 +349,7 @@
 //       return;
 //     }
 
-//     //console.log(`Handling answer from sender ${sender}`);
+//     console.log(`Handling answer from sender ${sender}`);
 
 //     const peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -404,21 +372,18 @@
 //       console.error("No sender provided for candidate");
 //       return;
 //     }
-
+  
 //     const connection = peerConnections[sender];
 //     if (!connection) {
 //       console.error(`No peer connection found for sender ${sender}`);
 //       return;
 //     }
 //     const peerConnection = connection.peerConnection;
-
-//     if (
-//       peerConnection.remoteDescription &&
-//       peerConnection.remoteDescription.type
-//     ) {
+  
+//     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
 //       try {
 //         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-//         //console.log(`ICE candidate added for ${sender}`);
+//         console.log(`ICE candidate added for ${sender}`);
 //       } catch (error) {
 //         console.error("Error adding ICE candidate:", error);
 //       }
@@ -432,6 +397,7 @@
 //       );
 //     }
 //   };
+  
 
 //   const handleRtcDisconnect = (userId) => {
 //     if (peerConnections[userId]) {
@@ -440,7 +406,7 @@
 //         peerConnections;
 //       setPeerConnections(restConnections);
 //       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
-//       //console.log(`WebRTC connection closed with user ${userId}`);
+//       console.log(`WebRTC connection closed with user ${userId}`);
 //       // AudioEffect에서도 제거
 //       if (audioEffectRef.current) {
 //         audioEffectRef.current.removeStream(userId);
@@ -448,7 +414,7 @@
       
 //       // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
 //       if (Object.keys(restConnections).length === 0) {
-//         //console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
+//         console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
 //         client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
 //       }
 //     }

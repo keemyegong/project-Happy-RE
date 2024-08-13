@@ -12,7 +12,7 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
-import MessageQueue from "./MessageQueue";  
+import MessageQueue from "../../utils/MessageQueue";
 
 import "./ChatRoomContainer.css";
 
@@ -35,24 +35,10 @@ const RtcClient = ({ characterImage }) => {
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
   const universal = useContext(universeVariable);
-  const messageQueue = useRef(new MessageQueue(
-    setClientId,
-    setUsers,
-    setCoolTime,
-    setNearbyUsers,
-    handleOffer,
-    handleAnswer,
-    handleCandidate,
-    handleRtcDisconnect,
-    setTalkingUsers,
-    createPeerConnection,
-    attemptOffer,
-    setPeerConnections
-  ));
+  const messageQueue = useRef(null);
 
   useEffect(() => {
     positionRef.current = position;
-    //console.log("NearbyUsers", nearbyUsers);
   }, [position, nearbyUsers]);
 
   useEffect(() => {
@@ -72,7 +58,6 @@ const RtcClient = ({ characterImage }) => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       client.close();
   
-      // 페이지를 벗어날 때 마이크 기능 끄기
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
@@ -83,12 +68,85 @@ const RtcClient = ({ characterImage }) => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
   }, []);
 
+  useEffect(() => {
+    axios
+    .get(`${universal.defaultUrl}/api/useravg`, {
+      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+    })
+    .then((response) => {
+      if(response.data.cnt == 0 ){
+        setPosition({
+          x: response.data.russellSumX,
+          y: response.data.russellSumY,
+        });
+      }else{
+        setPosition({
+          x: response.data.russellSumX/response.data.cnt,
+          y: response.data.russellSumY/response.data.cnt,
+        });      
+      }
+
+    })
+    .catch(() => {
+      console.log("서버와 통신 불가");
+    });
+
+  },[])
+
+  useEffect(() => {
+    messageQueue.current = new MessageQueue(
+      setClientId,
+      setUsers,
+      setCoolTime,
+      setNearbyUsers,
+      handleOffer,
+      handleAnswer,
+      handleCandidate,
+      handleRtcDisconnect,
+      setTalkingUsers,
+      createPeerConnection,
+      attemptOffer,
+      setPeerConnections
+    );
+
+    if (window.location.pathname !== "/webrtc") return;
+
+    client.onopen = () => {
+      console.log("WebSocket Client Connected");
+    };
+
+    client.onclose = () => {
+      console.log("WebSocket Client Disconnected");
+    };
+
+    client.onerror = (error) => {
+      console.error("WebSocket Error: ", error);
+    };
+
+    client.onmessage = (message) => {
+      const dataFromServer = JSON.parse(message.data);
+      messageQueue.current.enqueue(dataFromServer);
+    };
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((currentStream) => {
+          setStream(currentStream);
+        })
+        .catch((error) => {
+          console.error("Error accessing media devices.", error);
+        });
+    } else {
+      console.error("getUserMedia is not supported in this browser.");
+    }
+  }, [position, userImage, clientId]);
+
   const handleBeforeUnload = () => {
     client.send(JSON.stringify({ type: "disconnect" }));
     client.close();
     cleanupConnections();
   
-    // 마이크 기능 끄기
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
@@ -137,63 +195,6 @@ const RtcClient = ({ characterImage }) => {
     }
   };
 
-  useEffect(() => {
-    axios
-      .get(`${universal.defaultUrl}/api/useravg`, {
-        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
-      })
-      .then((response) => {
-        if(response.data.cnt == 0 ){
-          setPosition({
-            x: response.data.russellSumX,
-            y: response.data.russellSumY,
-          });
-        }else{
-          setPosition({
-            x: response.data.russellSumX/response.data.cnt,
-            y: response.data.russellSumY/response.data.cnt,
-          });      
-        }
-      })
-      .catch(() => {
-        //console.log("서버와통신불가");
-      });
-  },[])
-
-  useEffect(() => {
-    if (window.location.pathname !== "/webrtc") return;
-
-    client.onopen = () => {
-      //console.log("WebSocket Client Connected");
-    };
-
-    client.onclose = () => {
-      //console.log("WebSocket Client Disconnected");
-    };
-
-    client.onerror = (error) => {
-      //console.error("WebSocket Error: ", error);
-    };
-
-    client.onmessage = (message) => {
-      const dataFromServer = JSON.parse(message.data);
-      messageQueue.current.enqueue(dataFromServer);  // 메시지 큐에 추가
-    };
-
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((currentStream) => {
-          setStream(currentStream);
-        })
-        .catch((error) => {
-          //console.error("Error accessing media devices.", error);
-        });
-    } else {
-      //console.error("getUserMedia is not supported in this browser.");
-    }
-  }, [position, userImage, clientId]);
-
   const createPeerConnection = (userId) => {
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -225,9 +226,9 @@ const RtcClient = ({ characterImage }) => {
   
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "connected") {
-        //console.log(`WebRTC connection established with user ${userId}`);
+        console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        //console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
+        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
       if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
         handleRtcDisconnect(userId);
@@ -235,9 +236,7 @@ const RtcClient = ({ characterImage }) => {
     };
   
     if (stream) {
-      stream
-        .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, stream));
+      stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
     }
   
     return peerConnection;
@@ -260,7 +259,7 @@ const RtcClient = ({ characterImage }) => {
                 sender: clientId,
               })
             );
-            //console.log(`Offer sent to ${recipientId}`);
+            console.log(`Offer sent to ${recipientId}`);
           })
           .catch((error) =>
             console.error("Error setting local description:", error)
