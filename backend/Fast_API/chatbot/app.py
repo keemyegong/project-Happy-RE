@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import math
+import shutil
 import json
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Body, Request
@@ -101,6 +102,15 @@ def session_initialize(user_id:str):
         
     if user_id in user_message:
         del user_message[user_id]
+
+def delete_audio_file(folder_path):
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        try:
+            shutil.rmtree(folder_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    else:
+        return "Folder Directory doesn't exists"
 
 # ----------------------------------라우팅 함수--------------------------------------------
 
@@ -293,8 +303,13 @@ async def session_delete(request:Request):
 
 @router.delete('/initialize-session')
 def initialize_request(user_id:str=Depends(decode_jwt)):
+    print("initialize")
+    AUDIO_DIR = os.path.abspath(os.path.join(BASE_DIR, 'audio',str(user_id)))
+    print(AUDIO_DIR)
     try:
         session_initialize(user_id)
+        delete_audio_file(AUDIO_DIR)
+        return
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
