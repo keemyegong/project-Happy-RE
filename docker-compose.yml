@@ -1,0 +1,126 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    depends_on:
+      - certbot
+    networks:
+      - local
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    networks:
+      - local
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+    command: "certonly --webroot --webroot-path=/var/www/certbot --email your-email@example.com --agree-tos --no-eff-email -d ${SERVICE_DOMAIN}"
+
+  front-container:
+    build: ./frontend
+    container_name: frontend-container
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - local
+
+  spring-container:
+    build: ./backend/HappyRe
+    container_name: spring-container
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./data/spring/profileimg:/var/profileimg
+    networks:
+      - local
+    environment:
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+      DB_DOMAIN: ${DB_DOMAIN}
+      DOMAIN_PROPERTIES: ${DOMAIN_PROPERTIES}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+
+  fastapi-container:
+    build: ./backend/Fast_API
+    container_name: fastapi-container
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - local
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JWT_KEY: ${JWT_SECRET}
+      JWT_ALGORITHM: "HS256"
+      CLOVA_INVOKE_URL: ${CLOVA_INVOKE_URL}
+      CLOVA_SECRET: ${CLOVA_SECRET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      TEST_LOCAL: ${SERVICE_DOMAIN}
+      SPRING_MESSAGE_POST_URL: "${SERVICE_DOMAIN}/api/message"
+      SPRING_KEYWORD_SUMMARY_URL: "${SERVICE_DOMAIN}/api/keyword"
+      SPRING_DIARY_SUMMARY_URL: "${SERVICE_DOMAIN}/api/diary/updatetoday"
+      KOBERT_CHECKPOINT_X: "x1"
+      KOBERT_CHECKPOINT_Y: "y1"
+    volumes:
+      - ./data/fastapi/KoBertCheckpoint:/app/chatbot/KoBertCheckpoint
+
+  webrtc:
+    build: ./server
+    container_name: webrtc-container
+    ports:
+      - "5000:5001"
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    depends_on:
+      - certbot
+    networks:
+      - local
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./data/mysql:/data
+      - ./data/mysql/db_data:/var/lib/mysql
+      - ./data/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - local
+
+  testdocker:
+    image: python:latest
+    container_name: test-docker
+    ports:
+      - "127.0.0.1:8443:8443"
+    networks:
+      - local
+    command: tail -f /dev/null
+
+networks:
+  local:
+    driver: bridge
