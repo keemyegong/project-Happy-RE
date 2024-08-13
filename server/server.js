@@ -5,6 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
+const amqp = require('amqplib/callback_api');
 
 const app = express();
 const server = https.createServer({
@@ -38,59 +39,82 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
-wss.on('connection', (ws, req) => {
-  if (req.url !== '/webrtc') {
-    ws.close(1008, 'Unauthorized path');
-    return;
+amqp.connect('amqp://localhost', (error0, connection) => {
+  if (error0) {
+    throw error0;
   }
+  
+  connection.createChannel((error1, channel) => {
+    if (error1) {
+      throw error1;
+    }
 
-  const userId = uuidv4();
-  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
+    const queue = 'webrtc_messages';
+    channel.assertQueue(queue, { durable: false });
 
-  const roomId = getRoomWithSpace();
-  rooms[roomId].push({ ws, ...userInfo });
+    wss.on('connection', (ws, req) => {
+      if (req.url !== '/webrtc') {
+        ws.close(1008, 'Unauthorized path');
+        return;
+      }
 
-  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
+      const userId = uuidv4();
+      const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
-  ws.on('message', async (message) => {
-    const data = JSON.parse(message);
+      const roomId = getRoomWithSpace();
+      rooms[roomId].push({ ws, ...userInfo });
 
-    switch (data.type) {
-      case 'connect':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
-        updateClients(roomId);
-        break;
+      ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
 
-      case 'move':
-        handleMove(roomId, userId, data.position);
-        break;
+      ws.on('message', (message) => {
+        const data = JSON.parse(message);
 
-      case 'offer':
-      case 'answer':
-      case 'candidate':
-        forwardToRecipient(data, roomId, userId);
-        break;
+        // 메시지를 큐에 추가
+        channel.sendToQueue(queue, Buffer.from(JSON.stringify({ data, roomId, userId })));
+      });
 
-      case 'disconnect':
+      ws.on('close', () => {
         removeClient(roomId, userId);
         updateClients(roomId);
-        break;
+      });
+    });
 
-      case 'rtc_disconnect_all':
-        setCoolTime(roomId, data.userId, true);
-        setTimeout(() => {
-          setCoolTime(roomId, data.userId, false);
-        }, 10000);
-        break;
+    // 메시지 큐에서 메시지를 소비하고 처리
+    channel.consume(queue, (msg) => {
+      const { data, roomId, userId } = JSON.parse(msg.content.toString());
 
-      default:
-        console.error('Unrecognized message type:', data.type);
-    }
-  });
+      switch (data.type) {
+        case 'connect':
+          rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
+          updateClients(roomId);
+          break;
 
-  ws.on('close', () => {
-    removeClient(roomId, userId);
-    updateClients(roomId);
+        case 'move':
+          handleMove(roomId, userId, data.position);
+          break;
+
+        case 'offer':
+        case 'answer':
+        case 'candidate':
+          forwardToRecipient(data, roomId, userId);
+          break;
+
+        case 'disconnect':
+          removeClient(roomId, userId);
+          updateClients(roomId);
+          break;
+
+        case 'rtc_disconnect_all':
+          setCoolTime(roomId, data.userId, true);
+          setTimeout(() => {
+            setCoolTime(roomId, data.userId, false);
+          }, 10000);
+          break;
+
+        default:
+          console.error('Unrecognized message type:', data.type);
+      }
+    }, { noAck: true });
   });
 });
 
