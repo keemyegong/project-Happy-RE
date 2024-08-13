@@ -36,7 +36,7 @@ const RtcClient = ({ characterImage }) => {
   const universal = useContext(universeVariable);
   useEffect(() => {
     positionRef.current = position;
-    console.log("NearbyUsers", nearbyUsers);
+    //console.log("NearbyUsers", nearbyUsers);
   }, [position, nearbyUsers]);
 
   useEffect(() => {
@@ -128,8 +128,8 @@ const RtcClient = ({ characterImage }) => {
       headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
     })
     .then((response) => {
-      console.log("useravg")
-      console.log(response.data)
+      //console.log("useravg")
+      //console.log(response.data)
       if(response.data.cnt == 0 ){
         setPosition({
           x: response.data.russellSumX,
@@ -144,7 +144,7 @@ const RtcClient = ({ characterImage }) => {
 
     })
     .catch(() => {
-      console.log("서버와통신불가");
+      //console.log("서버와통신불가");
     });
 
   },[])
@@ -155,20 +155,20 @@ const RtcClient = ({ characterImage }) => {
     if (window.location.pathname !== "/webrtc") return;
 
     client.onopen = () => {
-      console.log("WebSocket Client Connected");
+      //console.log("WebSocket Client Connected");
     };
 
     client.onclose = () => {
-      console.log("WebSocket Client Disconnected");
+      //console.log("WebSocket Client Disconnected");
     };
 
     client.onerror = (error) => {
-      console.error("WebSocket Error: ", error);
+      //console.error("WebSocket Error: ", error);
     };
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
-      console.log("Received message from server:", dataFromServer);
+      //console.log("Received message from server:", dataFromServer);
 
       if (dataFromServer.type === "assign_id") {
         setClientId(dataFromServer.id);
@@ -207,7 +207,7 @@ const RtcClient = ({ characterImage }) => {
             })
           );
           setNearbyUsers(nearbyUsersData);
-          console.log("Nearby Users:", nearbyUsersData);
+          //console.log("Nearby Users:", nearbyUsersData);
         } else {
           setNearbyUsers([]);
         }
@@ -242,19 +242,19 @@ const RtcClient = ({ characterImage }) => {
           setStream(currentStream);
         })
         .catch((error) => {
-          console.error("Error accessing media devices.", error);
+          //console.error("Error accessing media devices.", error);
         });
     } else {
-      console.error("getUserMedia is not supported in this browser.");
+      //console.error("getUserMedia is not supported in this browser.");
     }
   }, [position, userImage, clientId]);
 
   const createPeerConnection = (userId) => {
-    console.log(`Creating PeerConnection for user ${userId}`);
+    //console.log(`Creating PeerConnection for user ${userId}`);
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
-    console.log("WebRTC 연결 객체 생성 완료");
+    //console.log("WebRTC 연결 객체 생성 완료");
   
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
   
@@ -283,12 +283,12 @@ const RtcClient = ({ characterImage }) => {
   
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "connected") {
-        console.log(`WebRTC connection established with user ${userId}`);
+        //console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
+        //console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
       if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
-        console.log("WebRTC 연결이 끊어졌습니다.");
+        //console.log("WebRTC 연결이 끊어졌습니다.");
         handleRtcDisconnect(userId); // 연결이 끊어질 때 handleRtcDisconnect 호출
       }
     };
@@ -320,7 +320,7 @@ const RtcClient = ({ characterImage }) => {
                 sender: clientId,
               })
             );
-            console.log(`Offer sent to ${recipientId}`);
+            //console.log(`Offer sent to ${recipientId}`);
           })
           .catch((error) =>
             console.error("Error setting local description:", error)
@@ -335,7 +335,7 @@ const RtcClient = ({ characterImage }) => {
       return;
     }
 
-    console.log(`Handling offer from sender ${sender}`);
+    //console.log(`Handling offer from sender ${sender}`);
 
     let peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -362,7 +362,7 @@ const RtcClient = ({ characterImage }) => {
           recipient: sender,
         })
       );
-      console.log(`Answer sent to ${sender}`);
+      //console.log(`Answer sent to ${sender}`);
 
       if (peerConnections[sender]?.pendingCandidates.length > 0) {
         for (const candidate of peerConnections[sender].pendingCandidates) {
@@ -381,7 +381,7 @@ const RtcClient = ({ characterImage }) => {
       return;
     }
 
-    console.log(`Handling answer from sender ${sender}`);
+    //console.log(`Handling answer from sender ${sender}`);
 
     const peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -418,7 +418,7 @@ const RtcClient = ({ characterImage }) => {
     ) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        console.log(`ICE candidate added for ${sender}`);
+        //console.log(`ICE candidate added for ${sender}`);
       } catch (error) {
         console.error("Error adding ICE candidate:", error);
       }
@@ -440,7 +440,7 @@ const RtcClient = ({ characterImage }) => {
         peerConnections;
       setPeerConnections(restConnections);
       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
-      console.log(`WebRTC connection closed with user ${userId}`);
+      //console.log(`WebRTC connection closed with user ${userId}`);
       // AudioEffect에서도 제거
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
@@ -448,7 +448,7 @@ const RtcClient = ({ characterImage }) => {
       
       // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
       if (Object.keys(restConnections).length === 0) {
-        console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
+        //console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
         client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
       }
     }
