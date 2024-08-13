@@ -41,6 +41,14 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+const RestrictUserTestRoute = ({ children }) => {
+  const personaNumber = localStorage.getItem("personaNumber");
+  if (personaNumber) {
+    return <Navigate to="/profile" />;
+  }
+  return children;
+};
+
 const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
   const location = useLocation();
   const isUserProfile = location.pathname === '/profile';
@@ -85,7 +93,7 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
           <Route path="/signup/agreement" element={<PublicRoute><SignUpAgreement /></PublicRoute>} />
           <Route path="/emotion" element={<EmotionGraph />} />
-          <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
+          <Route path="/usertest" element={<PrivateRoute><RestrictUserTestRoute><UserTest /></RestrictUserTestRoute></PrivateRoute>} />
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
@@ -123,6 +131,8 @@ const App = () => {
       setWithHappyreAccessedToday(false);
     }
   }, []);
+
+
 
   return (
     <universeVariable.Provider

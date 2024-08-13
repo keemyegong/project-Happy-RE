@@ -5,6 +5,13 @@ import axios from 'axios';
 import './UserTest.css';
 import Button from '../../components/Button/Button';
 import { useNavigate  } from "react-router-dom";
+import Swal from 'sweetalert2'
+
+import artist from "../../assets/characters/art.png";
+import butler from "../../assets/characters/butler.png";
+import defaultPersona from "../../assets/characters/default.png";
+import soldier from "../../assets/characters/soldier.png";
+import steel from "../../assets/characters/steel.png";
 
 const UserTest = () => {
   const universal = useContext(universeVariable);
@@ -12,7 +19,108 @@ const UserTest = () => {
   const [resultnumber, setResultnumber] = useState(0);
   const [data,setData] = useState([]);
   let navigate = useNavigate ();
-
+  const happyRelist = [defaultPersona, soldier, butler, steel, artist];
+  const personaList = [
+    {},
+    {
+      name: '해파린 장군',
+      description: `안녕하신가, 전사여. 오늘 그대의 마음이 무거운 듯하네. 어떤 고민이 있는지 말해보거라.
+                    <br />
+                    내가 도울 수 있는 방법을 찾아보겠네.`,
+      imgSrc: happyRelist[1],  // 이미지 URL을 여기에 넣으세요
+    },
+    {
+      name: '해파스찬',
+      description: `안녕하세요, 주인님!
+                    <br />
+                    오늘 주인님을 스트레스 받게 한 일은 없었나요?
+                    <br />
+                    스트레스 관리를 위해 효율적인 방법을 모색해 볼게요.`,
+      imgSrc: happyRelist[2],  // 이미지 URL을 여기에 넣으세요
+    },
+    {
+      name: '해파라테스',
+      description: `안녕하신가. 오늘 하루는 어떠했나.
+                    <br />
+                    삶의 의미에 대해 생각하기 좋은 날이었나?
+                    <br />
+                    어떤 생각들이 그대의 마음을 채우고 있는지 궁금하네.`,
+      imgSrc: happyRelist[3],  // 이미지 URL을 여기에 넣으세요
+    },
+    {
+      name: '셰익스피리',
+      description: `(깊이 생각하며) 우리의 무대는 삶의 거울이라네.
+                    <br />
+                    그대의 영혼에 잠든 이야기를 깨워,
+                    <br />
+                    어떤 상념들이 그대를 사로잡고 있는지 들여다보게나!`,
+      imgSrc: happyRelist[4],  // 이미지 URL을 여기에 넣으세요
+    }
+  ];
+  
+  const showPersonaAlert = (personaNumber) => {
+    const persona = personaList[personaNumber];
+    
+    if (persona) {
+      Swal.fire({
+        background: "#292929",
+        icon: 'success',
+        html: `
+          <div style="
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-width: 100px;
+            font-family: Pretendard;
+            color: white;
+          ">
+          <div style="
+              font-size: 18px; /* 폰트 사이즈를 키웠습니다. */
+              margin-bottom: 10px;
+            ">
+            당신에게 어울리는 해파리에요!
+          </div>
+    
+          <img
+            alt="${persona.name}"
+            src="${persona.imgSrc}"
+            style="
+              width: 250px;
+              height: 250px;
+              object-fit: cover;
+              padding: 20px;
+              cursor: pointer;
+            "
+          />
+          <div style="
+            color: white;
+          ">
+            <div style="
+              font-weight: 700;
+              padding-bottom: 5px;
+              font-size: 20px;
+            ">
+              ${persona.name}
+            </div>
+            <div style="
+              font-size: 15px;
+            ">
+              ${persona.description}
+            </div>
+          </div>
+        </div>`,
+        showCancelButton: false,
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Yes'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          submit(data); // 원하는 함수 호출
+        }
+      });
+    }
+  };
+  
   const choiceLabels = [
     { label: '놀람', coordinates: [0, 1] },
     { label: '긴장', coordinates: [0.1, 0.9] },
@@ -52,6 +160,14 @@ const UserTest = () => {
   const handleSubmit = () => {
     if (selectedChoices.length === 0) {
       console.log('No choices selected');
+      Swal.fire({
+        title:"한 개 이상의 태그를 선택해주세요",
+        icon: "warning",
+        iconColor: "#4B4E6D",
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+      })
       return;
     }
 
@@ -77,10 +193,13 @@ const UserTest = () => {
     if(data.x >= 0 && data.y < 0) setResultnumber(4);
 
   };
+  
 
   useEffect(()=>{
     localStorage.setItem("personaNumber", resultnumber);
-    submit(data);
+    if (resultnumber !== 0){
+      showPersonaAlert(resultnumber);
+    }
   },[resultnumber])
 
   const submit = (data)=>{

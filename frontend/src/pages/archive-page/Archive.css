@@ -85,6 +85,7 @@
   margin-top: 10%;
   display: flex;
   align-items: center;
+  
 }
 
 .keywordcard-arrow-button {
@@ -174,7 +175,13 @@
   width: 46%;
   height: 240px;
   min-width: 200px;
+
 }
+
+.disabled-arrow-archive-button{
+  cursor: default !important;
+}
+
 .archive-none-keywords-text {
   font-family: Pretendard;
   color: white;
@@ -187,6 +194,10 @@
 
 .archive-godiary-btn {
   margin-top: 20px;
+}
+
+.archive-keywordcard-container{
+  width: 200px;
 }
 
 @media (max-width: 1270px) {
