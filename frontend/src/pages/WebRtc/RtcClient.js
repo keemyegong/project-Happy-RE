@@ -1,5 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import React, { useEffect, useState, useRef , useContext} from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
@@ -13,7 +13,7 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
-import RtcModal from "../../components/rtc-modal/RtcModal"; // 모달 컴포넌트 임포트
+import RtcModal from "../../components/rtc-modal/RtcModal";
 
 import "./ChatRoomContainer.css";
 
@@ -36,13 +36,11 @@ const RtcClient = ({ characterImage }) => {
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
   const [showModal, setShowModal] = useState(true); // 모달 표시 상태 추가
-  const universal = useContext(universeVariable);
   const navigate = useNavigate();
-
+  const universal = useContext(universeVariable);
 
   useEffect(() => {
     positionRef.current = position;
-    //console.log("NearbyUsers", nearbyUsers);
   }, [position, nearbyUsers]);
 
   useEffect(() => {
@@ -71,6 +69,29 @@ const RtcClient = ({ characterImage }) => {
 
   useEffect(() => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get(`${universal.defaultUrl}/api/useravg`, {
+        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+      })
+      .then((response) => {
+        if (response.data.cnt == 0) {
+          setPosition({
+            x: response.data.russellSumX,
+            y: response.data.russellSumY,
+          });
+        } else {
+          setPosition({
+            x: response.data.russellSumX / response.data.cnt,
+            y: response.data.russellSumY / response.data.cnt,
+          });
+        }
+      })
+      .catch(() => {
+        console.error("서버와 통신 불가");
+      });
   }, []);
 
   const handleBeforeUnload = () => {
@@ -128,6 +149,8 @@ const RtcClient = ({ characterImage }) => {
   };
 
   const connectWebSocket = () => {
+    if (window.location.pathname !== "/webrtc") return;
+
     client.onopen = () => {
       //console.log("WebSocket Client Connected");
     };
@@ -137,7 +160,7 @@ const RtcClient = ({ characterImage }) => {
     };
 
     client.onerror = (error) => {
-      //console.error("WebSocket Error: ", error);
+      console.error("WebSocket Error: ", error);
     };
 
     client.onmessage = (message) => {
@@ -216,10 +239,10 @@ const RtcClient = ({ characterImage }) => {
           setStream(currentStream);
         })
         .catch((error) => {
-          //console.error("Error accessing media devices.", error);
+          console.error("Error accessing media devices.", error);
         });
     } else {
-      //console.error("getUserMedia is not supported in this browser.");
+      console.error("getUserMedia is not supported in this browser.");
     }
   };
 
@@ -275,7 +298,6 @@ const RtcClient = ({ characterImage }) => {
   
     return peerConnection;
   };
-  
 
   const attemptOffer = (peerConnection, recipientId) => {
     if (!peerConnection) return;

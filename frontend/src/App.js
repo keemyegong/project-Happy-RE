@@ -93,7 +93,7 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
           <Route path="/signup/agreement" element={<PublicRoute><SignUpAgreement /></PublicRoute>} />
           <Route path="/emotion" element={<EmotionGraph />} />
-          <Route path="/usertest" element={<PrivateRoute><RestrictUserTestRoute><UserTest /></RestrictUserTestRoute></PrivateRoute>} />
+          <Route path="/usertest" element={<PrivateRoute><UserTest /></PrivateRoute>} />
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
