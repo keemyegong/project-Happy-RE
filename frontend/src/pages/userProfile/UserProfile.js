@@ -22,6 +22,8 @@ import defaultPersona from "../../assets/characters/default.png";
 import soldier from "../../assets/characters/soldier.png";
 import steel from "../../assets/characters/steel.png";
 
+import heartimg from "../../assets/heart-fill.svg"
+
 const UserProfile = () => {
   const happyRelist = [defaultPersona, soldier, butler, steel, artist];
   const happyReHello = [
@@ -68,6 +70,7 @@ const UserProfile = () => {
   let recentinfo = [];
 
   let navigate = useNavigate();
+  const heartImageUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiB2aWV3Qm94PSIwIDAgMTYgMTYiPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTggMS4zMTRDMTIuNDM4LTMuMjQ4IDIzLjUzNCA0LjczNSg0KjAgOCAxNS03LjUzNCA0Ljc2MyAzLjU2Mi0zLjI0OCA4IDEuMzE0Ii8+PC9zdmc+';
 
   const [show, setShow] = useState(false);
   const [keywordEntities, setKeywordEntities] = useState(null);
@@ -168,7 +171,8 @@ const UserProfile = () => {
         }
       });
   };
-
+  const heartShape = `M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314`;
+  const img = new Image();
   useEffect(() => {
     setImage(userProfileImage);
     universal.setIsAuthenticated(true);
@@ -213,6 +217,7 @@ const UserProfile = () => {
       })
       .then((response) => {
         const responseData = response.data;
+        img.src = heartimg;
         if (responseData != ''){
           setValidCloud(true);
         }
@@ -220,15 +225,20 @@ const UserProfile = () => {
           name: item.word,
           value: item.frequency, // frequency에 대한 가중치 적용
         }));
-        setData(wordCloudData);
-        console.log("WordCloudData : ", wordCloudData);
-        if (wordCloudData.length==0){
+        const sortedTop100Data = wordCloudData
+          .sort((a, b) => b.value - a.value)  // `value`를 기준으로 내림차순 정렬
+          .slice(0, 50);                     // 상위 100개 데이터만 추출
+
+        setData(sortedTop100Data);
+        console.log("WordCloudData : ", sortedTop100Data);
+        if (sortedTop100Data.length==0){
           // setChangeClass('wordcloud-container');
           setRenderCloud(false);
           console.log('aa')
         } else{
           const chartElement = document.getElementById("wordCloud");
-  
+
+      
           if (chartElement) {
             // chartElement가 존재하는지 확인
             const chart = echarts.init(chartElement);
@@ -247,14 +257,16 @@ const UserProfile = () => {
               series: [
                 {
                   type: "wordCloud",
-                  shape: "star",
-                  sizeRange: [12, 50], // 글자 크기 범위
+                  keepAspect: false,
+                  shape: "circle",
+                  offsetCenter: [0, -100],
+                  sizeRange: [10, 40], // 글자 크기 범위
                   rotationRange: [-90, 90], // 글자의 회전 범위
-                  gridSize: 2, // 글자 간격
+                  gridSize: 10, // 글자 간격
                   drawOutOfBound: false,
                   textStyle: {
-                    fontFamily: "sans-serif",
-                    fontWeight: "bold",
+                    fontFamily: "Pretendard",
+                    fontWeight: 400,
                     // Color can be a callback function or a color string
                     color: function () {
                       // Random color
@@ -278,11 +290,11 @@ const UserProfile = () => {
                     },
                   },
   
-                  data: wordCloudData,
+                  data: sortedTop100Data,
                 },
               ],
             });
-            setData(wordCloudData)
+            setData(sortedTop100Data)
             
   
           } else {
@@ -389,8 +401,8 @@ const UserProfile = () => {
                     있어요
                   </span>
                 </div>
-                <div >
-                  {renderCloud && <div id="wordCloud" className={changeClass}></div>}
+                <div style={{margin: "auto"}}>
+                  {renderCloud && <div id="wordCloud"style={{opacity: "0.9", width: "100%", height: "260px" }}  className={changeClass} ></div>}
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?
@@ -444,6 +456,7 @@ const UserProfile = () => {
                       alt="해파리 페르소나"
                       src={happyRelist[localStorage.getItem("personaNumber")]}
                     />
+                    <span className="happyre-change-guid">펜 모양의 버튼을 클릭하면 다른 해파리와 대화할 수 있어요!</span>
                     <div className="persona-change-button" onClick={showModal}>
                       <span className="material-symbols-outlined">edit</span>
                     </div>
