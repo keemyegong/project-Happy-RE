@@ -99,7 +99,7 @@
   - [HuggingFace](https://huggingface.co/) 및 [PyTorch](https://pytorch.org/)를 사용한 감정 인식 모델을 구현하고 Fine-Tuning 하였음
   - 모델은 유저의 발언을 입력으로 받아 [Russell's Model](https://en.wikipedia.org/wiki/Emotion_classification#Circumplex_model) 모델에 대한 감정 예측 X값과 Y값을 출력함
 - 데이터셋 및 훈련 방법
-  - ![](readme%20resource/data.png)
+  - ![](readme%20resource/data.PNG)
   - 네이버 영화 리뷰 데이터를 수집하고 전처리(긍정도, X축)
   - 대화 데이터셋을 수집하여 전처리(각성도, Y축)
   - 총 약 16만 문장으로 러셀 척도에 대한 예측을 훈련시킴
