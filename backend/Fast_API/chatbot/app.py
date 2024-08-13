@@ -91,7 +91,17 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
         "speaker":speaker,
         "audioKey":audio
     })
-    
+
+def session_initialize(user_id:str):
+    if user_id in user_session:
+        del user_session[user_id]
+
+    if user_id in user_emotion_russell:
+        del user_emotion_russell[user_id]
+        
+    if user_id in user_message:
+        del user_message[user_id]
+
 # ----------------------------------라우팅 함수--------------------------------------------
 
 # POST 요청으로 chatbot 사용
@@ -115,6 +125,8 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     api_instance = user_session[user_id]
     user_input = request.user_input
     audio = request.audio
+    
+    print(f"user_input : {user_input} \n ----------------")
     if audio=='':
         audio = None
     
@@ -124,6 +136,8 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
         message_session_update(user_id, user_input, "starter", None)
     
     response = api_instance.generateResponse(user_input)
+    
+    print(f"Response : {response} \n -----------------------")
     
     message_session_update(user_id, response, "ai", None)
 
@@ -269,19 +283,18 @@ async def session_delete(request:Request):
             diary_summary_response = await client.put(SPRING_DIARY_SUMMARY_URL, json=diary, headers=new_header)
             
             summary_detail_response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
+            session_initialize(user_id)
             
-            if user_id in user_session:
-                del user_session[user_id]
-
-            if user_id in user_emotion_russell:
-                del user_emotion_russell[user_id]
-                
-            if user_id in user_message:
-                del user_message[user_id]
             return response
         
     except Exception as e:
         print(f"Error While Summary Posting: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    
+@router.delete('/initialize-session')
+def initialize_request(user_id:str=Depends(decode_jwt)):
+    try:
+        session_initialize(user_id)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
