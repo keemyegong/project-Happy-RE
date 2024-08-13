@@ -12,7 +12,7 @@ const EmotionGraph = ({ data }) => {
 
     heatmapInstance.current = h337.create({
       container,
-      radius: 25, // 히트맵 점 반지름
+      radius: 10, // 히트맵 점 반지름
       maxOpacity: 1, // 최대 불투명도
       minOpacity: 0, // 최소 불투명도
       blur: 0.75, // 흐림
