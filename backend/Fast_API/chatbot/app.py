@@ -217,6 +217,7 @@ async def post_message_request(request:Request):
 async def session_delete(request:Request):
     header = request.headers["authorization"]
     user_id = decode_jwt(header.split(" ")[-1])
+    user_folder_dir = os.path.abspath(os.path.join(BASE_DIR,'audio',str(user_id)))
     
     new_header = {
         "authorization": header,
@@ -294,6 +295,7 @@ async def session_delete(request:Request):
             
             summary_detail_response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
             session_initialize(user_id)
+            delete_audio_file(user_folder_dir)
             
             return response
         
