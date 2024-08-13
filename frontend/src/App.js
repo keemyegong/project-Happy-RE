@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import bgm from './assets/bgm.mp3';
 
 import Nav from './components/navbar/Navbar';
 import Main from './pages/main/Main';
@@ -50,6 +51,11 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
     <div className="App">
       <StarryBackground />
       <Nav />
+      <audio
+        src={bgm}
+        loop
+        autoPlay={true}>
+      </audio>
       <div className="content">
         <Routes>
           <Route path="/" element={<PublicRoute><Main /></PublicRoute>} />
@@ -115,6 +121,7 @@ const App = () => {
     >
       <Router>
         <AppContent withHappyreAccessedToday={withHappyreAccessedToday} />
+
       </Router>
     </universeVariable.Provider>
   );
