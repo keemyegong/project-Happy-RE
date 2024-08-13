@@ -12,7 +12,7 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
-import MessageQueue from "../../utils/MessageQueue";
+import MessageQueue from "./MessageQueue";
 
 import "./ChatRoomContainer.css";
 
