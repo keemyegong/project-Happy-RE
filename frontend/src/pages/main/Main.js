@@ -108,14 +108,14 @@ const Main = () => {
     const characterSize = calculateCharacterSize(); // 반응형 캐릭터 크기
 
     const initialPositions1 = [
-      { minX: 40, maxX: 350, minY: 50, maxY: 100 },
-      { minX: 100, maxX: 550, minY: 50, maxY: 100 },
+      { minX: 40, maxX: 350, minY: 50, maxY: 70 },
+      { minX: 100, maxX: 550, minY: 50, maxY: 70 },
     ];
 
     const initialPositions2 = [
       { minX: 0, maxX: 230, minY: 150, maxY: 550 },
-      { minX: 60, maxX: 370, minY: 150, maxY: 400 },
-      { minX: 120, maxX: 550, minY: 150, maxY: 500 },
+      { minX: 60, maxX: 370, minY: 100, maxY: 400 },
+      { minX: 120, maxX: 550, minY: 125, maxY: 500 },
     ];
 
     const characters1 = calculateCharacterPosition(initialPositions1, characterSize).map((pos, index) => {
