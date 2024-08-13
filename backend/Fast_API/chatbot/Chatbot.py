@@ -57,3 +57,42 @@ class Chatbot:
     def __call__(self, user_input):
         return self.generateResponse(user_input)
     
+# ------------------------------------------------------문장 나누기 --------------------------------------------
+    
+class SentenceDividingChatbot:
+    def __init__(
+        self,
+        api_key,
+        model="gpt-4o",
+        temperature=0.7,
+        promptTemplate=[
+            (
+                "system",
+                ""
+            ),
+            MessagesPlaceholder(variable_name="messages"),
+        ],
+    ):
+        self.llm = ChatOpenAI(model=model, temperature=temperature)
+        self.promptTemplate = promptTemplate
+        self.history = ChatMessageHistory()
+        prompt = ChatPromptTemplate.from_messages(
+            self.promptTemplate,
+        )
+        self.chain = prompt | self.llm
+
+    def generateResponse(self, user_input):
+        # todo: sanitize user input
+        self.history.add_user_message(user_input)
+
+        response = self.chain.invoke(
+            {
+                "messages": self.history.messages,
+            }
+        )
+        self.history.add_ai_message(response.content)
+        return response.content
+
+    def __call__(self, user_input):
+        return self.generateResponse(user_input)
+    

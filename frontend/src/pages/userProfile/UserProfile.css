@@ -93,6 +93,7 @@
   padding-right: 10px;
 }
 
+
 .wordcloud-container{
   margin-inline: 0px;
 }
@@ -326,9 +327,9 @@
 /* 툴팁의 스타일 정의 */
 .echarts-tooltip {
   color: aliceblue;
-  
   border-radius: 5px !important;   /* 둥근 모서리 */
-
+  font-family: Pretendard;
+  font-weight: 100;
 }
 
 .nodata{

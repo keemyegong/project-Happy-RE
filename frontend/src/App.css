@@ -33,3 +33,21 @@ html, body {
   font-family: Pretendard;
 }
 
+.audio-paly-button-main-page{
+  position: fixed;
+  bottom: 11px;
+  left: 10px;
+  z-index: 10000000;
+  cursor: pointer
+  ;
+}
+
+.audio-paly-button-main-page-label{
+  position: fixed;
+  bottom: 10px;
+  left: 40px;
+  z-index: 10000000;
+  color: grey;
+  margin: 0px;
+  cursor: pointer;
+}

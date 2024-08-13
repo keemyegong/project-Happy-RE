@@ -247,14 +247,15 @@ const UserProfile = () => {
               series: [
                 {
                   type: "wordCloud",
-                  shape: "star",
-                  sizeRange: [12, 50], // 글자 크기 범위
+                  shape: "pentagon",
+                  offsetCenter: [0, -100],
+                  sizeRange: [10, 40], // 글자 크기 범위
                   rotationRange: [-90, 90], // 글자의 회전 범위
-                  gridSize: 2, // 글자 간격
+                  gridSize: 5, // 글자 간격
                   drawOutOfBound: false,
                   textStyle: {
-                    fontFamily: "sans-serif",
-                    fontWeight: "bold",
+                    fontFamily: "Pretendard",
+                    fontWeight: 400,
                     // Color can be a callback function or a color string
                     color: function () {
                       // Random color
@@ -389,8 +390,8 @@ const UserProfile = () => {
                     있어요
                   </span>
                 </div>
-                <div >
-                  {renderCloud && <div id="wordCloud" className={changeClass}></div>}
+                <div style={{margin: "auto"}}>
+                  {renderCloud && <div id="wordCloud"style={{opacity: "0.9", width: "100%", height: "270px" }}  className={changeClass} ></div>}
                   {data.length === 0 && (
                     <p className="wordcloud-none-word">
                       아직 나의 단어가 없어요! 다이어리를 작성하러 갈까요?

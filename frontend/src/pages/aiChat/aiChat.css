@@ -87,3 +87,56 @@
   left: 0;
   z-index: 10000;
 }
+
+.ai-chat-guide {
+  opacity: 0.9;
+  margin-top: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.ai-chat-guide-text {
+  opacity: 0.9;
+  font-family: Pretendard;
+  font-size: 12px;
+  font-weight: 100;
+  margin-left: 5px;
+}
+
+.ai-chat-tooltip {
+  font-family: Pretendard;
+  font-size: 12px;
+  line-height: 20px;
+  visibility: hidden;
+  width: 340px;
+  background-color: black;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position the tooltip above the guide */
+  left: 50%;
+  margin-left: -80px; /* Center the tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.ai-chat-tooltip::after {
+
+  content: '';
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.ai-chat-guide:hover .ai-chat-tooltip {
+  padding: 10px;
+  visibility: visible;
+  opacity: 1;
+}
