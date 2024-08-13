@@ -35,7 +35,20 @@ const RtcClient = ({ characterImage }) => {
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
   const universal = useContext(universeVariable);
-  const messageQueue = useRef(new MessageQueue());  // 메시지 큐 인스턴스 생성
+  const messageQueue = useRef(new MessageQueue(
+    setClientId,
+    setUsers,
+    setCoolTime,
+    setNearbyUsers,
+    handleOffer,
+    handleAnswer,
+    handleCandidate,
+    handleRtcDisconnect,
+    setTalkingUsers,
+    createPeerConnection,
+    attemptOffer,
+    setPeerConnections
+  ));
 
   useEffect(() => {
     positionRef.current = position;
