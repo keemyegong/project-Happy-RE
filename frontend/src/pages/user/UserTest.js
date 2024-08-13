@@ -5,6 +5,7 @@ import axios from 'axios';
 import './UserTest.css';
 import Button from '../../components/Button/Button';
 import { useNavigate  } from "react-router-dom";
+import Swal from 'sweetalert2'
 
 const UserTest = () => {
   const universal = useContext(universeVariable);
@@ -52,6 +53,14 @@ const UserTest = () => {
   const handleSubmit = () => {
     if (selectedChoices.length === 0) {
       console.log('No choices selected');
+      Swal.fire({
+        title:"한 개 이상의 태그를 선택해주세요",
+        icon: "warning",
+        iconColor: "#4B4E6D",
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+      })
       return;
     }
 
