@@ -1,5 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef , useContext} from "react";
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 import CharacterList from "../../components/CharacterList/CharacterList";
@@ -15,8 +15,6 @@ import axios from "axios";
 import MessageQueue from "./MessageQueue";
 
 import "./ChatRoomContainer.css";
-
-const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/webrtc");
 
 const RtcClient = ({ characterImage }) => {
   const [peerConnections, setPeerConnections] = useState({});
@@ -36,44 +34,46 @@ const RtcClient = ({ characterImage }) => {
   const [coolTime, setCoolTime] = useState(false);
   const universal = useContext(universeVariable);
   const messageQueue = useRef(null);
+  const clientRef = useRef(null);
   const clientIdRef = useRef(clientId);
   const userImageRef = useRef(userImage);
-
-  useEffect(() => {
-    positionRef.current = position;
-  }, [position, nearbyUsers]);
 
   useEffect(() => {
     clientIdRef.current = clientId;
   }, [clientId]);
 
   useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  useEffect(() => {
     userImageRef.current = userImage;
   }, [userImage]);
 
   useEffect(() => {
-    messageQueue.current = new MessageQueue(
-      setClientId,
-      setUsers,
-      setCoolTime,
-      setNearbyUsers,
-      handleOffer,
-      handleAnswer,
-      handleCandidate,
-      handleRtcDisconnect,
-      setTalkingUsers,
-      createPeerConnection,
-      attemptOffer,
-      setPeerConnections,
-      () => clientIdRef.current,
-      () => positionRef.current,
-      () => userImageRef.current
-    );
-
-    if (window.location.pathname !== "/webrtc") return;
+    const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/webrtc");
+    clientRef.current = client;
 
     client.onopen = () => {
       console.log("WebSocket Client Connected");
+      messageQueue.current = new MessageQueue(
+        setClientId,
+        setUsers,
+        setCoolTime,
+        setNearbyUsers,
+        handleOffer,
+        handleAnswer,
+        handleCandidate,
+        handleRtcDisconnect,
+        setTalkingUsers,
+        createPeerConnection,
+        attemptOffer,
+        setPeerConnections,
+        () => clientIdRef.current,
+        () => positionRef.current,
+        () => userImageRef.current,
+        client
+      );
     };
 
     client.onclose = () => {
@@ -102,19 +102,33 @@ const RtcClient = ({ characterImage }) => {
       console.error("getUserMedia is not supported in this browser.");
     }
 
+    return () => {
+      client.close();
+    };
+  }, [clientId, position, userImage]);
+
+  useEffect(() => {
+    if (window.location.pathname !== "/webrtc") {
+      clientRef.current.close();
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      return;
+    }
+  
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      client.close();
-
+      clientRef.current.close();
+  
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [clientId, position, userImage, stream]);
+  }, [stream]);
 
   useEffect(() => {
     setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
@@ -122,32 +136,33 @@ const RtcClient = ({ characterImage }) => {
 
   useEffect(() => {
     axios
-      .get(`${universal.defaultUrl}/api/useravg`, {
-        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
-      })
-      .then((response) => {
-        if (response.data.cnt == 0) {
-          setPosition({
-            x: response.data.russellSumX,
-            y: response.data.russellSumY,
-          });
-        } else {
-          setPosition({
-            x: response.data.russellSumX / response.data.cnt,
-            y: response.data.russellSumY / response.data.cnt,
-          });
-        }
-      })
-      .catch(() => {
-        console.log("서버와 통신 불가");
-      });
-  }, []);
+    .get(`${universal.defaultUrl}/api/useravg`, {
+      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+    })
+    .then((response) => {
+      if(response.data.cnt == 0 ){
+        setPosition({
+          x: response.data.russellSumX,
+          y: response.data.russellSumY,
+        });
+      }else{
+        setPosition({
+          x: response.data.russellSumX/response.data.cnt,
+          y: response.data.russellSumY/response.data.cnt,
+        });      
+      }
+    })
+    .catch(() => {
+      console.log("서버와 통신 불가");
+    });
+
+  },[]);
 
   const handleBeforeUnload = () => {
-    client.send(JSON.stringify({ type: "disconnect" }));
-    client.close();
+    clientRef.current.send(JSON.stringify({ type: "disconnect" }));
+    clientRef.current.close();
     cleanupConnections();
-
+  
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
@@ -172,8 +187,8 @@ const RtcClient = ({ characterImage }) => {
       id: clientId,
     };
     setPosition(newPosition);
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: "move", position: newPosition }));
+    if (clientRef.current.readyState === WebSocket.OPEN) {
+      clientRef.current.send(JSON.stringify({ type: "move", position: newPosition }));
     }
   };
 
@@ -200,12 +215,12 @@ const RtcClient = ({ characterImage }) => {
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
-
+  
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
-
+  
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        client.send(
+        clientRef.current.send(
           JSON.stringify({
             type: "candidate",
             candidate: event.candidate,
@@ -215,7 +230,7 @@ const RtcClient = ({ characterImage }) => {
         );
       }
     };
-
+  
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
@@ -224,7 +239,7 @@ const RtcClient = ({ characterImage }) => {
         }
       }
     };
-
+  
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "connected") {
         console.log(`WebRTC connection established with user ${userId}`);
@@ -240,11 +255,11 @@ const RtcClient = ({ characterImage }) => {
         handleRtcDisconnect(userId);
       }
     };
-
+  
     if (stream) {
       stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
     }
-
+  
     return peerConnection;
   };
 
@@ -257,7 +272,7 @@ const RtcClient = ({ characterImage }) => {
         peerConnection
           .setLocalDescription(offer)
           .then(() => {
-            client.send(
+            clientRef.current.send(
               JSON.stringify({
                 type: "offer",
                 offer: offer.sdp,
@@ -267,7 +282,9 @@ const RtcClient = ({ characterImage }) => {
             );
             console.log(`Offer sent to ${recipientId}`);
           })
-          .catch((error) => console.error("Error setting local description:", error));
+          .catch((error) =>
+            console.error("Error setting local description:", error)
+          );
       })
       .catch((error) => console.error("Error creating offer:", error));
   };
@@ -295,7 +312,7 @@ const RtcClient = ({ characterImage }) => {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
-      client.send(
+      clientRef.current.send(
         JSON.stringify({
           type: "answer",
           answer: answer.sdp,
@@ -342,14 +359,14 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for candidate");
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
+  
     if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -371,15 +388,16 @@ const RtcClient = ({ characterImage }) => {
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
       peerConnections[userId].peerConnection.close();
-      const { [userId]: removedConnection, ...restConnections } = peerConnections;
+      const { [userId]: removedConnection, ...restConnections } =
+        peerConnections;
       setPeerConnections(restConnections);
       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
-
+      
       if (Object.keys(restConnections).length === 0) {
-        client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
+        clientRef.current.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
       }
     }
   };
@@ -388,10 +406,12 @@ const RtcClient = ({ characterImage }) => {
     if (direction === "up") {
       setDisplayStartIndex(Math.max(displayStartIndex - 1, 0));
     } else {
-      setDisplayStartIndex(Math.min(displayStartIndex + 1, nearbyUsers.length - 4));
+      setDisplayStartIndex(
+        Math.min(displayStartIndex + 1, nearbyUsers.length - 4)
+      );
     }
   };
-
+  
   return (
     <div className="chat-room-container" ref={containerRef}>
       <div className="chat-graph-audio-container">
