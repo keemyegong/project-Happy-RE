@@ -91,7 +91,17 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
         "speaker":speaker,
         "audioKey":audio
     })
-    
+
+def session_initialize(user_id:str):
+    if user_id in user_session:
+        del user_session[user_id]
+
+    if user_id in user_emotion_russell:
+        del user_emotion_russell[user_id]
+        
+    if user_id in user_message:
+        del user_message[user_id]
+
 # ----------------------------------라우팅 함수--------------------------------------------
 
 # POST 요청으로 chatbot 사용
@@ -115,6 +125,8 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
     api_instance = user_session[user_id]
     user_input = request.user_input
     audio = request.audio
+    
+    print(f"user_input : {user_input} \n ----------------")
     if audio=='':
         audio = None
     
@@ -124,6 +136,8 @@ async def chatbot(requestforP:Request, request: ChatRequest, user_id: str = Depe
         message_session_update(user_id, user_input, "starter", None)
     
     response = api_instance.generateResponse(user_input)
+    
+    print(f"Response : {response} \n -----------------------")
     
     message_session_update(user_id, response, "ai", None)
 
@@ -198,12 +212,12 @@ async def session_delete(request:Request):
         "authorization": header,
         "content-type": "application/json"
     }
-    
+    # 프롬프트 수정
     chatbot_instance = user_session[user_id]
     prompt = '지금까지의 대화에서 전체적인 대화를 요약할 수 있는 짧게 요약된 문장과 \
-        긍정적인 감정이 느껴지는 서로 다른 3개 이하의 키워드와 부정적인 감정이 느껴지는 서로 다른 3개 이하의 키워드를 뽑아 유저 메세지와 함께 보여줘.\
+        대화들을 요약할 수 있는 사건 위주의 키워드들을 뽑아 유저 메세지와 함께 보여줘.\
         이때 너에게 설정된 persona를 무시하고, 오로지 유저의 입력에서만 키워드를 생성, 응답해줘.\
-        Tips on Creating Keywords: 1. The keyword must NOT be emotion or thought. 2. pick most triggering keywords.\
+        Tips on Creating Keywords: The keyword must NOT be emotion.\
         응답 결과는 반드시 요약 결과만을 JSON 형태로 제공하는데, 이 딕셔너리는 키값으로 "diary_summary"와 "summary_detail"을 가져. \
         "diary_summary"는 전체 대화를 짧게 요약하는 주제 문장을 값으로 가져. \
         "summary_detail"은 list를 값으로 갖는데, 이 리스트는 안에 1개 이상의 딕셔너리가 있는 형태로, \
@@ -259,23 +273,28 @@ async def session_delete(request:Request):
             raise HTTPException(status_code=500, detail=str(e))
     # 스프링으로 전송
     try:
+        print(f'''
+                Diary -----------------------
+                {diary}
+                Summary List ----------------
+                {summary_list}
+            ''')
         async with httpx.AsyncClient() as client:
             diary_summary_response = await client.put(SPRING_DIARY_SUMMARY_URL, json=diary, headers=new_header)
             
             summary_detail_response = await client.post(SPRING_KEYWORD_SUMMARY_URL, json=summary_list, headers=new_header)
+            session_initialize(user_id)
             
-            if user_id in user_session:
-                del user_session[user_id]
-
-            if user_id in user_emotion_russell:
-                del user_emotion_russell[user_id]
-                
-            if user_id in user_message:
-                del user_message[user_id]
             return response
         
     except Exception as e:
         print(f"Error While Summary Posting: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    
+@router.delete('/initialize-session')
+def initialize_request(user_id:str=Depends(decode_jwt)):
+    try:
+        session_initialize(user_id)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
