@@ -11,7 +11,7 @@ import DiaryReport from "../../components/diary-report/DiaryReport";
 import DiaryDetail from "../../components/diary-report/DiaryDetail";
 import { useNavigate, useLocation  } from "react-router-dom";
 import Swal from 'sweetalert2'
-import useBackListener from './useBackListener';
+// import useBackListener from './useBackListener';
 
 
 const AIChat = () => {
