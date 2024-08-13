@@ -169,7 +169,7 @@ const RtcClient = ({ characterImage }) => {
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       //console.log("Received message from server:", dataFromServer);
-
+    
       if (dataFromServer.type === "assign_id") {
         setClientId(dataFromServer.id);
         client.send(
@@ -185,7 +185,7 @@ const RtcClient = ({ characterImage }) => {
           position: user.position || { x: 0, y: 0 },
           connectedAt: user.connectedAt || 0,
         }));
-
+    
         // 자기 자신 정보를 제외하고 users를 설정
         setUsers(
           filteredUsers
@@ -195,7 +195,7 @@ const RtcClient = ({ characterImage }) => {
               image: user.characterImage,
             }))
         );
-
+    
         // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
         const currentUser = filteredUsers.find((user) => user.id === clientId);
         if (currentUser) {
@@ -234,6 +234,7 @@ const RtcClient = ({ characterImage }) => {
         }
       }
     };
+    
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
@@ -404,21 +405,18 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for candidate");
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
-    if (
-      peerConnection.remoteDescription &&
-      peerConnection.remoteDescription.type
-    ) {
+  
+    if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        //console.log(`ICE candidate added for ${sender}`);
+        console.log(`ICE candidate added for ${sender}`);
       } catch (error) {
         console.error("Error adding ICE candidate:", error);
       }
@@ -432,6 +430,7 @@ const RtcClient = ({ characterImage }) => {
       );
     }
   };
+  
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
