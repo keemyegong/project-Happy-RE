@@ -1,5 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import React, { useEffect, useState, useRef , useContext} from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 import CharacterList from "../../components/CharacterList/CharacterList";
@@ -36,23 +36,22 @@ const RtcClient = ({ characterImage }) => {
   const [coolTime, setCoolTime] = useState(false);
   const universal = useContext(universeVariable);
   const messageQueue = useRef(null);
+  const clientIdRef = useRef(clientId);
+  const userImageRef = useRef(userImage);
 
   useEffect(() => {
     positionRef.current = position;
   }, [position, nearbyUsers]);
 
   useEffect(() => {
-    if (window.location.pathname !== "/webrtc") {
-      client.close();
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-      return;
-    }
-  
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("keydown", handleKeyDown);
-  
+    clientIdRef.current = clientId;
+  }, [clientId]);
+
+  useEffect(() => {
+    userImageRef.current = userImage;
+  }, [userImage]);
+
+  useEffect(() => {
     messageQueue.current = new MessageQueue(
       setClientId,
       setUsers,
@@ -66,65 +65,9 @@ const RtcClient = ({ characterImage }) => {
       createPeerConnection,
       attemptOffer,
       setPeerConnections,
-      () => clientId,  // 함수로 변경
-      () => positionRef.current,  // 함수로 변경
-      () => userImage  // 함수로 변경
-    );
-  
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      client.close();
-  
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [stream, clientId, position, userImage]);
-
-  useEffect(() => {
-    setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
-  }, []);
-
-  useEffect(() => {
-    axios
-    .get(`${universal.defaultUrl}/api/useravg`, {
-      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
-    })
-    .then((response) => {
-      if(response.data.cnt == 0 ){
-        setPosition({
-          x: response.data.russellSumX,
-          y: response.data.russellSumY,
-        });
-      }else{
-        setPosition({
-          x: response.data.russellSumX/response.data.cnt,
-          y: response.data.russellSumY/response.data.cnt,
-        });      
-      }
-
-    })
-    .catch(() => {
-      console.log("서버와 통신 불가");
-    });
-
-  },[])
-
-  useEffect(() => {
-    messageQueue.current = new MessageQueue(
-      setClientId,
-      setUsers,
-      setCoolTime,
-      setNearbyUsers,
-      handleOffer,
-      handleAnswer,
-      handleCandidate,
-      handleRtcDisconnect,
-      setTalkingUsers,
-      createPeerConnection,
-      attemptOffer,
-      setPeerConnections
+      () => clientIdRef.current,
+      () => positionRef.current,
+      () => userImageRef.current
     );
 
     if (window.location.pathname !== "/webrtc") return;
@@ -158,13 +101,53 @@ const RtcClient = ({ characterImage }) => {
     } else {
       console.error("getUserMedia is not supported in this browser.");
     }
-  }, [position, userImage, clientId]);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      client.close();
+
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [clientId, position, userImage, stream]);
+
+  useEffect(() => {
+    setUserImage(happyRelist[localStorage.getItem("personaNumber")]);
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get(`${universal.defaultUrl}/api/useravg`, {
+        headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+      })
+      .then((response) => {
+        if (response.data.cnt == 0) {
+          setPosition({
+            x: response.data.russellSumX,
+            y: response.data.russellSumY,
+          });
+        } else {
+          setPosition({
+            x: response.data.russellSumX / response.data.cnt,
+            y: response.data.russellSumY / response.data.cnt,
+          });
+        }
+      })
+      .catch(() => {
+        console.log("서버와 통신 불가");
+      });
+  }, []);
 
   const handleBeforeUnload = () => {
     client.send(JSON.stringify({ type: "disconnect" }));
     client.close();
     cleanupConnections();
-  
+
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
@@ -193,7 +176,7 @@ const RtcClient = ({ characterImage }) => {
       client.send(JSON.stringify({ type: "move", position: newPosition }));
     }
   };
-
+  
   const handleKeyDown = (event) => {
     switch (event.key) {
       case "ArrowUp":
