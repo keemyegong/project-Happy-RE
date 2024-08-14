@@ -14,12 +14,17 @@ const ChatEventClicking = ({eventEnd, setIsInputDisabled})=>{
         dx:(Math.floor(Math.random) < 0.5 ? -0.3 : 0.1) + Math.random() * 0.2,
         dy:(Math.floor(Math.random) < 0.5 ? -0.3 : 0.1) + Math.random() * 0.2,
     });
+    const [fadeClass, setFadeClass] = useState('clicking-fade-in')
 
     useEffect(() => {
         if (numberOfClick > 0){
             moveImageToRandomPosition();
+            setFadeClass('clicking-fade-in')
         } else {
-            handleEventEnd()
+            setFadeClass('clicking-fade-out')
+            setTimeout(() => {
+                handleEventEnd();
+            }, 3000)
         }
     }, [numberOfClick]);
 
@@ -64,15 +69,17 @@ const ChatEventClicking = ({eventEnd, setIsInputDisabled})=>{
 
     const handleClick = () => {
         if (numberOfClick > 0){
-            setNumberOfClick(prev => prev-1);
+            setFadeClass('clicking-fade-out')
+            setTimeout(()=>{
+                setNumberOfClick(prev => prev-1);
+                setFadeClass('clicking-fade-in')
+            }, 1000)
         }
     };
 
     const handleEventEnd = () => {
-        setTimeout(() => {
-            eventEnd();
-            setIsInputDisabled(false);
-        }, 0);
+        eventEnd();
+        setIsInputDisabled(false);
     }
 
     return(
@@ -83,7 +90,7 @@ const ChatEventClicking = ({eventEnd, setIsInputDisabled})=>{
                 <img
                     src={defaultImage}
                     alt="alt"
-                    className='click-image'
+                    className={`click-image ${fadeClass}`}
                     style={{
                         position:'absolute',
                         top:`${position.top}%`,
@@ -92,7 +99,7 @@ const ChatEventClicking = ({eventEnd, setIsInputDisabled})=>{
                     onClick={handleClick}
                 />
             ) : (
-                <div className='event-ended'>이벤트 종료</div>
+                <div className='event-ended clicking-fade-in'>종료되었습니다.<br/>잠시 후 대화로 넘어갑니다.</div>
             )}
         </div>
     );

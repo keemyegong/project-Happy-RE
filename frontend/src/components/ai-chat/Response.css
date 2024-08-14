@@ -213,7 +213,15 @@
   transform: translate(-50%, -50%);
   font-size: 24px;
   font-weight: bold;
-  color: red;
+  color: white;
+}
+
+.clicking-fade-in {
+  animation: fadein 1s ease-in-out forwards;
+}
+
+.clicking-fade-out {
+  animation: fadeout 1s ease-in-out forwards;
 }
 
 /* .user-voice-play-btn:hover{
