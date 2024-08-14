@@ -11,6 +11,7 @@ import DiaryReport from "../../components/diary-report/DiaryReport";
 import DiaryDetail from "../../components/diary-report/DiaryDetail";
 import { useNavigate, useLocation  } from "react-router-dom";
 import Swal from 'sweetalert2'
+
 // import useBackListener from './useBackListener';
 
 
@@ -72,6 +73,7 @@ const AIChat = () => {
                 withCredentials: true,
               }
             }).then(()=>{
+              console.log('navigate');
               navigate('/diary');
 
             }).catch((err)=>{
@@ -115,6 +117,7 @@ const AIChat = () => {
     "오늘따라 아고라가 소란스러운 모양이네. 다시 한 번 말해주시게.",
     "(곤란한 눈으로) 소란의 바다가 그대의 대사를 가라앉혔다네. 대사를 한 번 더 읊어주시게.",
   ]
+  
 
   // 처음 인삿말 받아오기
   useEffect(() => {

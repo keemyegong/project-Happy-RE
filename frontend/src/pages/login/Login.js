@@ -36,7 +36,7 @@ function Login() {
     
 
     axios.post(
-      `${universal.defaultUrl}/api/login`,
+      `${universal.defaultUrl}/login`,
       inputUserInfo,
     ).then((Response)=>{
       const jwtToken = Response.headers.authorization;
@@ -50,6 +50,7 @@ function Login() {
     }).then((Response)=>{
       universal.setIsAuthenticated(true);
       navigate('/profile');
+      window.location.reload();    
     }).catch(()=>{
       console.log('Login failed');
       if (email === ''){

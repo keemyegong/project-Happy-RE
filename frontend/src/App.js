@@ -20,7 +20,7 @@ import Archive from './pages/archive-page/Archive';
 import StarryBackground from './components/starry-background/StarryBackground';
 import EmotionGraph from './components/emotion-graph/Test';
 import defaultImage from './assets/characters/default.png';
-
+import axios from 'axios';
 import './App.css';
 
 export const universeVariable = createContext();
@@ -97,8 +97,8 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
           <Route path="/user/update" element={<PrivateRoute><UserUpdate /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
-          {/* <Route path="/with-happyre" element={<PrivateRoute>{withHappyreAccessedToday ? <Navigate to="/profile" /> : <AIChat />}</PrivateRoute>} /> */}
-          <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>}/>
+          <Route path="/with-happyre" element={<PrivateRoute>{withHappyreAccessedToday ? <Navigate to="/profile" /> : <AIChat />}</PrivateRoute>} />
+          {/* <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>} /> */}
           <Route path="/webrtc"
             element={
               <PrivateRoute>
@@ -121,15 +121,29 @@ const App = () => {
   const [withHappyreAccessedToday, setWithHappyreAccessedToday] = useState(false);
 
   useEffect(() => {
-    const lastAccessDate = Cookies.get('withHappyreAccessDate');
+    console.log('useEffectCheck')
+
+    if (Cookies.get("Authorization")){
+      axios.get(
+        `http://192.168.31.216:8080/api/diary/detail/`,
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get('Authorization')}`,
+            withCredentials: true,
+          }
+        }).then((response)=>{
+          // console.log(response.data)
+          if (response.data != "No Today Diary"){
+            setWithHappyreAccessedToday(true);
+          } else{
+            setWithHappyreAccessedToday(false)
+          };
+        })
+    }
+
+
     const today = new Date().toISOString().split('T')[0];
     
-    if (lastAccessDate === today) {
-      setWithHappyreAccessedToday(true);
-    } else {
-      Cookies.set('withHappyreAccessDate', today, { expires: 1 });
-      setWithHappyreAccessedToday(false);
-    }
   }, []);
 
 
@@ -149,6 +163,7 @@ const App = () => {
         setIsAuthenticated,
         todayDone,
         setTodayDone,
+        setWithHappyreAccessedToday,
       }}
     >
       <Router>

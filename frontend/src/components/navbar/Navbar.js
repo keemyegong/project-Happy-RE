@@ -14,8 +14,10 @@ function Nav() {
   const toggleNavbar = () => setIsOpen(!isOpen);
 
   const logout = ()=>{
+    window.location.reload();
     Cookies.remove('Authorization',{path:'/'})
     universal.setIsAuthenticated(false);
+
 
   }
   // 쿠키에서 JWT 토큰 확인

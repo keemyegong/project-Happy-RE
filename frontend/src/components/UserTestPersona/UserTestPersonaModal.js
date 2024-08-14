@@ -95,8 +95,10 @@ const UserTestPersonaModal = (personaNumber) => {
                 </div>`,
             showCancelButton: false,
             confirmButtonColor: '#3085d6',
-            confirmButtonText: '확인'
+            confirmButtonText: '확인',
+
         })
+
     }
 }
 

@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { universeVariable } from '../../App';
+
 import Swal from 'sweetalert2';
 import './ChatBox.css';
 import Button from '../Button/Button';
@@ -11,6 +13,8 @@ const ChatBox = ({ eventbtnDisabled,setIsInputDisabled, isInputDisabled, setIsBu
 
   const ChatType = Number(persona);
   const [showModal, setShowModal] = useState(false); // 모달 표시 상태
+  const universal = useContext(universeVariable);
+
 
   const getChatData = (type) => {
     switch (type) {
@@ -67,6 +71,7 @@ const ChatBox = ({ eventbtnDisabled,setIsInputDisabled, isInputDisabled, setIsBu
     }).then((result) => {
       if (result.isConfirmed) {
         endChatSession();
+        universal.setWithHappyreAccessedToday(true);
       }
     });
   };
