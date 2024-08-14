@@ -6,11 +6,10 @@
 
 1. [기획 배경](#기획-배경)
 2. [서비스 소개](#서비스-소개)
-3. [기능 소개](#기능-소개)
+8. [빌드 및 배포 가이드](#빌드-및-배포-가이드)
 4. [기술 스택](#기술-스택)
-5. [외부 API](#외부-API)
-6. [명세서](#명세서)
-7. [빌드 가이드](#빌드-가이드)
+6. [서비스 설계](#서비스-설계)
+7. [명세서](#명세서)
 
 # 기획 배경
 
@@ -48,24 +47,10 @@
 
 ## 유저 페르소나
 
-- 청소년기 후반 ~ 성인
-- 하루 일정을 마친 저녁에 하루를 기록
-
-## 서비스 시퀀스
-
-### AI 채팅 시퀀스
-
-![](readme%20resource/AI%20채팅%20시퀀스.png)
-
-### 유저 간 채팅 시퀀스
-
-![](readme%20resource/유저%20채팅%20시퀀스.png)
-
-# 기능 소개
+- 청소년기 후반 ~ 성인 사용자를 대상으로 합니다.
+- 하루 일정을 마친 저녁에 하루를 기록하는 상황을 가정하였습니다.
 
 ## 메인 화면
-
-<!-- 로그인 시에 보이는 화면 -->
 
 ## 다이어리 및 AI 채팅
 
@@ -75,9 +60,10 @@
 
 ## 아카이브
 
-# 기술 스택
+# 빌드 및 배포 가이드
+[Porting manual](exec/Porting%20manual.md) 을 참조하세요
 
-(아키텍처 다이어그램)
+# 기술 스택
 
 ## Front-End
 
@@ -109,23 +95,40 @@
   - Layer-wise learning rate를 적용하여 Catastrophic forgetting을 최소화
     - HuggingFace의 Trainer Class를 상속한 Custom Trainer class로 구현
 
-# 외부 API
+## 외부 API
 
 - [OPENAI API](https://platform.openai.com/)
   - 챗봇 및 요약용 LLM 제공
 - [CLOVA Speech](https://clova.ai/speech)
   - 음성 인식을 챗봇과의 대화에 활용
 
+# 서비스 설계
+## 화면 설계서
+[Figma link](https://www.figma.com/file/1PJbdnukSAbrktuaonSwqR)
+![](readme%20resource/화면%20설계서.PNG)
+## Flow chart
+[Figma link](https://www.figma.com/file/fAxSiFc3f0PXwAZOsBEGxW)
+### 메인 Flow chart
+![](readme%20resource/flow_1.PNG)
+### AI챗 Flow chart
+![](readme%20resource/flow_2.PNG)
+## 서비스 시퀀스
+### AI 채팅 시퀀스
+![](readme%20resource/AI%20채팅%20시퀀스.png)
+### 유저 간 채팅 시퀀스
+
+![](readme%20resource/유저%20채팅%20시퀀스.png)
+## Architecture
+<!-- 아키텍처 다이어그램 Goes Here-->
+## ERD
+- ![](readme%20resource/Happyre_ERD.png)
+
 # 명세서
-
 ## 기능 명세서
-
-(WIP)
-
+- ![](readme%20resource/기능명세_1.PNG)
+- ![](readme%20resource/기능명세_2.PNG)
 ## API 명세서
+- ![](readme%20resource/REST_1.PNG)
+- ![](readme%20resource/REST_2.PNG)
+- ![](readme%20resource/REST_3.PNG)
 
-(WIP)
-
-# 빌드 가이드
-
-(WIP)
