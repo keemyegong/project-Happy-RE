@@ -20,7 +20,7 @@ public interface UserMessageRepository extends JpaRepository<UserMessageEntity, 
 //            "ORDER BY RAND() LIMIT :size")
 
 
-//    @Query(value = "SELECT * FROM user_message WHERE user_id != :userId ORDER BY RAND() LIMIT :size", nativeQuery = true)
+    //    @Query(value = "SELECT * FROM user_message WHERE user_id != :userId ORDER BY RAND() LIMIT :size", nativeQuery = true)
     @Query(value = "SELECT * \n" +
             "FROM user_message um \n" +
             "WHERE um.user_message_id NOT IN (\n" +
