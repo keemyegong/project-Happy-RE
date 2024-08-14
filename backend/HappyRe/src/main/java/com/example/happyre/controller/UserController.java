@@ -5,7 +5,6 @@ import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserAvgService;
 import com.example.happyre.service.UserService;
-import com.example.happyre.util.MutexCounter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Tag(name = "User")
 @Controller
@@ -29,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserController {
     private final UserService userService;
     private final UserAvgService userAvgService;
-    private ConcurrentHashMap<Integer, MutexCounter> userLocks = new ConcurrentHashMap<>();
+
 
     @GetMapping("/test")
     public ResponseEntity<?> me(HttpServletRequest request) {
@@ -39,64 +37,48 @@ public class UserController {
     //유저정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getUser(HttpServletRequest request) {
-        UserEntity userEntity = userService.findByRequest(request);
-        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
-        lock.increase();
-        synchronized (lock) {
-            try {
-                return new ResponseEntity<>(userEntity, HttpStatus.OK);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            } finally{
-                lock.decrease();
-                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
-            }
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            return new ResponseEntity<>(userEntity, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
     }
 
     @GetMapping("/profileimg")
     public ResponseEntity<?> getProfileImg(HttpServletRequest request) {
-        UserEntity userEntity = userService.findByRequest(request);
-        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
-        lock.increase();
-        synchronized (lock) {
-            try {
-                Resource resource = userService.myProfile(request);
+        try {
+            Resource resource = userService.myProfile(request);
 
-                if (resource == null || !resource.exists()) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-                }
-
-                // MIME 타입 설정 (파일 확장자에 따라 다를 수 있음)
-                String contentType = Files.probeContentType(Paths.get(resource.getURI()));
-
-                if (contentType == null) {
-                    contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // 기본 MIME 타입
-                }
-
-                // HTTP 헤더 설정
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.parseMediaType(contentType));
-                System.out.println("parseMediaType :" + MediaType.parseMediaType(contentType));
-                headers.setContentLength(resource.contentLength()); // 파일 크기 설정
-                System.out.println("resource.contentLength() : " + resource.contentLength());
-                headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
-                System.out.println("PROFILE IMAGE LOAD Success");
-                userLocks.remove(userEntity.getId());
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource);
-
-            } catch (IOException e) {
-                System.out.println("PROFILE IMAGE LOAD ERROR: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally{
-                lock.decrease();
-                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
+            if (resource == null || !resource.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
+
+            // MIME 타입 설정 (파일 확장자에 따라 다를 수 있음)
+            String contentType = Files.probeContentType(Paths.get(resource.getURI()));
+
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // 기본 MIME 타입
+            }
+
+            // HTTP 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(contentType));
+            System.out.println("parseMediaType :" + MediaType.parseMediaType(contentType));
+            headers.setContentLength(resource.contentLength()); // 파일 크기 설정
+            System.out.println("resource.contentLength() : " + resource.contentLength());
+            headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
+            System.out.println("PROFILE IMAGE LOAD Success");
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+
+        } catch (IOException e) {
+            System.out.println("PROFILE IMAGE LOAD ERROR: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -104,20 +86,12 @@ public class UserController {
     //유저정보 수정
     @PutMapping("/me")
     public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
-        UserEntity userEntity = userService.findByRequest(request);
-        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
-        lock.increase();
-        synchronized (lock){
-            try {
-                System.out.println("modifyUser Controller ");
-                userService.modifyUserInfo(modifyUserDTO, request);
-                return ResponseEntity.ok("User updated successfully");
-            } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            } finally{
-                lock.decrease();
-                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
-            }
+        try {
+            System.out.println("modifyUser Controller ");
+            userService.modifyUserInfo(modifyUserDTO, request);
+            return ResponseEntity.ok("User updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -134,21 +108,13 @@ public class UserController {
 
     @PostMapping("/uploadprofile")
     public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        UserEntity userEntity = userService.findByRequest(request);
-        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
-        lock.increase();
-        synchronized (lock) {
-            try {
-                System.out.println("uploadProfile Controller Successful connect");
-                userService.uploadProfile(request, file);
-                return ResponseEntity.ok("upload profile successfully");
-            } catch (RuntimeException e) {
-                System.out.println("upload profile ERROR: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-            } finally {
-                lock.decrease();
-                if (lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
-            }
+        try {
+            System.out.println("uploadProfile Controller Successful connect");
+            userService.uploadProfile(request, file);
+            return ResponseEntity.ok("upload profile successfully");
+        } catch (RuntimeException e) {
+            System.out.println("upload profile ERROR: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
