@@ -166,7 +166,7 @@ public class UserService {
         }
 
         // 파일 확장자 추출
-        String fileExtension = getFileExtension(originalFileName);
+        String fileExtension = getFileExtension(originalFileName).toLowerCase();
         if (fileExtension == null || fileExtension.isEmpty()) {
             throw new RuntimeException("File must have an extension");
         }
