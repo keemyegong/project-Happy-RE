@@ -6,7 +6,7 @@ import AIResponse from './AIResponse';
 import UserResponse from './UserResponse';
 import ChatEvent from './ChatEvent';
 
-const ChatBox = ({ setIsInputDisabled, isInputDisabled, setIsButtonDisabled, chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession, persona }) => {
+const ChatBox = ({ eventbtnDisabled,setIsInputDisabled, isInputDisabled, setIsButtonDisabled, chatHistory, isBotTyping, onSendClick, isMicMuted, userInput, setUserInput, eventProceeding, eventStoping, eventEnd, isButtonDisabled, endChatSession, persona }) => {
 
 
   const ChatType = Number(persona);
@@ -103,7 +103,7 @@ const ChatBox = ({ setIsInputDisabled, isInputDisabled, setIsButtonDisabled, cha
             if (chat.type === 'user') {
               return <UserResponse key={index} content={chat.content} />
             } else if (chat.type === 'event') {
-              return <ChatEvent key={index} content={chat.content} eventStoping={eventStoping} eventProceeding={eventProceeding} eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
+              return <ChatEvent eventbtnDisabled={eventbtnDisabled} key={index} content={chat.content} eventStoping={eventStoping} eventProceeding={eventProceeding} eventEnd={eventEnd} setIsInputDisabled={setIsInputDisabled} />
             } else {
               return <AIResponse key={index} content={chat.content} />
             }
