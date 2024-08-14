@@ -145,7 +145,7 @@ public class UserController {
     public ResponseEntity<?> firstRussell(HttpServletRequest request, @RequestBody Map<String, Double> body) {
         try {
             userService.fistRussell(request, body);
-            userAvgService.setAvgByReq(request , body.get("x"), body.get("y"));
+            userAvgService.setAvgByReq(request, body.get("x"), body.get("y"));
             return ResponseEntity.ok("First russell setting successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
