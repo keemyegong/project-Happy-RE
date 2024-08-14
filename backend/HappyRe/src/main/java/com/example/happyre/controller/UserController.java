@@ -5,6 +5,7 @@ import com.example.happyre.dto.user.ModifyUserDTO;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.service.UserAvgService;
 import com.example.happyre.service.UserService;
+import com.example.happyre.util.MutexCounter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserController {
     private final UserService userService;
     private final UserAvgService userAvgService;
-    private ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, MutexCounter> userLocks = new ConcurrentHashMap<>();
 
     @GetMapping("/test")
     public ResponseEntity<?> me(HttpServletRequest request) {
@@ -39,12 +40,16 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> getUser(HttpServletRequest request) {
         UserEntity userEntity = userService.findByRequest(request);
-        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
+        lock.increase();
         synchronized (lock) {
             try {
                 return new ResponseEntity<>(userEntity, HttpStatus.OK);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            } finally{
+                lock.decrease();
+                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
             }
         }
 
@@ -53,7 +58,8 @@ public class UserController {
     @GetMapping("/profileimg")
     public ResponseEntity<?> getProfileImg(HttpServletRequest request) {
         UserEntity userEntity = userService.findByRequest(request);
-        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
+        lock.increase();
         synchronized (lock) {
             try {
                 Resource resource = userService.myProfile(request);
@@ -77,6 +83,7 @@ public class UserController {
                 System.out.println("resource.contentLength() : " + resource.contentLength());
                 headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
                 System.out.println("PROFILE IMAGE LOAD Success");
+                userLocks.remove(userEntity.getId());
                 return ResponseEntity.ok()
                         .headers(headers)
                         .body(resource);
@@ -86,6 +93,9 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally{
+                lock.decrease();
+                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
             }
         }
     }
@@ -95,7 +105,8 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
         UserEntity userEntity = userService.findByRequest(request);
-        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
+        lock.increase();
         synchronized (lock){
             try {
                 System.out.println("modifyUser Controller ");
@@ -103,6 +114,9 @@ public class UserController {
                 return ResponseEntity.ok("User updated successfully");
             } catch (RuntimeException e) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            } finally{
+                lock.decrease();
+                if(lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
             }
         }
     }
@@ -120,13 +134,21 @@ public class UserController {
 
     @PostMapping("/uploadprofile")
     public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        try {
-            System.out.println("uploadProfile Controller Successful connect");
-            userService.uploadProfile(request, file);
-            return ResponseEntity.ok("upload profile successfully");
-        } catch (RuntimeException e) {
-            System.out.println("upload profile ERROR: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        UserEntity userEntity = userService.findByRequest(request);
+        MutexCounter lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new MutexCounter(0));
+        lock.increase();
+        synchronized (lock) {
+            try {
+                System.out.println("uploadProfile Controller Successful connect");
+                userService.uploadProfile(request, file);
+                return ResponseEntity.ok("upload profile successfully");
+            } catch (RuntimeException e) {
+                System.out.println("upload profile ERROR: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            } finally {
+                lock.decrease();
+                if (lock.getCount().equals(0)) userLocks.remove(userEntity.getId());
+            }
         }
     }
 
