@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 import "./ChatRoomContainer.css";
 
-const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/webrtc");
+const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/mindtalk");
 
 const RtcClient = ({ characterImage }) => {
   const [peerConnections, setPeerConnections] = useState({});
@@ -65,7 +65,7 @@ const RtcClient = ({ characterImage }) => {
   };
 
   useEffect(() => {
-    if (window.location.pathname !== "/webrtc") {
+    if (window.location.pathname !== "/mindtalk") {
       client.close();
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -170,7 +170,7 @@ const RtcClient = ({ characterImage }) => {
   },[])
 
   useEffect(() => {
-    if (window.location.pathname !== "/webrtc") return;
+    if (window.location.pathname !== "/mindtalk") return;
 
     client.onopen = () => {
       //console.log("WebSocket Client Connected");

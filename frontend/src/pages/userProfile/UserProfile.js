@@ -380,9 +380,9 @@ const UserProfile = () => {
               </div>
               <div className="default-info-container">
                 <p className="nickname">{nickname}</p>
-                <p className="email">{email}</p>
+                {/* <p className="email">{email}</p> */}
                 <Button
-                  className="profile-edit-btn btn light-btn small"
+                  className="profile-edit-btn btn light-btn small ms-0"
                   content="Edit Profile"
                   onClick={() => {
                     navigate("/user/update");
@@ -419,7 +419,7 @@ const UserProfile = () => {
                   />
                 </div>
               </div>
-              <div className="col-12 col-xxl-6">
+              <div className="user-emotion-info-container col-12 col-xxl-6">
                 <div className="profile-emotion-title text-white">
                   <p className="profile-emotion-title-text">Emotion Graph</p>
                   <span className="profile-mywords-guide">
@@ -432,7 +432,7 @@ const UserProfile = () => {
                   <EmotionGraph data={recentList} />
                 </div>
 
-                <div className="change-happyre-persona my-5">
+                <div className="change-happyre-persona">
                   <div className="persona-chat-container">
                     {" "}
                     <div className="persona-chat">
