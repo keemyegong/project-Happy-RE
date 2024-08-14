@@ -2,7 +2,25 @@
 .user-profile-container{
   margin-top: 150px;
   font-family: Pretendard;
+  max-height: 85vh;
+  overflow-y: auto;
 }
+
+.user-profile-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.user-profile-container::-webkit-scrollbar-thumb {
+  height: 30%;
+  background: #898B98;; 
+  border-radius: 10px;
+}
+
+.user-profile-container::-webkit-scrollbar-track {
+  background: #595B63;  
+  border-radius: 10px;
+} */
+
 
 .user-avatar{
   text-align: center;
@@ -47,25 +65,25 @@
   margin: 0px;
 }
 
-.user-emotion-info-container {
+/* .user-emotion-info-container {
   max-height: 85vh;
   overflow-y: auto;
 }
 
 .user-emotion-info-container::-webkit-scrollbar {
-  width: 10px;  /* 스크롤바의 너비 */
+  width: 10px;
 }
 
 .user-emotion-info-container::-webkit-scrollbar-thumb {
-  height: 30%; /* 스크롤바의 길이 */
-  background: #898B98;; /* 스크롤바의 색상 */
+  height: 30%;
+  background: #898B98;; 
   border-radius: 10px;
 }
 
 .user-emotion-info-container::-webkit-scrollbar-track {
-  background: #595B63;  /*스크롤바 뒷 배경 색상*/
+  background: #595B63;  
   border-radius: 10px;
-}
+} */
 
 
 .profile-mywords-title {
