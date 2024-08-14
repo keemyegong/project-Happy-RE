@@ -53,7 +53,7 @@ function Nav() {
                   <Link className='navbar-menu navbar-menu-font' to='/message'>MESSAGE</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className='navbar-menu navbar-menu-font' to='/webrtc'>TALK</Link>
+                  <Link className='navbar-menu navbar-menu-font' to='/mindtalk'>TALK</Link>
                 </li>
                 <li className="nav-item">
                   <Link className='navbar-menu navbar-menu-font' to='/archive'>ARCHIVE</Link>
