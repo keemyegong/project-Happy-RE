@@ -1,9 +1,7 @@
 package com.example.happyre.dto.oauth;
 
 import com.example.happyre.dto.user.UserDTO;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 

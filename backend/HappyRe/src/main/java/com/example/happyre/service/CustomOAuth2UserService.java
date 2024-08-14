@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else if (registrationId.equals("kakao")) {
             System.out.println(oAuth2User.getAttributes());
             oAuth2Response = new KaKaoResponse(oAuth2User.getAttributes());
-        }else{
+        } else {
             return null;
         }
 

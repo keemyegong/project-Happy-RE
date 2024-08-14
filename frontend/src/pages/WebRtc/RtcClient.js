@@ -1,5 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import React, { useEffect, useState, useRef , useContext} from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 import CharacterList from "../../components/CharacterList/CharacterList";
@@ -13,8 +13,7 @@ import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
 import RtcModal from '../../components/rtc-modal/RtcModal.js';
-import { useNavigate  } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 
 import "./ChatRoomContainer.css";
 
@@ -37,48 +36,34 @@ const RtcClient = ({ characterImage }) => {
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
 
-
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-
 
   const universal = useContext(universeVariable);
   useEffect(() => {
     positionRef.current = position;
-    //console.log("NearbyUsers", nearbyUsers);
   }, [position, nearbyUsers]);
 
-  ////////rtc//////////
   useEffect(() => {
     openModal();
   }, []);
 
   const handleConfirm = () => {
     closeModal();
-    // WebSocket 연결 로직을 여기에 추가
-    // 예: websocket.connect()
   };
 
-  // 모달 열기
   const openModal = () => {
     setShowModal(true);
   };
 
-  // 모달 닫기
   const closeModal = () => {
     setShowModal(false);
   };
   const handleCancel = () => {
     closeModal();
-    // '/profile' 경로로 이동
     navigate('/profile');
   };
 
-  ///////modal////////
-
-
-
-  
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") {
       client.close();
@@ -96,7 +81,6 @@ const RtcClient = ({ characterImage }) => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       client.close();
   
-      // 페이지를 벗어날 때 마이크 기능 끄기
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
@@ -112,7 +96,6 @@ const RtcClient = ({ characterImage }) => {
     client.close();
     cleanupConnections();
   
-    // 마이크 기능 끄기
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
@@ -161,15 +144,12 @@ const RtcClient = ({ characterImage }) => {
     }
   };
 
-
   useEffect(() => {
     axios
     .get(`${universal.defaultUrl}/api/useravg`, {
       headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
     })
     .then((response) => {
-      //console.log("useravg")
-      //console.log(response.data)
       if(response.data.cnt == 0 ){
         setPosition({
           x: response.data.russellSumX,
@@ -189,8 +169,6 @@ const RtcClient = ({ characterImage }) => {
 
   },[])
 
-
-
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") return;
 
@@ -208,7 +186,6 @@ const RtcClient = ({ characterImage }) => {
 
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
-      //console.log("Received message from server:", dataFromServer);
     
       if (dataFromServer.type === "assign_id") {
         setClientId(dataFromServer.id);
@@ -226,7 +203,6 @@ const RtcClient = ({ characterImage }) => {
           connectedAt: user.connectedAt || 0,
         }));
     
-        // 자기 자신 정보를 제외하고 users를 설정
         setUsers(
           filteredUsers
             .filter((user) => user.id !== clientId)
@@ -236,10 +212,9 @@ const RtcClient = ({ characterImage }) => {
             }))
         );
     
-        // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
         const currentUser = filteredUsers.find((user) => user.id === clientId);
         if (currentUser) {
-          setCoolTime(currentUser.coolTime); // coolTime 상태 설정
+          setCoolTime(currentUser.coolTime);
           const nearbyUsersData = (currentUser.connectedUsers || []).map(
             (connectedUser) => ({
               id: connectedUser.id,
@@ -247,7 +222,6 @@ const RtcClient = ({ characterImage }) => {
             })
           );
           setNearbyUsers(nearbyUsersData);
-          //console.log("Nearby Users:", nearbyUsersData);
         } else {
           setNearbyUsers([]);
         }
@@ -290,11 +264,9 @@ const RtcClient = ({ characterImage }) => {
   }, [position, userImage, clientId]);
 
   const createPeerConnection = (userId) => {
-    //console.log(`Creating PeerConnection for user ${userId}`);
     const peerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
-    //console.log("WebRTC 연결 객체 생성 완료");
   
     peerConnections[userId] = { peerConnection, pendingCandidates: [] };
   
@@ -314,7 +286,6 @@ const RtcClient = ({ characterImage }) => {
     peerConnection.ontrack = (event) => {
       if (localAudioRef.current) {
         localAudioRef.current.srcObject = event.streams[0];
-        // AudioEffect에 스트림 추가
         if (audioEffectRef.current) {
           audioEffectRef.current.addStream(userId, event.streams[0]);
         }
@@ -323,13 +294,10 @@ const RtcClient = ({ characterImage }) => {
   
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "connected") {
-        //console.log(`WebRTC connection established with user ${userId}`);
       } else {
-        //console.log(`WebRTC connection state with user ${userId}: ${peerConnection.connectionState}`);
       }
       if (peerConnection.connectionState === "disconnected" || peerConnection.connectionState === "closed") {
-        //console.log("WebRTC 연결이 끊어졌습니다.");
-        handleRtcDisconnect(userId); // 연결이 끊어질 때 handleRtcDisconnect 호출
+        handleRtcDisconnect(userId);
       }
     };
   
@@ -341,7 +309,6 @@ const RtcClient = ({ characterImage }) => {
   
     return peerConnection;
   };
-  
 
   const attemptOffer = (peerConnection, recipientId) => {
     if (!peerConnection) return;
@@ -360,7 +327,6 @@ const RtcClient = ({ characterImage }) => {
                 sender: clientId,
               })
             );
-            //console.log(`Offer sent to ${recipientId}`);
           })
           .catch((error) =>
             console.error("Error setting local description:", error)
@@ -374,8 +340,6 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for offer");
       return;
     }
-
-    //console.log(`Handling offer from sender ${sender}`);
 
     let peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -402,7 +366,6 @@ const RtcClient = ({ characterImage }) => {
           recipient: sender,
         })
       );
-      //console.log(`Answer sent to ${sender}`);
 
       if (peerConnections[sender]?.pendingCandidates.length > 0) {
         for (const candidate of peerConnections[sender].pendingCandidates) {
@@ -420,8 +383,6 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for answer");
       return;
     }
-
-    //console.log(`Handling answer from sender ${sender}`);
 
     const peerConnection = peerConnections[sender]?.peerConnection;
 
@@ -469,7 +430,6 @@ const RtcClient = ({ characterImage }) => {
       );
     }
   };
-  
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
@@ -478,15 +438,11 @@ const RtcClient = ({ characterImage }) => {
         peerConnections;
       setPeerConnections(restConnections);
       setNearbyUsers((prev) => prev.filter((user) => user.id !== userId));
-      //console.log(`WebRTC connection closed with user ${userId}`);
-      // AudioEffect에서도 제거
       if (audioEffectRef.current) {
         audioEffectRef.current.removeStream(userId);
       }
       
-      // 모든 연결이 끊겼는지 확인하고 서버에 신호 보냄
       if (Object.keys(restConnections).length === 0) {
-        //console.log('모든 WebRTC 연결이 끊겼음을 서버에 알림');
         client.send(JSON.stringify({ type: "rtc_disconnect_all", userId: clientId }));
       }
     }
@@ -530,7 +486,7 @@ const RtcClient = ({ characterImage }) => {
               movePosition={movePosition}
               localAudioRef={localAudioRef}
               userImage={userImage}
-              coolTime={coolTime} // coolTime 상태 추가
+              coolTime={coolTime}
             />
           </div>
           <div className="audio-effect-container">

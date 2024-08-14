@@ -1,6 +1,6 @@
 use happyre;
 
-DROP Table IF EXISTS `UserWordFrequency`; --Rename?
+DROP Table IF EXISTS `UserWordFrequency`; -- Rename?
 DROP TABLE IF EXISTS `user_message_archived`;
 DROP TABLE IF EXISTS `user_message_attached_keyword`;
 DROP TABLE IF EXISTS `user_message`;
@@ -10,7 +10,9 @@ DROP TABLE IF EXISTS `emotion`;
 DROP TABLE IF EXISTS `keyword`;
 DROP TABLE IF EXISTS `message`;
 DROP TABLE IF EXISTS `diary`;
+DROP TABLE IF EXISTS `user_avg`;
 DROP TABLE IF EXISTS `user`;
+
 
 CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -124,4 +126,15 @@ CREATE TABLE UserWordFrequency (
     frequency INT DEFAULT 1,
     PRIMARY KEY (user_id, word),
     FOREIGN KEY (user_id) REFERENCES User(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE `user_avg` (
+  `user_id` int NOT NULL ,
+  `russell_sum_x` double not null,
+  `russell_sum_y` double not null,
+  `cnt` int default 0,
+  PRIMARY KEY (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
