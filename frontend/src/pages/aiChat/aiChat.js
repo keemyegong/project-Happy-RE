@@ -117,7 +117,7 @@ const AIChat = () => {
 
   // 처음 인삿말 받아오기
   useEffect(() => {
-    // eventStart();
+    eventStart();
     // eslint-disable-next-line no-restricted-globals
     history.pushState({ page: 1 }, "title 1", "?page=1");
     // eventStart();
@@ -339,6 +339,7 @@ const AIChat = () => {
     setIsInputDisabled(true);
 
     const eventNumber = Math.floor(Math.random() * 3);
+    // const eventNumber = 3
     if (eventNumber === 0 ) eventNumber+=1;
     
 
