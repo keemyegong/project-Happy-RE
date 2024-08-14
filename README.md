@@ -116,10 +116,9 @@
 ### AI 채팅 시퀀스
 ![](readme%20resource/AI%20채팅%20시퀀스.png)
 ### 유저 간 채팅 시퀀스
-
 ![](readme%20resource/유저%20채팅%20시퀀스.png)
 ## Architecture
-<!-- 아키텍처 다이어그램 Goes Here-->
+![](readme%20resource/architecture.png)
 ## ERD
 - ![](readme%20resource/Happyre_ERD.png)
 
