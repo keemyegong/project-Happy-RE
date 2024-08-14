@@ -39,6 +39,7 @@ const AIChat = () => {
   const [isInputDisabled, setIsInputDisabled] = useState(false);
   const location = useLocation();
   const [key,setKey] = useState('');
+  const [eventbtnDisabled, setEventbtnDisabed] = useState(false);
 
 
   window.onpopstate = ()=>{
@@ -332,14 +333,17 @@ const AIChat = () => {
   // 이벤트 허가 받는 함수
   const eventStart = () => {
     setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'event', content: '이벤트 허가' }]);
+
   }
 
   // 이벤트 허가에서 yes를 누른 경우 실행되는 함수
   const eventProceeding = () => {
     setIsInputDisabled(true);
+    setEventbtnDisabed(true);
 
-    const eventNumber = Math.floor(Math.random() * 3);
-    // const eventNumber = 3
+    
+    let eventNumber = Math.floor(Math.random() * 3);
+    // console.log(eventNumber);
     if (eventNumber === 0 ) eventNumber+=1;
     
 
@@ -364,6 +368,8 @@ const AIChat = () => {
   // 이벤트 허가에서 No를 누른 경우 실행되는 함수
   const eventStoping = () => {
     setChatHistory(prevChatHistory => [...prevChatHistory, { type: 'ai', content: eventStopComment[localStorage.getItem("personaNumber")] }]);
+    setEventbtnDisabed(true);
+    
   }
 
   // 이벤트 1번 스트레칭
@@ -546,6 +552,7 @@ const AIChat = () => {
               setIsButtonDisabled={setIsButtonDisabled}
               setIsInputDisabled={setIsInputDisabled}
               isInputDisabled={isInputDisabled}
+              eventbtnDisabled={eventbtnDisabled}
             />
 
           </div>

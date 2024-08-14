@@ -16,27 +16,30 @@ public class UserAvgService {
         this.userService = usrService;
     }
 
-    public UserEntity getUserEntity(HttpServletRequest req){
+    public UserEntity getUserEntity(HttpServletRequest req) {
         return userService.findByRequest(req);
     }
-    public UserAvgEntity getUserAvg(int userId){
+
+    public UserAvgEntity getUserAvg(int userId) {
         UserAvgEntity userAvgEntity = usrAvgRepo.findByUserId(userId);
-        if(userAvgEntity == null){
+        if (userAvgEntity == null) {
             userAvgEntity = new UserAvgEntity();
             userAvgEntity.setUserId(userId);
         }
-        return userAvgEntity ;
+        return userAvgEntity;
     }
-    public UserAvgEntity getUserAvgEntityByReq(HttpServletRequest req){
+
+    public UserAvgEntity getUserAvgEntityByReq(HttpServletRequest req) {
         UserEntity userEntity = getUserEntity(req);
         UserAvgEntity userAvgEntity = usrAvgRepo.findByUserId(userEntity.getId());
-        if(userAvgEntity == null){
+        if (userAvgEntity == null) {
             userAvgEntity = new UserAvgEntity();
             userAvgEntity.setUserId(userEntity.getId());
         }
-        return userAvgEntity ;
+        return userAvgEntity;
     }
-    public void setAvgByReq(HttpServletRequest req,  double x, double y){
+
+    public void setAvgByReq(HttpServletRequest req, double x, double y) {
         UserAvgEntity userAvgEntity = getUserAvgEntityByReq(req);
         userAvgEntity.setRussellSumX(userAvgEntity.getRussellSumX() + x);
         userAvgEntity.setRussellSumY(userAvgEntity.getRussellSumY() + y);
@@ -44,7 +47,7 @@ public class UserAvgService {
         usrAvgRepo.save(userAvgEntity);
     }
 
-    public void setAvg(int userId, double x, double y){
+    public void setAvg(int userId, double x, double y) {
         UserAvgEntity userAvgEntity = getUserAvg(userId);
         userAvgEntity.setRussellSumX(userAvgEntity.getRussellSumX() + x);
         userAvgEntity.setRussellSumY(userAvgEntity.getRussellSumY() + y);

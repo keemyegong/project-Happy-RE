@@ -1,6 +1,5 @@
 package com.example.happyre.dto.diary;
 
-import com.example.happyre.dto.keyword.KeywordEntityDTO;
 import com.example.happyre.dto.message.MessageEntityDTO;
 import com.example.happyre.entity.KeywordEntity;
 import com.example.happyre.entity.MessageEntity;
