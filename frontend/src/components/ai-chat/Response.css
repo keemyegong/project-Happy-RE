@@ -136,7 +136,7 @@
   -webkit-animation: fadeout 3s; /* Safari and Chrome */
 }
 
-.bouncing-ball-container{
+.chat-event-container{
   position:relative;
   width: 100%;
   height: 100%;
@@ -189,6 +189,31 @@
 
 .user-voice-play-btn{
   cursor: pointer;
+}
+
+
+.click-counter{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.click-image{
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+
+.event-ended{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: red;
 }
 
 /* .user-voice-play-btn:hover{

@@ -2,8 +2,8 @@ package com.example.happyre.dto.oauth;
 
 import java.util.Map;
 
-public class KaKaoResponse implements OAuth2Response{
-//        properties={nickname=이창현,
+public class KaKaoResponse implements OAuth2Response {
+    //        properties={nickname=이창현,
 //                profile_image=http://t1.kakaocdn.net/account_images/default_profile.jpeg.twg.thumb.R640x640,
 //                 thumbnail_image=http://t1.kakaocdn.net/account_images/default_profile.jpeg.twg.thumb.R110x110},
 //                kakao_account={profile_nickname_needs_agreement=false,
@@ -23,7 +23,7 @@ public class KaKaoResponse implements OAuth2Response{
 //    this.attribute = (Map<String, Object>) attribute.get("propertyes");
 //}
 // 카카오 API 응답에서 전달된 사용자 정보가 담긴 맵
-private final Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     // 생성자
     public KaKaoResponse(Map<String, Object> attributes) {

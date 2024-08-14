@@ -35,3 +35,26 @@
   justify-content: space-around;
   margin-top: 5px;
 }
+
+
+.rtc-modal-images {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rtc-modal-img {
+  width: 175px; /* 이미지 크기를 키웠습니다 */
+  height: 175px;
+  object-fit: cover;
+}
+
+.rtc-modal-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+.rtc-modal-arrow {
+  font-size: 36px; /* 화살표 크기 */
+  margin: 0 20px; /* 이미지 사이의 간격 */
+}

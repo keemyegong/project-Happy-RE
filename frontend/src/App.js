@@ -106,7 +106,7 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
           {/* <Route path="/with-happyre" element={<PrivateRoute>{withHappyreAccessedToday ? <Navigate to="/profile" /> : <AIChat />}</PrivateRoute>} /> */}
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>}/>
-          <Route path="/webrtc"
+          <Route path="/mindtalk"
             element={
               <PrivateRoute>
                 <RtcClient

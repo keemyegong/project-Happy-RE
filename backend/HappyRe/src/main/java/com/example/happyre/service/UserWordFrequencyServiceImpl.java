@@ -21,7 +21,7 @@ public class UserWordFrequencyServiceImpl implements UserWordFrequencyService {
         sentence.forEach(s -> {
             String[] splitWords = s.split(" ");  // 띄어쓰기로 문자열 분리
             for (String word : splitWords) {
-                System.out.println("++"+word+"++");
+                System.out.println("++" + word + "++");
                 // 특수문자 제거
                 word = word.replaceAll("[^a-zA-Z0-9가-힣]", "");
                 if (!word.isEmpty()) {

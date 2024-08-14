@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -14,14 +12,15 @@ const server = https.createServer({
 
 app.use(express.static('public'));
 
-app.get('/webrtc', (req, res) => {
+app.get('/mindtalk', (req, res) => {
   res.send('WebRTC path accessed');
 });
 
-const wss = new WebSocket.Server({ server, path: '/webrtc' });
+const wss = new WebSocket.Server({ server, path: '/mindtalk' });
 
 const MAX_USERS_PER_ROOM = 6;
 let rooms = {};
+let messageQueue = [];
 
 const createNewRoom = () => {
   const roomId = uuidv4();
@@ -38,8 +37,15 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
+const processMessageQueue = () => {
+  while (messageQueue.length > 0) {
+    const { data, roomId, userId } = messageQueue.shift();
+    handleMessage(data, roomId, userId);
+  }
+};
+
 wss.on('connection', (ws, req) => {
-  if (req.url !== '/webrtc') {
+  if (req.url !== '/mindtalk') {
     ws.close(1008, 'Unauthorized path');
     return;
   }
@@ -52,40 +58,10 @@ wss.on('connection', (ws, req) => {
 
   ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
 
-  ws.on('message', async (message) => {
+  ws.on('message', (message) => {
     const data = JSON.parse(message);
-
-    switch (data.type) {
-      case 'connect':
-        rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
-        updateClients(roomId);
-        break;
-
-      case 'move':
-        handleMove(roomId, userId, data.position);
-        break;
-
-      case 'offer':
-      case 'answer':
-      case 'candidate':
-        forwardToRecipient(data, roomId, userId);
-        break;
-
-      case 'disconnect':
-        removeClient(roomId, userId);
-        updateClients(roomId);
-        break;
-
-      case 'rtc_disconnect_all':
-        setCoolTime(roomId, data.userId, true);
-        setTimeout(() => {
-          setCoolTime(roomId, data.userId, false);
-        }, 10000);
-        break;
-
-      default:
-        console.error('Unrecognized message type:', data.type);
-    }
+    messageQueue.push({ data, roomId, userId });
+    processMessageQueue();
   });
 
   ws.on('close', () => {
@@ -93,6 +69,40 @@ wss.on('connection', (ws, req) => {
     updateClients(roomId);
   });
 });
+
+const handleMessage = (data, roomId, userId) => {
+  switch (data.type) {
+    case 'connect':
+      rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
+      updateClients(roomId);
+      break;
+
+    case 'move':
+      handleMove(roomId, userId, data.position);
+      break;
+
+    case 'offer':
+    case 'answer':
+    case 'candidate':
+      forwardToRecipient(data, roomId, userId);
+      break;
+
+    case 'disconnect':
+      removeClient(roomId, userId);
+      updateClients(roomId);
+      break;
+
+    case 'rtc_disconnect_all':
+      setCoolTime(roomId, data.userId, true);
+      setTimeout(() => {
+        setCoolTime(roomId, data.userId, false);
+      }, 10000);
+      break;
+
+    default:
+      console.error('Unrecognized message type:', data.type);
+  }
+};
 
 const handleMove = (roomId, userId, position) => {
   rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position, hasMoved: true } : user);
@@ -190,4 +200,3 @@ const setCoolTime = (roomId, userId, state) => {
 server.listen(5001, () => {
   console.log('Server is running on port 5001');
 });
-//
