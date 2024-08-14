@@ -8,8 +8,8 @@ import ChatEventClicking from './ChatEventClicking';
 import ChatEventStretching from './ChatEventStretching';
 import ChatEventWatching from './ChatEventWatching';
 
-const ChatEvent = ({ content, eventProceeding, eventStoping, eventEnd,setIsInputDisabled }) => {
-	
+const ChatEvent = ({ eventbtnDisabled, content, eventProceeding, eventStoping, eventEnd,setIsInputDisabled }) => {
+	console.log(eventbtnDisabled);
 	const universal = useContext(universeVariable);
 	const example_event = [
 		"감정이 격해졌을 때는 깊이 생각하는것 보다, 잠시 마음을 비우는 게 좋을 것 같아요. 도움이 되는 감각 운동을 해보실래요?",
@@ -43,8 +43,8 @@ const ChatEvent = ({ content, eventProceeding, eventStoping, eventEnd,setIsInput
 				</div>
 				
 				<div className='event-response-button-container'>
-					<Button className='btn light-btn small' content={"좋아!"} onClick={eventProceeding} />
-					<Button className='btn dark-btn small' content={"지금은 괜찮아."} onClick={eventStoping} />
+					<Button disabled={eventbtnDisabled} className='btn light-btn small' content={"좋아!"} onClick={eventProceeding} />
+					<Button disabled={eventbtnDisabled} className='btn dark-btn small' content={"지금은 괜찮아."} onClick={eventStoping} />
 				</div> 
 
 			</p>
