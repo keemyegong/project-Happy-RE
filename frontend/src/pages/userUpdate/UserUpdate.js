@@ -138,8 +138,8 @@ const UserUpdate = ()=>{
         <UserInfoInput
         setNickname={setNickname} setPassword={setPassword} setPassword2={setPassword2} nickname={nickname}/>
       </div>
-      <Button className='btn dark-btn middle mb-3' content='Update' onClick={changeUserInfo} />
-      <Button className='btn light-btn middle' content='Sign Out' onClick={()=>{
+      <Button className='btn dark-btn middle mb-3 ms-0' content='Update' onClick={changeUserInfo} />
+      <Button className='btn light-btn middle ms-0' content='Sign Out' onClick={()=>{
         axios.delete(
           `${universal.defaultUrl}/api/user/me`,
           {headers: {Authorization : `Bearer ${Cookies.get('Authorization')}`}}

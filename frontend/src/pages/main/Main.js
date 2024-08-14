@@ -15,17 +15,16 @@ const Main = () => {
   const canvasRef2 = useRef(null);
   const jumpHeight = 50;
   const jumpDuration = 1000;
-  const [showUpButton, setShowUpButton] = useState(false);
-  const [showDownButton, setShowDownButton] = useState(true);
+  const [scrollDirection, setScrollDirection] = useState('down');
   const animationIntervals = useRef([]);
 
   const characterImages = [art, soldier, steel, defaultImg, butler];
 
   const calculateCharacterSize = () => {
-    const minWidth = 375; // 최소 너비
-    const maxWidth = 1920; // 최대 너비
-    const minSize = 75; // 최소 크기
-    const maxSize = 200; // 최대 크기
+    const minWidth = 375;
+    const maxWidth = 1920;
+    const minSize = 75;
+    const maxSize = 200;
 
     const currentWidth = window.innerWidth;
     const characterSize = minSize + ((maxSize - minSize) * ((currentWidth - minWidth) / (maxWidth - minWidth)));
@@ -34,8 +33,8 @@ const Main = () => {
   };
 
   const calculateCharacterPosition = (initialPositions, characterSize) => {
-    const minWidth = 375; // 최소 너비
-    const maxWidth = 1920; // 최대 너비
+    const minWidth = 375;
+    const maxWidth = 1920;
 
     const currentWidth = window.innerWidth;
     const widthRatio = (currentWidth - minWidth) / (maxWidth - minWidth);
@@ -94,7 +93,7 @@ const Main = () => {
         };
       });
 
-      drawCharacters(); // Initial draw to avoid delay
+      drawCharacters();
     }
   };
 
@@ -105,7 +104,7 @@ const Main = () => {
 
   const resizeCanvas = () => {
     clearAnimationIntervals();
-    const characterSize = calculateCharacterSize(); // 반응형 캐릭터 크기
+    const characterSize = calculateCharacterSize();
 
     const initialPositions1 = [
       { minX: 40, maxX: 350, minY: 50, maxY: 70 },
@@ -170,16 +169,16 @@ const Main = () => {
 
     const handleScrollButtons = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
+      const container3 = document.getElementById('container-3');
+      const container3Top = container3.offsetTop;
       const clientHeight = document.documentElement.clientHeight;
 
-      setShowUpButton(scrollTop > 0);
-      setShowDownButton(scrollTop + clientHeight < scrollHeight);
+      setScrollDirection(scrollTop + clientHeight < container3Top + container3.clientHeight ? 'down' : 'up');
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleScrollButtons);
-    handleScrollButtons(); // 초기 상태 설정
+    handleScrollButtons();
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScrollButtons);
@@ -264,6 +263,14 @@ const Main = () => {
         <div className='to-login'>
           <Link className='text-login' to='/signin'>Login</Link>
         </div>
+        <button
+          className={`scroll-button ${scrollDirection}`}
+          onClick={() => handleScroll(scrollDirection)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className={`bi bi-chevron-compact-${scrollDirection}`} viewBox="0 0 16 16">
+            <path fillRule="evenodd" d={`M1.553 ${scrollDirection === 'down' ? '6.776' : '9.224'}a.5.5 0 0 1 .67-${scrollDirection === 'down' ? '.223' : '.447'}L8 ${scrollDirection === 'down' ? '9.44' : '6.56'}l5.776-${scrollDirection === 'down' ? '2.888' : '2.888'}a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67`}/>
+          </svg>
+        </button>
       </div>
       <div id="container-2" className="container-2">
         <div className='main-description1-text'>
@@ -276,23 +283,26 @@ const Main = () => {
           </div>
           <div className="information">
             <h2 className='highlight-blue'>record</h2>
-            <p>바쁜 일상 속에서 놓치기 쉬운 나의 감정,</p>
-            <p>이제 해피리와 함께 기록해보세요.</p>
+            <p>정신없는 일상 속에서 놓치기 쉬운 나의 감정, 이제 해피리와 함께 기록해보세요.</p>
+            <p>간단한 테스트를 통해, 해피리의 자체 AI 모델이 당신의 맞춤형 해파리를 소개해 드릴게요.</p>
+            <p>혼자서 쓰는 일기가 아닌, 해파리와 함께 이야기하면서 오늘의 다이어리를 기록할 수 있어요.</p>
+            <p>해피리는 당신과 함께 감정을 공유하며, 당신의 오늘 하루에 대한 레포트를 제공합니다.</p>
           </div>
         </div>
       </div>
       <div id="container-3" className="container-3">
         <div className="information">
           <h2 className='highlight-blue'>mood</h2>
-          <p>해피리는 당신과 함께 감정을 공유하며 기록하고,</p>
-          <p>하루에 대한 레포트를 제공합니다.</p>
-          <p>바쁜 일상을 마무리하고, 해피리와 함께 하루를 정리하며</p>
+          <p>이곳에서 나와 비슷한 무드를 지닌 친구들과 소통할 기회 역시 제공합니다.</p>
+          <p>해피리가 분석한 오늘의 다이어리를 해피리 친구들과 함께 공유해보세요.</p>
+          <p>함께하는 기록 속에서 어쩌면 놓치고 있던 나의 감정을 마주할 수 있을지도 몰라요.</p>
+          <p>바쁜 하루를 마무리하고, 해피리와 함께 오늘을 정리해보세요.</p>
           <p>우리 함께 감정에 대해 알아가 볼까요?</p>
           <a className="go-login" href="/signin">
             함께할래요!
           </a>
         </div>
-        <div className="characters char-section-2">
+        <div id="scroll-none-section" className="characters char-section-2">
           <canvas ref={canvasRef2} style={{ display: 'block', width: '100%', height: '100%' }} />
         </div>
       </div>

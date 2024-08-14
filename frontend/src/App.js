@@ -71,18 +71,25 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           audioRef.current.play(); setPlaying(true);
         } 
       }}>
-      {!playing && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
-      fill="grey" class="bi bi-play-fill" viewBox="0 0 16 16"
-      className='audio-paly-button-main-page'
-      >
-        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-      </svg>}
+      {!playing &&
+      // <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+      // fill="grey" class="bi bi-play-fill" viewBox="0 0 16 16"
+      // className='audio-paly-button-main-page'
+      // >
+      //   <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+      // </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-music-note-beamed" viewBox="0 0 16 16" className='audio-paly-button-main-page'>
+        <path d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13s1.12-2 2.5-2 2.5.896 2.5 2m9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2"/>
+        <path fill-rule="evenodd" d="M14 11V2h1v9zM6 3v10H5V3z"/>
+        <path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4z"/>
+      </svg>
+      }
       {playing && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
-      fill="grey" class="bi bi-pause-fill" viewBox="0 0 16 16"
+      fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16"
       className='audio-paly-button-main-page'>
         <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
       </svg>}
-      <p className='audio-paly-button-main-page-label' style={{fontFamily: "Pretendard", fontSize: "15px"}}>음악을 들으면서 이용할래요</p>
+      <p className='audio-paly-button-main-page-label' style={{fontFamily: "Pretendard", fontSize: "15px"}}>Happy:RE MUSIC ON</p>
       
       </div>
       
