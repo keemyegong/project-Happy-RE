@@ -34,7 +34,8 @@ const RtcModal = ({ show, onConfirm, onCancel }) => {
 
         <p>움직이기 시작하면 서버에 접속이 됩니다!!</p>
         <p>다른사람과 가까워지면 음성 연결이되고 멀어지면 연결이 끊어져</p>
-        <p>해당 인원과는 잠시동안 연결이 불가해요</p>         
+        <p>해당 인원과는 잠시동안 연결이 불가해요</p>       
+        <p>사람이 없으면 새로고침을 통해 방을바꿔주세요!</p>   
 
 
         <div className="rtc-modal-buttons">
