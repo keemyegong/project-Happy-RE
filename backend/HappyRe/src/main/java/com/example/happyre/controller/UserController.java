@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Tag(name = "User")
 @Controller
@@ -27,7 +28,7 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final UserAvgService userAvgService;
-
+    private ConcurrentHashMap<Integer, Object> userLocks = new ConcurrentHashMap<>();
 
     @GetMapping("/test")
     public ResponseEntity<?> me(HttpServletRequest request) {
@@ -37,48 +38,55 @@ public class UserController {
     //유저정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getUser(HttpServletRequest request) {
-        try {
-            UserEntity userEntity = userService.findByRequest(request);
-            return new ResponseEntity<>(userEntity, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        UserEntity userEntity = userService.findByRequest(request);
+        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        synchronized (lock) {
+            try {
+                return new ResponseEntity<>(userEntity, HttpStatus.OK);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
         }
 
     }
 
     @GetMapping("/profileimg")
     public ResponseEntity<?> getProfileImg(HttpServletRequest request) {
-        try {
-            Resource resource = userService.myProfile(request);
+        UserEntity userEntity = userService.findByRequest(request);
+        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        synchronized (lock) {
+            try {
+                Resource resource = userService.myProfile(request);
 
-            if (resource == null || !resource.exists()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                if (resource == null || !resource.exists()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                }
+
+                // MIME 타입 설정 (파일 확장자에 따라 다를 수 있음)
+                String contentType = Files.probeContentType(Paths.get(resource.getURI()));
+
+                if (contentType == null) {
+                    contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // 기본 MIME 타입
+                }
+
+                // HTTP 헤더 설정
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.parseMediaType(contentType));
+                System.out.println("parseMediaType :" + MediaType.parseMediaType(contentType));
+                headers.setContentLength(resource.contentLength()); // 파일 크기 설정
+                System.out.println("resource.contentLength() : " + resource.contentLength());
+                headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
+                System.out.println("PROFILE IMAGE LOAD Success");
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(resource);
+
+            } catch (IOException e) {
+                System.out.println("PROFILE IMAGE LOAD ERROR: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            // MIME 타입 설정 (파일 확장자에 따라 다를 수 있음)
-            String contentType = Files.probeContentType(Paths.get(resource.getURI()));
-
-            if (contentType == null) {
-                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE; // 기본 MIME 타입
-            }
-
-            // HTTP 헤더 설정
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-            System.out.println("parseMediaType :" + MediaType.parseMediaType(contentType));
-            headers.setContentLength(resource.contentLength()); // 파일 크기 설정
-            System.out.println("resource.contentLength() : " + resource.contentLength());
-            headers.setContentDisposition(ContentDisposition.inline().filename(resource.getFilename()).build()); // 파일 이름 설정
-            System.out.println("PROFILE IMAGE LOAD Success");
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(resource);
-
-        } catch (IOException e) {
-            System.out.println("PROFILE IMAGE LOAD ERROR: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -86,12 +94,16 @@ public class UserController {
     //유저정보 수정
     @PutMapping("/me")
     public ResponseEntity<?> modifyUser(HttpServletRequest request, @RequestBody ModifyUserDTO modifyUserDTO) {
-        try {
-            System.out.println("modifyUser Controller ");
-            userService.modifyUserInfo(modifyUserDTO, request);
-            return ResponseEntity.ok("User updated successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        UserEntity userEntity = userService.findByRequest(request);
+        Object lock = userLocks.computeIfAbsent(userEntity.getId(), k -> new Object());
+        synchronized (lock){
+            try {
+                System.out.println("modifyUser Controller ");
+                userService.modifyUserInfo(modifyUserDTO, request);
+                return ResponseEntity.ok("User updated successfully");
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
         }
     }
 
