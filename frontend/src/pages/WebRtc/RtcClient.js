@@ -1,6 +1,5 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import React, { useEffect, useState, useRef , useContext} from "react";
-import { useNavigate } from 'react-router-dom';
 import defaultImg from "../../assets/characters/default.png";
 import CoordinatesGraph from "../../components/ChatGraph/ChatGraph";
 import CharacterList from "../../components/CharacterList/CharacterList";
@@ -13,7 +12,6 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
-import RtcModal from "../../components/rtc-modal/RtcModal"; // 모달 컴포넌트 임포트
 
 import "./ChatRoomContainer.css";
 
@@ -35,11 +33,7 @@ const RtcClient = ({ characterImage }) => {
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
-  const [showModal, setShowModal] = useState(true); // 모달 표시 상태 추가
   const universal = useContext(universeVariable);
-  const navigate = useNavigate();
-
-
   useEffect(() => {
     positionRef.current = position;
     //console.log("NearbyUsers", nearbyUsers);
@@ -127,7 +121,39 @@ const RtcClient = ({ characterImage }) => {
     }
   };
 
-  const connectWebSocket = () => {
+
+  useEffect(() => {
+    axios
+    .get(`${universal.defaultUrl}/api/useravg`, {
+      headers: { Authorization: `Bearer ${Cookies.get("Authorization")}` },
+    })
+    .then((response) => {
+      //console.log("useravg")
+      //console.log(response.data)
+      if(response.data.cnt == 0 ){
+        setPosition({
+          x: response.data.russellSumX,
+          y: response.data.russellSumY,
+        });
+      }else{
+        setPosition({
+          x: response.data.russellSumX/response.data.cnt,
+          y: response.data.russellSumY/response.data.cnt,
+        });      
+      }
+
+    })
+    .catch(() => {
+      //console.log("서버와통신불가");
+    });
+
+  },[])
+
+
+
+  useEffect(() => {
+    if (window.location.pathname !== "/webrtc") return;
+
     client.onopen = () => {
       //console.log("WebSocket Client Connected");
     };
@@ -143,7 +169,7 @@ const RtcClient = ({ characterImage }) => {
     client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
       //console.log("Received message from server:", dataFromServer);
-
+    
       if (dataFromServer.type === "assign_id") {
         setClientId(dataFromServer.id);
         client.send(
@@ -159,7 +185,7 @@ const RtcClient = ({ characterImage }) => {
           position: user.position || { x: 0, y: 0 },
           connectedAt: user.connectedAt || 0,
         }));
-
+    
         // 자기 자신 정보를 제외하고 users를 설정
         setUsers(
           filteredUsers
@@ -169,7 +195,7 @@ const RtcClient = ({ characterImage }) => {
               image: user.characterImage,
             }))
         );
-
+    
         // currentUser의 connectedUsers를 찾아 nearbyUsers로 설정
         const currentUser = filteredUsers.find((user) => user.id === clientId);
         if (currentUser) {
@@ -207,7 +233,7 @@ const RtcClient = ({ characterImage }) => {
           }));
         }
       }
-    };
+    };    
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
@@ -221,7 +247,7 @@ const RtcClient = ({ characterImage }) => {
     } else {
       //console.error("getUserMedia is not supported in this browser.");
     }
-  };
+  }, [position, userImage, clientId]);
 
   const createPeerConnection = (userId) => {
     //console.log(`Creating PeerConnection for user ${userId}`);
@@ -378,21 +404,18 @@ const RtcClient = ({ characterImage }) => {
       console.error("No sender provided for candidate");
       return;
     }
-
+  
     const connection = peerConnections[sender];
     if (!connection) {
       console.error(`No peer connection found for sender ${sender}`);
       return;
     }
     const peerConnection = connection.peerConnection;
-
-    if (
-      peerConnection.remoteDescription &&
-      peerConnection.remoteDescription.type
-    ) {
+  
+    if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
       try {
         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        //console.log(`ICE candidate added for ${sender}`);
+        console.log(`ICE candidate added for ${sender}`);
       } catch (error) {
         console.error("Error adding ICE candidate:", error);
       }
@@ -406,6 +429,7 @@ const RtcClient = ({ characterImage }) => {
       );
     }
   };
+  
 
   const handleRtcDisconnect = (userId) => {
     if (peerConnections[userId]) {
@@ -438,22 +462,8 @@ const RtcClient = ({ characterImage }) => {
     }
   };
 
-  const handleModalConfirm = () => {
-    setShowModal(false);
-    connectWebSocket(); // '예'를 눌렀을 때 웹소켓 연결
-  };
-
-  const handleModalCancel = () => {
-    navigate('/profile');
-  };
-
   return (
     <div className="chat-room-container" ref={containerRef}>
-      <RtcModal 
-        show={showModal} 
-        onConfirm={handleModalConfirm} 
-        onCancel={handleModalCancel} 
-      />
       <div className="chat-graph-audio-container">
         <div className="chat-room-guide-container">
           <p className="chat-room-guide-title">마인드 톡</p>

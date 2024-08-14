@@ -1,4 +1,5 @@
 import os
+import shutil
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException,UploadFile, File, Body, Request
 from fastapi.responses import JSONResponse
@@ -31,6 +32,16 @@ s3_client = boto3.client(
 BUCKET_NAME = os.getenv("S3_BUCKET")
 
 #----------------------------------------------사용자 정의 함수--------------------------------------------------------
+
+# 오디오 파일 삭제
+def delete_audio_file(folder_path):
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        try:
+            shutil.rmtree(folder_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    else:
+        return "Folder Directory doesn't exists"
 
 # 음성 데이터 텍스트 변환
 async def clova(file_location : str):
@@ -72,10 +83,15 @@ async def file_upload(user_id:str, AUDIO_DIR:str):
                 except s3_client.exceptions.S3UploadFailedError as e:
                     print(f"File upload Error : {str(e)}")
                     raise HTTPException(status_code=500, detail=f"Could not upload file: {e}")
+        try:
+            delete_audio_file(user_audio_dir)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error occured while delete audio file : {str(e)}")
     except KeyError as ke:
         print(f"Key Error in File Upload : {str(e)}")
         raise HTTPException(status_code=500, detail="Could not find user audio directory")
-    
+
+
 # -----------------------------------------------라우팅 함수----------------------------------------------------------
 
 # clova API 사용
