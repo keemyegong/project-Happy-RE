@@ -1,6 +1,5 @@
 package com.example.happyre.entity;
 
-import com.example.happyre.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,7 +23,6 @@ public class MessageEntity {
     @Column(nullable = false)
     private Integer sequence;
 
-    @Convert(converter = AttributeEncryptor.class)
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
