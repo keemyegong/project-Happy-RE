@@ -12,6 +12,9 @@ import steel from "../../assets/characters/steel.png";
 import { universeVariable } from "../../App";
 import Cookies from "js-cookie";
 import axios from "axios";
+import RtcModal from '../../components/rtc-modal/RtcModal.js';
+import { useNavigate  } from 'react-router-dom';
+
 
 import "./ChatRoomContainer.css";
 
@@ -33,12 +36,49 @@ const RtcClient = ({ characterImage }) => {
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
+
+
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
+
   const universal = useContext(universeVariable);
   useEffect(() => {
     positionRef.current = position;
     //console.log("NearbyUsers", nearbyUsers);
   }, [position, nearbyUsers]);
 
+  ////////rtc//////////
+  useEffect(() => {
+    openModal();
+  }, []);
+
+  const handleConfirm = () => {
+    closeModal();
+    // WebSocket 연결 로직을 여기에 추가
+    // 예: websocket.connect()
+  };
+
+  // 모달 열기
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setShowModal(false);
+  };
+  const handleCancel = () => {
+    closeModal();
+    // '/profile' 경로로 이동
+    navigate('/profile');
+  };
+
+  ///////modal////////
+
+
+
+  
   useEffect(() => {
     if (window.location.pathname !== "/webrtc") {
       client.close();
@@ -466,6 +506,11 @@ const RtcClient = ({ characterImage }) => {
     <div className="chat-room-container" ref={containerRef}>
       <div className="chat-graph-audio-container">
         <div className="chat-room-guide-container">
+        <RtcModal
+        show={showModal}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
           <p className="chat-room-guide-title">마인드 톡</p>
           <p className="chat-room-guide-text">
             나와 비슷한 감정을 느끼는 사람들과 함께 마음속 이야기를 나눠보세요
