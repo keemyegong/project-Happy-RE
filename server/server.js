@@ -12,11 +12,11 @@ const server = https.createServer({
 
 app.use(express.static('public'));
 
-app.get('/webrtc', (req, res) => {
+app.get('/mindtalk', (req, res) => {
   res.send('WebRTC path accessed');
 });
 
-const wss = new WebSocket.Server({ server, path: '/webrtc' });
+const wss = new WebSocket.Server({ server, path: '/mindtalk' });
 
 const MAX_USERS_PER_ROOM = 6;
 let rooms = {};
@@ -45,7 +45,7 @@ const processMessageQueue = () => {
 };
 
 wss.on('connection', (ws, req) => {
-  if (req.url !== '/webrtc') {
+  if (req.url !== '/mindtalk') {
     ws.close(1008, 'Unauthorized path');
     return;
   }
