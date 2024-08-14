@@ -3,7 +3,6 @@ const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-const amqp = require('amqplib/callback_api');
 
 const app = express();
 const server = https.createServer({
@@ -21,6 +20,7 @@ const wss = new WebSocket.Server({ server, path: '/webrtc' });
 
 const MAX_USERS_PER_ROOM = 6;
 let rooms = {};
+let messageQueue = [];
 
 const createNewRoom = () => {
   const roomId = uuidv4();
@@ -37,84 +37,72 @@ const getRoomWithSpace = () => {
   return createNewRoom();
 };
 
-amqp.connect('amqp://localhost', (error0, connection) => {
-  if (error0) {
-    throw error0;
+const processMessageQueue = () => {
+  while (messageQueue.length > 0) {
+    const { data, roomId, userId } = messageQueue.shift();
+    handleMessage(data, roomId, userId);
   }
-  
-  connection.createChannel((error1, channel) => {
-    if (error1) {
-      throw error1;
-    }
+};
 
-    const queue = 'webrtc_messages';
-    channel.assertQueue(queue, { durable: false });
+wss.on('connection', (ws, req) => {
+  if (req.url !== '/webrtc') {
+    ws.close(1008, 'Unauthorized path');
+    return;
+  }
 
-    wss.on('connection', (ws, req) => {
-      if (req.url !== '/webrtc') {
-        ws.close(1008, 'Unauthorized path');
-        return;
-      }
+  const userId = uuidv4();
+  const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
-      const userId = uuidv4();
-      const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
+  const roomId = getRoomWithSpace();
+  rooms[roomId].push({ ws, ...userInfo });
 
-      const roomId = getRoomWithSpace();
-      rooms[roomId].push({ ws, ...userInfo });
+  ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
 
-      ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    messageQueue.push({ data, roomId, userId });
+    processMessageQueue();
+  });
 
-      ws.on('message', (message) => {
-        const data = JSON.parse(message);
-
-        // 메시지를 큐에 추가
-        channel.sendToQueue(queue, Buffer.from(JSON.stringify({ data, roomId, userId })));
-      });
-
-      ws.on('close', () => {
-        removeClient(roomId, userId);
-        updateClients(roomId);
-      });
-    });
-
-    // 메시지 큐에서 메시지를 소비하고 처리
-    channel.consume(queue, (msg) => {
-      const { data, roomId, userId } = JSON.parse(msg.content.toString());
-
-      switch (data.type) {
-        case 'connect':
-          rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
-          updateClients(roomId);
-          break;
-
-        case 'move':
-          handleMove(roomId, userId, data.position);
-          break;
-
-        case 'offer':
-        case 'answer':
-        case 'candidate':
-          forwardToRecipient(data, roomId, userId);
-          break;
-
-        case 'disconnect':
-          removeClient(roomId, userId);
-          updateClients(roomId);
-          break;
-
-        case 'rtc_disconnect_all':
-          setCoolTime(roomId, data.userId, true);
-          setTimeout(() => {
-            setCoolTime(roomId, data.userId, false);
-          }, 10000);
-          break;
-
-        default:
-          console.error('Unrecognized message type:', data.type);
-      }
-    }, { noAck: true });
+  ws.on('close', () => {
+    removeClient(roomId, userId);
+    updateClients(roomId);
   });
 });
+
+const handleMessage = (data, roomId, userId) => {
+  switch (data.type) {
+    case 'connect':
+      rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, ...data } : user);
+      updateClients(roomId);
+      break;
+
+    case 'move':
+      handleMove(roomId, userId, data.position);
+      break;
+
+    case 'offer':
+    case 'answer':
+    case 'candidate':
+      forwardToRecipient(data, roomId, userId);
+      break;
+
+    case 'disconnect':
+      removeClient(roomId, userId);
+      updateClients(roomId);
+      break;
+
+    case 'rtc_disconnect_all':
+      setCoolTime(roomId, data.userId, true);
+      setTimeout(() => {
+        setCoolTime(roomId, data.userId, false);
+      }, 10000);
+      break;
+
+    default:
+      console.error('Unrecognized message type:', data.type);
+  }
+};
 
 const handleMove = (roomId, userId, position) => {
   rooms[roomId] = rooms[roomId].map(user => user.id === userId ? { ...user, position, hasMoved: true } : user);
