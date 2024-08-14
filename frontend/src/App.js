@@ -132,7 +132,7 @@ const App = () => {
 
     if (Cookies.get("Authorization")){
       axios.get(
-        `http://192.168.31.216:8080/api/diary/detail/`,
+        `https://i11b204.p.ssafy.io/api/diary/detail/`,
         {
           headers: {
             Authorization: `Bearer ${Cookies.get('Authorization')}`,
