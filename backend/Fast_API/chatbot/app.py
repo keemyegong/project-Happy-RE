@@ -70,6 +70,10 @@ async def emotion_tagging(user_id: str, text: str):
     trigger = False
     
     russell_coord = await emotion_analysis(text)
+    print(f'''
+            Text : {text}
+            Russell : {russell_coord}
+        ''')
     
     if user_id not in user_emotion_russell:
         user_emotion_russell[user_id] = {}
