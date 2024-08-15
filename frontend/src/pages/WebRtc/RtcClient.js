@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 import "./ChatRoomContainer.css";
 
-const client = new W3CWebSocket("wss://i11b204.p.ssafy.io:5000/mindtalk");
+const client = new W3CWebSocket("wss://i11b204.p.ssafy.io/mindtalk");
 
 const RtcClient = ({ characterImage }) => {
   const [peerConnections, setPeerConnections] = useState({});
