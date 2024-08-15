@@ -214,7 +214,7 @@ const RtcClient = ({ characterImage }) => {
             .filter((user) => user.id !== clientId)
             .map((user) => ({
               ...user,
-              image: user.characterImage,
+              image: user.characterImage || defaultImg,
             }))
         );
 
@@ -223,7 +223,7 @@ const RtcClient = ({ characterImage }) => {
         }else {
           setShowText(false);
         }
-        console.log(filteredUsers);
+        // console.log(filteredUsers);
     
 
     
