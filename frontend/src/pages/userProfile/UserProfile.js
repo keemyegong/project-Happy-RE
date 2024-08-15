@@ -146,6 +146,21 @@ const UserProfile = () => {
       });
   };
 
+  const getTodayDary = ()=>{
+    axios
+        .get(
+          `${universal.defaultUrl}/api/diary/detail/`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("Authorization")}`,
+              withCredentials: true,
+            },
+          }
+        ).then((response)=>{
+          setKeywordEntities(response.data.keywordEntities);
+        })
+  }
+
   const showDiaryModal = (date) => {
     getDiary(date.getFullYear(), date.getMonth() + 1, date.getDate());
   };
@@ -182,6 +197,7 @@ const UserProfile = () => {
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
     getRecentMonthDiary();
+    getTodayDary();
     
     setTimeout(()=>{
 
