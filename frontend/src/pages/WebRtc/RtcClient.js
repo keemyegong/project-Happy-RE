@@ -14,6 +14,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import RtcModal from '../../components/rtc-modal/RtcModal.js';
 import { useNavigate } from 'react-router-dom';
+import FadeinText from "../../components/ai-chat/FadeInText.js";
 
 import "./ChatRoomContainer.css";
 
@@ -35,6 +36,7 @@ const RtcClient = ({ characterImage }) => {
   const containerRef = useRef(null);
   const audioEffectRef = useRef(null);
   const [coolTime, setCoolTime] = useState(false);
+  const [showText, setShowText] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
@@ -201,7 +203,16 @@ const RtcClient = ({ characterImage }) => {
           ...user,
           position: user.position || { x: 0, y: 0 },
           connectedAt: user.connectedAt || 0,
+        
+        
         }));
+
+        if (filteredUsers.length == 1){
+          setShowText(true);
+        }else {
+          setShowText(false);
+        }
+        console.log(filteredUsers);
     
         setUsers(
           filteredUsers
@@ -462,6 +473,7 @@ const RtcClient = ({ characterImage }) => {
     <div className="chat-room-container" ref={containerRef}>
       <div className="chat-graph-audio-container">
         <div className="chat-room-guide-container">
+        {showText && <FadeinText />}
         <RtcModal
         show={showModal}
         onConfirm={handleConfirm}

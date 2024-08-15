@@ -1,22 +1,15 @@
 import React,{useState, useEffect} from 'react';
 import './Response.css';
-import background from '../../assets/명상화면.png'
-import Timer from '../timer/Timer';
 
-const textList = ["잠시 눈을 감고 심호흡을 해봐요", 
-	"오늘 하루는 어땠나요?", 
-	"뭔가 적당히 명상할때 나오면좋은", 
-	"텍스트같은거없나"];
+const textList = ["현재 방에는 혼자만 있어요", "마음에 여유를 가지고 누군가가 들어오길 기다려볼까요?", "혼자 있을 때 주로 무엇을 하며 지내나요?", "이런 시간엔 자신에게 집중해보는 것도 좋아요."];
 
-const ChatEventMeditation = ({eventEnd})=>{
+const FadeinText = ()=>{
 	const [currentText, setCurrentText] = useState(textList[0]);
 	const [fadeProp, setFadeProp] = useState('meditation-text-fadein');
 	const fadeInDuration = 3000; // 페이드인 지속 시간 (3초)
 	const displayDuration = 2000; // 텍스트 표시 시간 (3초)
 	const fadeOutDuration = 3000; // 페이드아웃 지속 시간 (3초)
-	const totalDuration = fadeInDuration + displayDuration + fadeOutDuration;
-	
-	const image = background
+
 	useEffect(()=>{
 
 		const interval = setInterval(()=>{
@@ -34,14 +27,12 @@ const ChatEventMeditation = ({eventEnd})=>{
 
 	
 	return(
-		<div className='meditation-container'>
-			<Timer/>
+		<div className='fadein-text-container'>
 			<p className={fadeProp} meditation-text>{currentText}</p>
-			<img src={image} className='meditation-img' />
 		</div>
 
 	);
 
 }
 
-export default ChatEventMeditation;
+export default FadeinText;

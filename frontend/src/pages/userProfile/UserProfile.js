@@ -21,6 +21,7 @@ import butler from "../../assets/characters/butler.png";
 import defaultPersona from "../../assets/characters/default.png";
 import soldier from "../../assets/characters/soldier.png";
 import steel from "../../assets/characters/steel.png";
+import LoadingProfileImagae from '../../assets/loading-7528_512.gif'
 
 
 import heartimg from "../../assets/heart-fill.svg"
@@ -43,7 +44,7 @@ const UserProfile = () => {
     "(미소를 지으며) 오늘 하루는 어떤 이야기를 만들어 나갔나요? 저와 함께 오늘의 장면들을 이야기해 볼까요?",
   ];
 
-  const [image, setImage] = useState(userProfileImage);
+  const [image, setImage] = useState(LoadingProfileImagae);
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [words, setWords] = useState("");
@@ -210,6 +211,7 @@ const UserProfile = () => {
           });
       })
       .catch(() => {
+
         console.log("서버와통신불가");
       });
     
@@ -422,6 +424,7 @@ const UserProfile = () => {
                     getMonthlyDiary={getMonthlyDiary}
                     setSelectedDay={setSelectedDay}
                   />
+                  {/* <span className="profile-calender-guide"> 달력을 통해 월간 기록을 바로 확인할 수 있어요! </span> */}
                 </div>
               </div>
               <div className="user-emotion-info-container col-12 col-xxl-6">
