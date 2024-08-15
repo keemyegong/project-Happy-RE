@@ -44,6 +44,8 @@ const UserProfile = () => {
     "(미소를 지으며) 노을과 함께 또다시 하루의 막이 내려가는 군. 그대가 써내려간 오늘의 이야기를 들려주시게.",
   ];
 
+
+
   const [image, setImage] = useState(LoadingProfileImagae);
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
@@ -144,6 +146,21 @@ const UserProfile = () => {
       });
   };
 
+  const getTodayDary = ()=>{
+    axios
+        .get(
+          `${universal.defaultUrl}/api/diary/detail/`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("Authorization")}`,
+              withCredentials: true,
+            },
+          }
+        ).then((response)=>{
+          setKeywordEntities(response.data.keywordEntities);
+        })
+  }
+
   const showDiaryModal = (date) => {
     getDiary(date.getFullYear(), date.getMonth() + 1, date.getDate());
   };
@@ -180,6 +197,7 @@ const UserProfile = () => {
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
     getRecentMonthDiary();
+    getTodayDary();
     
     setTimeout(()=>{
 
@@ -444,10 +462,10 @@ const UserProfile = () => {
                   <div className="persona-chat-container">
                     {" "}
                     <div className="persona-chat">
-                      {keywordEntities == null
+                      {keywordEntities == undefined
                         ? happyReGoDiary[localStorage.getItem("personaNumber")]
                         : happyReHello[localStorage.getItem("personaNumber")]}
-                      {keywordEntities == null && (
+                      {keywordEntities == undefined && (
                         <p className="persona-diary-add-btn m-0">
                           <Button
                             className="btn dark-btn small"

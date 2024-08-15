@@ -8,6 +8,14 @@
   padding-bottom: 20px;
 }
 
+.DiaryReport-Loading{
+  width: 600px;
+  height: 100%;
+  background-color: transparent;
+  padding: 10px;
+  padding-bottom: 20px;
+}
+
 .diary-report-header {
   font-family: "Alegreya Sans SC";
   font-size: clamp(14px, 1.3vw, 18px);
