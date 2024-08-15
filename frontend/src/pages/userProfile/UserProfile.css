@@ -5,7 +5,7 @@
   max-height: 85vh;
   overflow-y: auto;
 }
-
+ 
 .user-profile-container::-webkit-scrollbar {
   width: 10px;
 }
@@ -33,9 +33,9 @@
   margin-bottom: 10px;
 }
 
-.profile-image{
-  width: 100%;
-  height: 100%;
+.profile-page-user-image{
+  width: 100% !important;
+  height: 100% !important;
   object-fit: contain;
 }
 

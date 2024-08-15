@@ -76,7 +76,7 @@ const Message = () => {
           setKeywords(response.data.keywordEntities);
         }
       });
-  };
+  }; 
 
   return (
     <main className="Message">
@@ -84,7 +84,7 @@ const Message = () => {
       <div className="message-profile-container">
         <div className="default-info">
           <div className="user-avatar">
-            <img className="profile-image" src={image} alt="User profile" />
+            <img className="profile-page-user-image" src={image} alt="User profile" />
           </div>
           <div className="default-info-container">
             <p className="nickname">{nickname}</p>

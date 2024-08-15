@@ -22,6 +22,7 @@ import defaultPersona from "../../assets/characters/default.png";
 import soldier from "../../assets/characters/soldier.png";
 import steel from "../../assets/characters/steel.png";
 
+
 import heartimg from "../../assets/heart-fill.svg"
 
 const UserProfile = () => {
@@ -42,7 +43,7 @@ const UserProfile = () => {
     "(미소를 지으며) 오늘 하루는 어떤 이야기를 만들어 나갔나요? 저와 함께 오늘의 장면들을 이야기해 볼까요?",
   ];
 
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(userProfileImage);
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [words, setWords] = useState("");
@@ -174,7 +175,7 @@ const UserProfile = () => {
   const heartShape = `M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314`;
   const img = new Image();
   useEffect(() => {
-    setImage(userProfileImage);
+    // setImage(userProfileImage);
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
     getRecentMonthDiary();
@@ -380,7 +381,7 @@ const UserProfile = () => {
           <div className="col-12 col-md-4 col-xxl-2 ">
             <div className="default-info">
               <div className="user-avatar">
-                <img className="profile-image" src={image} alt="profile" />
+                <img className="profile-page-user-image" src={image} alt="profile" />
               </div>
               <div className="default-info-container">
                 <p className="nickname">{nickname}</p>
