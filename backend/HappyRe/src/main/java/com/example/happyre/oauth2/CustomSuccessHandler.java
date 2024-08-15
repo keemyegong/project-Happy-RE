@@ -41,6 +41,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
         UserEntity user = userRepository.findByEmail(email);
+
         String token = jwtUtil.createJwt(email, role, 60 * 60 * 60 * 1000 * 500L, user.getId());
         System.out.println("Successfully OAuth2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1: " + email);
         response.addCookie(createCookie("Authorization", token));

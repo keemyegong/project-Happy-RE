@@ -7,7 +7,8 @@ import ballImg from "../../assets/bouncing_ball.png"
 const textList = [
     "공들의 움직임에 집중해보세요",
     "눈으로 공을 따라가 보세요",
-    "마음을 비우세요"
+    "마음을 비우세요",
+    "X 버튼을 누르시면 종료됩니다."
 ]
 
 const ChatEventWatching = ({eventEnd,setIsInputDisabled})=>{

@@ -5,11 +5,15 @@ import Timer from '../timer/Timer';
 
 const textList = ["잠시 눈을 감고 심호흡을 해봐요", 
 	"오늘 하루는 어땠나요?", 
-	"뭔가 적당히 명상할때 나오면좋은", "텍스트같은거없나"];
+	"천천히 숨을 내쉬어 보세요",
+	"주변에서는 어떤 소리가 나고 있나요?",
+	"지금 느껴지는 향기가 있나요?"
+	];
 
 const ChatEventMeditation = ({eventEnd})=>{
 	const [currentText, setCurrentText] = useState(textList[0]);
 	const [fadeProp, setFadeProp] = useState('meditation-text-fadein');
+	const [textIdx, setTextIdx] = useState(0)
 	const fadeInDuration = 3000; // 페이드인 지속 시간 (3초)
 	const displayDuration = 2000; // 텍스트 표시 시간 (3초)
 	const fadeOutDuration = 3000; // 페이드아웃 지속 시간 (3초)
@@ -22,11 +26,15 @@ const ChatEventMeditation = ({eventEnd})=>{
 			setFadeProp('meditation-text-fadeout');
 
 			setTimeout(()=>{
-				setCurrentText(textList[ Math.floor(Math.random() * 4)]);
+				setTextIdx(prevIdx => {
+					const newIdx = (prevIdx + 1) % textList.length
+					setCurrentText(textList[newIdx]);
+					return newIdx
+				})
 				setFadeProp('meditation-text-fadein')
-			},3000)
+			},fadeInDuration)
 
-		},7000)
+		},totalDuration)
 
 		return () => clearInterval(interval);
 	},[])

@@ -21,6 +21,8 @@ import butler from "../../assets/characters/butler.png";
 import defaultPersona from "../../assets/characters/default.png";
 import soldier from "../../assets/characters/soldier.png";
 import steel from "../../assets/characters/steel.png";
+import LoadingProfileImagae from '../../assets/loading-7528_512.gif'
+
 
 import heartimg from "../../assets/heart-fill.svg"
 
@@ -31,7 +33,7 @@ const UserProfile = () => {
     "인생은 치열한 전장과도 같지! 이 전투를 이겨내기 위한 전략을 함께 고민해보자꾸나.",
     "주인님, 하루 일과를 체계적으로 정리해 볼까요? 작은 성취들이 쌓이면 큰 성과로 이어질 것입니다.",
     "삶의 의미를 찾는 여정에서 함께 길을 나서보지 않겠나. 깊이 있는 대화가 그대의 마음을 밝히리라 믿네.",
-    "(미소 지으며) 모든 이야기는 그대의 삶에서 중요한 장면이랍니다. 그 장면들을 나와 함께 살펴보며 마음의 평화를 찾아보아요.",
+    "(미소 지으며) 그대는 이야기의 주인공이자 극의 주연이자 무대의 주인이지. 그대의 이야기를 기대하고 있다네.",
   ];
 
   const happyReGoDiary = [
@@ -39,10 +41,10 @@ const UserProfile = () => {
     "전사여, 오늘은 어떤 전투에 임했는가? 오늘의 치열한 하루에 대해 보고하게나!",
     "주인님, 오늘 하루는 어떻게 보내셨나요? 어떤 부분에서 어려움을 겪으셨는지 말씀해 주시면 제가 도와드릴 수 있을 것 같아요.",
     "오늘 그대의 하루는 어떠했는가? 나와 함께 오늘 하루를 되짚으며 고찰해보는 것은 어떤가?",
-    "(미소를 지으며) 오늘 하루는 어떤 이야기를 만들어 나갔나요? 저와 함께 오늘의 장면들을 이야기해 볼까요?",
+    "(미소를 지으며) 노을과 함께 또다시 하루의 막이 내려가는 군. 그대가 써내려간 오늘의 이야기를 들려주시게.",
   ];
 
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(LoadingProfileImagae);
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [words, setWords] = useState("");
@@ -174,7 +176,7 @@ const UserProfile = () => {
   const heartShape = `M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314`;
   const img = new Image();
   useEffect(() => {
-    setImage(userProfileImage);
+    // setImage(userProfileImage);
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
     getRecentMonthDiary();
@@ -209,6 +211,7 @@ const UserProfile = () => {
           });
       })
       .catch(() => {
+
         console.log("서버와통신불가");
       });
     
@@ -380,7 +383,7 @@ const UserProfile = () => {
           <div className="col-12 col-md-4 col-xxl-2 ">
             <div className="default-info">
               <div className="user-avatar">
-                <img className="profile-image" src={image} alt="profile" />
+                <img className="profile-page-user-image" src={image} alt="profile" />
               </div>
               <div className="default-info-container">
                 <p className="nickname">{nickname}</p>
@@ -421,6 +424,7 @@ const UserProfile = () => {
                     getMonthlyDiary={getMonthlyDiary}
                     setSelectedDay={setSelectedDay}
                   />
+                  {/* <span className="profile-calender-guide"> 달력을 통해 월간 기록을 바로 확인할 수 있어요! </span> */}
                 </div>
               </div>
               <div className="user-emotion-info-container col-12 col-xxl-6">

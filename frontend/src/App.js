@@ -106,7 +106,7 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
           <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} setHappyreNumber={setHappyreNumber} />
           {/* <Route path="/with-happyre" element={<PrivateRoute>{withHappyreAccessedToday ? <Navigate to="/profile" /> : <AIChat />}</PrivateRoute>} /> */}
           <Route path="/with-happyre" element={<PrivateRoute><AIChat /></PrivateRoute>}/>
-          <Route path="/mindtalk"
+          <Route path="/mindtalking"
             element={
               <PrivateRoute>
                 <RtcClient
@@ -114,6 +114,7 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
                 />
               </PrivateRoute>
             }/>
+
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
           <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         </Routes>
@@ -163,7 +164,7 @@ const App = () => {
         // fastUrl: '',
         fastUrl: 'https://i11b204.p.ssafy.io',
         // fastUrl: 'http://192.168.31.229:8000',
-        // defaultUrl: 'http://192.168.31.216:8080',
+        // defaultUrl: 'http://180.228.3.53:8080',
         // defaultUrl: 'http://192.168.31.48:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
         isAuthenticated,
