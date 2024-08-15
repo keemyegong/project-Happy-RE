@@ -13,10 +13,6 @@
 
 # 기획 배경
 
-## 개요
-
-- Happy : Re: 음성 대화를 통한 AI 감정 모니터링 일기 서비스
-
 ## 필요성
 
 - 현대인은 점점 정신 건강의 필요성이 증가하고 있습니다.
@@ -44,18 +40,41 @@
 - **결과적으로 Happy : Re 는 자신을 좀 더 깊게 이해하고, 바람직한 삶의 계획을 세우는 데 도움이 될 수 있습니다.**
 
 # 서비스 소개
+![](readme%20resource/catchphrase.png)
 
-## 해피리 페르소나
-![](readme%20resource/profile.mov)
+## 해파리 페르소나 매칭
+- Happy: Re 에는 총 5종류의 해파리가 있습니다.
+
+  ![](readme%20resource/persona.png)
+
+- 회원가입 시 간략한 테스트를 통해 알맞은 초기 해파리를 매칭해 줍니다.
+
+  ![](readme%20resource/test.gif)
 ## 메인 화면
 
+- 메인 화면입니다.
+
+  ![](readme%20resource/profile.gif)
+
 ## 다이어리 및 AI 채팅
+- 메인 기능으로, 자신과 맞는 해파리와 채팅을 하며 오늘 하루를 정리할 수 있습니다.
+
+  ![](readme%20resource/aichat.gif)
 
 ## 유저 메세지 공유
+- 오늘 하루의 이야기를 익명으로 공유하고, 다른 사람들의 이야기도 볼 수 있습니다.
+
+  ![](readme%20resource/message.gif)
 
 ## 마인드 톡
+- 자신과 비슷한 Russell 척도를 가진 익명의 유저들과 음성 채팅으로 서로의 이야기를 나눌 수 있습니다.
+
+  ![](readme%20resource/mindtalk.gif)
 
 ## 아카이브
+- 마음에 드는 유저 메세지와 키워드를 저장할 수 있습니다.
+
+  ![](readme%20resource/archive.gif)
 
 # 빌드 및 배포 가이드
 [Porting manual](exec/Porting%20manual.md) 을 참조하세요
@@ -117,14 +136,13 @@
 ## Architecture
 ![](readme%20resource/architecture.png)
 ## ERD
-- ![](readme%20resource/Happyre_ERD.png)
-
+![](readme%20resource/Happyre_ERD.png)
 # 명세서
 ## 기능 명세서
-- ![](readme%20resource/기능명세_1.PNG)
-- ![](readme%20resource/기능명세_2.PNG)
+![](readme%20resource/기능명세_1.PNG)
+![](readme%20resource/기능명세_2.PNG)
 ## API 명세서
-- ![](readme%20resource/REST_1.PNG)
-- ![](readme%20resource/REST_2.PNG)
-- ![](readme%20resource/REST_3.PNG)
+![](readme%20resource/REST_1.PNG)
+![](readme%20resource/REST_2.PNG)
+![](readme%20resource/REST_3.PNG)
 
