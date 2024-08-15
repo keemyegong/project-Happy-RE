@@ -66,6 +66,9 @@
   margin-bottom: 10px;
 }
 
+.message-edit-profile-button{
+  margin: 0px !important;
+}
 
 .default-info-container {
   font-family: Pretendard;

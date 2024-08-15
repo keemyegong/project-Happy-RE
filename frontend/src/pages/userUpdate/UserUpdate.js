@@ -123,7 +123,7 @@ const UserUpdate = ()=>{
     <div className='user-update-container'>
       <h1 className='text-center text-white'>Profile</h1>
       <div className='user-avatar'>
-        <img className='profile-image' src={image} onClick={()=>{
+        <img className='profile-page-user-image' src={image} onClick={()=>{
           fileInput.current.click()
         }}/>
          <input 
