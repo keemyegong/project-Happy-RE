@@ -108,11 +108,19 @@ const UserTest = () => {
             ">
               ${persona.description}
             </div>
+            <div style="margin:20px; font-size:13px; color:#d1d3e5;">
+            * 함께 할 해파리는 프로필 화면에서 언제든지 바꿀 수 있어요!
+            </div>
+
           </div>
         </div>`,
+        width:400,
         showCancelButton: false,
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Yes'
+        confirmButtonColor: '#4B4E6D',
+        confirmButtonText: '함께 할래요!',
+        allowOutsideClick: false, // 모달 외부 클릭 시 닫힘 방지
+        allowEscapeKey: false,    // ESC 키로 닫힘 방지
+        backdrop: true,           // 배경을 어둡게 처리
       }).then((result) => {
         if (result.isConfirmed) {
           submit(data); // 원하는 함수 호출

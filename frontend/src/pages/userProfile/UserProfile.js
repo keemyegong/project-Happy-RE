@@ -178,6 +178,8 @@ const UserProfile = () => {
     universal.setIsAuthenticated(true);
     getMonthlyDiary(today);
     getRecentMonthDiary();
+    
+    setTimeout(()=>{
 
     axios
       .get(`${universal.defaultUrl}/api/user/me`, {
@@ -199,6 +201,7 @@ const UserProfile = () => {
           .then((Response) => {
             const blobData = new Blob([Response.data], { type: "image/jpeg" });
             const url = window.URL.createObjectURL(blobData);
+
             setImage(url);
           })
           .catch(() => {
@@ -208,7 +211,8 @@ const UserProfile = () => {
       .catch(() => {
         console.log("서버와통신불가");
       });
-
+    
+    },100);
     axios
       .get(`${universal.defaultUrl}/api/wordcloud/mywords`, {
         headers: {
@@ -456,7 +460,7 @@ const UserProfile = () => {
                       alt="해파리 페르소나"
                       src={happyRelist[localStorage.getItem("personaNumber")]}
                     />
-                    <span className="happyre-change-guid">펜 모양의 버튼을 클릭하면 다른 해파리와 대화할 수 있어요!</span>
+                    <span className="happyre-change-guid">* 펜 모양의 버튼을 클릭하면 다른 해파리와 대화할 수 있어요!</span>
                     <div className="persona-change-button" onClick={showModal}>
                       <span className="material-symbols-outlined">edit</span>
                     </div>
