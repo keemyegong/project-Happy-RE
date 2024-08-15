@@ -114,6 +114,14 @@ const AppContent = ({ setHappyreNumber, withHappyreAccessedToday }) => {
                 />
               </PrivateRoute>
             }/>
+          <Route path="/mindtalk/"
+            element={
+              <PrivateRoute>
+                <RtcClient
+                  characterImage={characterImage}
+                />
+              </PrivateRoute>
+            }/>
           <Route path="/diary" element={<PrivateRoute><Diary /></PrivateRoute>} />
           <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         </Routes>
