@@ -88,7 +88,7 @@ const Message = () => {
           </div>
           <div className="default-info-container">
             <p className="nickname">{nickname}</p>
-            <p className="email">{email}</p>
+            {/* <p className="email">{email}</p> */}
             <Button
               className="btn dark-btn small message-edit-profile-button"
               content="Edit Profile"
