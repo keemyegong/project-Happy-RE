@@ -77,8 +77,8 @@
   ![](readme%20resource/archive.gif)
 
 # 빌드 및 배포 가이드
-[Porting manual](exec/Porting%20manual.md) 을 참조하세요
-
+- [Porting manual](exec/Porting%20manual.md) 을 참조하세요.
+- 자세한 사용법은 [시연 시나리오](exec/Scenario.md) 를 참조하세요
 # 기술 스택
 
 ## Front-End
