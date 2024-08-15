@@ -190,6 +190,41 @@ const AIChat = () => {
     navigate('/diary');
 
   }
+
+  const endChat = ()=>{
+    if (chatHistory.length<2){
+      Swal.fire({
+        title: '저장할 수 없어요!',
+        html: "저장은 내용을 입력한 후에 진행할 수 있습니다!",
+        icon: 'warning',
+        iconColor: '#D35E5E',
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+        confirmButtonText: '확인',
+
+      })
+    }else{
+      Swal.fire({
+        title: '하루 기록을 마칠까요?',
+        html: "다이어리는 하루에 한 번만 등록할 수 있어요! <br/> 한번 나가면 오늘의 다이어리는 다시 기록할 수 없습니다......",
+        icon: 'warning',
+        iconColor: '#D35E5E',
+        color: 'white',
+        background: '#292929',
+        confirmButtonColor: '#4B4E6D',
+        showCancelButton: true,
+        cancelButtonColor: '#D35E5E',
+        confirmButtonText: '나갈래요!',
+        cancelButtonText: 'CANCEL'
+      }).then((response)=>{
+        if (response.isConfirmed){
+          endChatSession();
+        }
+      })
+    }
+
+  }
   const endChatSession = () => {
     // 1. 채팅 로그 스프링 저장 요청
     setshowModal(true);
@@ -523,7 +558,7 @@ const AIChat = () => {
               <span>
                 |
               </span>
-              <p onClick={endChatSession}>
+              <p onClick={endChat}>
                 
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-save-fill" viewBox="0 0 16 16">
                     <path d="M8.5 1.5A1.5 1.5 0 0 1 10 0h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6c-.314.418-.5.937-.5 1.5v7.793L4.854 6.646a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l3.5-3.5a.5.5 0 0 0-.708-.708L8.5 9.293z"/>
