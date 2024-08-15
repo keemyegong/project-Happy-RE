@@ -11,12 +11,13 @@ import ChatEventWatching from './ChatEventWatching';
 const ChatEvent = ({ eventbtnDisabled, content, eventProceeding, eventStoping, eventEnd,setIsInputDisabled }) => {
 	console.log(eventbtnDisabled);
 	const universal = useContext(universeVariable);
+	// 이벤트 허가 텍스트는 페르소나 따라감
 	const example_event = [
 		"감정이 격해졌을 때는 깊이 생각하는것 보다, 잠시 마음을 비우는 게 좋을 것 같아요. 도움이 되는 감각 운동을 해보실래요?",
-		"이벤트 허가 텍스트 1사분면",
-		"이벤트 허가 텍스트 2사분면",
-		"이벤트 허가 텍스트 3사분면",
-		"이벤트 허가 텍스트 4사분면",
+		"좋은 전투를 위해서는 때로는 머리를 비우는 것도 필요하지. 감각 운동을 하며 머리를 비우는 것은 어떤가?",
+		"주인님, 마음이 복잡하실 때는 눈을 돌리는 것도 하나의 방법입니다. 감각 운동을 하며 잠시 마음을 비우는 것은 어떠신가요?",
+		"고통을 잊는 방법 중 가장 좋은 것은 그대가 고통을 놓아주는 것이지. 감각 운동을 하며 잠시나마 모든 것을 놓아주는 것이 어떤가?",
+		"(슬픈 표정으로) 마음에 먹구름이 드리우고 머리가 늪에 잠긴 것 같을 때는, 잠시 극의 막을 내리고 모든 것을 벗어나는 것이 어떤가?",
 	]
 	return(
 		<div className='ai-response-container'>
