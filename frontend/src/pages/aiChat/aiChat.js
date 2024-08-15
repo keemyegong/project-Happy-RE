@@ -11,6 +11,7 @@ import DiaryReport from "../../components/diary-report/DiaryReport";
 import DiaryDetail from "../../components/diary-report/DiaryDetail";
 import { useNavigate, useLocation  } from "react-router-dom";
 import Swal from 'sweetalert2'
+
 // import useBackListener from './useBackListener';
 
 
@@ -42,49 +43,52 @@ const AIChat = () => {
   const [eventbtnDisabled, setEventbtnDisabed] = useState(false);
 
 
-  window.onpopstate = ()=>{
-    // // eslint-disable-next-line no-restricted-globals
+  // window.onpopstate = ()=>{
+  //   // // eslint-disable-next-line no-restricted-globals
 
-    // eslint-disable-next-line no-restricted-globals
-    if (window.history.idx == key){
-      // 해결...
-      // 여전히 남은 문제... 뒤로가기가 아니라 nav bar등으로 이동하는 경우엔 방어가 안됨
-      // 근데 그건 내일 고치겠습니다(이것보단 쉬울듯)
-      Swal.fire({
-        title: '정말 나가시겠습니까?',
-        // html: "다이어리는 하루에 한 번만 등록할 수 있어요! <br/> 한번 나가면 오늘의 다이어리는 다시 기록할 수 없습니다......",
-        icon: 'warning',
-        iconColor: '#D35E5E',
-        color: 'white',
-        background: '#292929',
-        confirmButtonColor: '#4B4E6D',
-        showCancelButton: true,
-        cancelButtonColor: '#D35E5E',
-        confirmButtonText: '나갈래요!',
-        cancelButtonText: 'CANCEL'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          axios.delete(
-            `${universal.fastUrl}/fastapi/chatbot/initialize-session/`,
-            {
-              headers: {
-                Authorization: `Bearer ${Cookies.get('Authorization')}`,
-                withCredentials: true,
-              }
-            }).then(()=>{
-              navigate('/diary');
+  //   // eslint-disable-next-line no-restricted-globals
+  //   if (window.history.idx == key){
+  //     // 해결...
+  //     // 여전히 남은 문제... 뒤로가기가 아니라 nav bar등으로 이동하는 경우엔 방어가 안됨
+  //     // 근데 그건 내일 고치겠습니다(이것보단 쉬울듯)
+  //     Swal.fire({
+  //       title: '정말 나가시겠습니까?',
+  //       // html: "다이어리는 하루에 한 번만 등록할 수 있어요! <br/> 한번 나가면 오늘의 다이어리는 다시 기록할 수 없습니다......",
+  //       icon: 'warning',
+  //       iconColor: '#D35E5E',
+  //       color: 'white',
+  //       background: '#292929',
+  //       confirmButtonColor: '#4B4E6D',
+  //       showCancelButton: true,
+  //       cancelButtonColor: '#D35E5E',
+  //       confirmButtonText: '나갈래요!',
+  //       cancelButtonText: 'CANCEL'
+  //     }).then((result) => {
+  //       if (result.isConfirmed) {
+  //         axios.delete(
+  //           `${universal.fastUrl}/fastapi/chatbot/initialize-session/`,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${Cookies.get('Authorization')}`,
+  //               withCredentials: true,
+  //             }
+  //           }).then(()=>{
+  //             console.log('navigate');
+  //             navigate('/diary');
 
-            }).catch((err)=>{
-              console.log(err);
-            })
-        } else{
+  //             window.history.deleteAll();
+
+  //           }).catch((err)=>{
+  //             console.log(err);
+  //           })
+  //       } else{
           
-         // eslint-disable-next-line no-restricted-globals
-          history.pushState({ page: 1 }, "title 1", "?page=1");
-        }
-      });
-    }
-  }
+  //        // eslint-disable-next-line no-restricted-globals
+  //         history.pushState({ page: 1 }, "title 1", "?page=1");
+  //       }
+  //     });
+  //   }
+  // }
 
   const today = {
     year:currDate.getFullYear(),
@@ -115,12 +119,13 @@ const AIChat = () => {
     "오늘따라 아고라가 소란스러운 모양이네. 다시 한 번 말해주시게.",
     "(곤란한 눈으로) 소란의 바다가 그대의 대사를 가라앉혔다네. 대사를 한 번 더 읊어주시게.",
   ]
+  
 
   // 처음 인삿말 받아오기
   useEffect(() => {
     eventStart();
     // eslint-disable-next-line no-restricted-globals
-    history.pushState({ page: 1 }, "title 1", "?page=1");
+    // history.pushState({ page: 1 }, "title 1", "?page=1");
     // eventStart();
 
     // eslint-disable-next-line no-restricted-globals
@@ -141,8 +146,23 @@ const AIChat = () => {
       sendStart(localStorage.getItem("personaNumber"));
     }
 
+    return ()=>{
+      quit();
+    };
     
-  }, [universal.fastUrl]);
+  }, []);
+
+  const quit = ()=>{
+    console.log('멈춤')
+    axios.delete(
+                `${universal.fastUrl}/fastapi/chatbot/initialize-session/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${Cookies.get('Authorization')}`,
+                    withCredentials: true,
+                  }
+                })
+  }
 
   const sendStart = (Startpersona)=>{
     axios.post(
@@ -503,18 +523,14 @@ const AIChat = () => {
               <span>
                 |
               </span>
-              <p onClick={toggleCam}>
-                {isCamEnabled ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-camera-video-fill" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2z"/>
+              <p onClick={endChatSession}>
+                
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-save-fill" viewBox="0 0 16 16">
+                    <path d="M8.5 1.5A1.5 1.5 0 0 1 10 0h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h6c-.314.418-.5.937-.5 1.5v7.793L4.854 6.646a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l3.5-3.5a.5.5 0 0 0-.708-.708L8.5 9.293z"/>
                   </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-camera-video-off-fill" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M10.961 12.365a2 2 0 0 0 .522-1.103l3.11 1.382A1 1 0 0 0 16 11.731V4.269a1 1 0 0 0-1.406-.913l-3.111 1.382A2 2 0 0 0 9.5 3H4.272zm-10.114-9A2 2 0 0 0 0 5v6a2 2 0 0 0 2 2h5.728zm9.746 11.925-10-14 .814-.58 10 14z"/>
-                  </svg>
-                )}
+
                 <span>
-                  CAM
+                  SAVE
                 </span>
               </p>
             </div>
@@ -526,13 +542,12 @@ const AIChat = () => {
       <div className='ai-chat-tooltip'>
         이곳에서는 해파리와의 채팅을 통해 다이어리를 작성할 수 있어요<br/>
         텍스트 모드, 음성 모드 두 가지를 지원합니다<br/>
+        위의 버튼을 클릭해서 모드를 전환할 수 있어요!<br/>
         <br/>
-        TYPE: 기본적으로 제공하는 모드입니다 텍스트 채팅을 통해 해파리와 소통할 수 있어요<br/>
-        REC: 음성 모드로 전환할 수 있어요 말을 마치면 SEND 버튼을 눌러주세요<br/>
-        CAM: 캠을 켜는 게 부담스러우신가요? CAM의 ON/OFF 설정을 전환할 수 있어요<br/>
+        <strong>TYPE</strong> : 기본적으로 제공하는 모드입니다 텍스트 채팅을 통해 해파리와 소통할 수 있어요<br/>
+        <strong>REC</strong>: 음성 모드로 전환할 수 있어요 말을 마치면 SEND 버튼을 눌러주세요. 음성은 버튼을 누른 순간부터 자동으로 기록됩니다. 기록한 음성은 다이어리 작성 후에 다시 들어볼 수 있어요!<br/>
+        <strong>SAVE</strong>: SAVE 버튼을 누르면, 오늘의 대화를 종료하게 됩니다. 해파리 친구들이 오늘 하루를 정리해 줄 거에요!  <br/>
         <br/>
-        다이어리 작성이 끝났다면 채팅창 우측 상단의 엑스를 눌러주세요!<br/>
-        해파리 친구들이 당신의 오늘 하루를 정리해 줄 거예요
       </div>
     </div>
           </div>

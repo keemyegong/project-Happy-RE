@@ -39,47 +39,14 @@ const ChatCam = ({ isCamEnabled, persona }) => {
   const date = String(today.getDate()).padStart(2, '0');
   const day = today.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
 
-  const formattedDate = `${year}.${month}.${date}.${day}`;
-
-  const [userVideoStream, setUserVideoStream] = useState(null);
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        setUserVideoStream(stream);
-      })
-      .catch(error => {
-        console.error('Error accessing user camera:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (videoRef.current && userVideoStream) {
-      videoRef.current.srcObject = userVideoStream;
-    }
-  }, [userVideoStream]);
+  const formattedDate = ``;
 
   return (
     <div className='ChatCam'>
       <div className='chat-cam-container'>
-        <div className='chat-cam-date'>{formattedDate}</div>
+        <div className='chat-cam-date'>* 새로고침, 뒤로가기 등을 통해 페이지를 이동하는 경우,<br/> 소중한 기록이 없어질 수 있어요.</div>
         <img className='chat-cam-ai-profile-img' src={chatData.imageSrc} alt="AI profile" />
-        {isCamEnabled && userVideoStream ? (
-          <video
-            className='chat-cam-user-video'
-            autoPlay
-            muted
-            playsInline
-            ref={videoRef}
-          />
-        ) : (
-          <img
-            className='chat-cam-user-video'
-            src={require('../../assets/images/chatcam-user2.gif')}
-            alt="User Jellyfish"
-          />
-        )}
+      
       </div>
     </div>
   );

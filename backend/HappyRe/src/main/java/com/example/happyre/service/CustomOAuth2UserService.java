@@ -50,9 +50,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userEntity.setRole("ROLE_USER");
             userEntity.setSocialLogin(oAuth2Response.getProvider());
             existingUser = userEntity;
-        } else {
-            existingUser.setEmail(oAuth2Response.getEmail());
-            existingUser.setName(oAuth2Response.getName());
         }
 
         UserEntity savedEntity = userRepository.save(existingUser);
