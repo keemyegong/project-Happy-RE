@@ -265,6 +265,8 @@ const AIChat = () => {
                 withCredentials: true,
               }
             }).then((response)=>{
+              console.log(response.data);
+              
               setDaySummary(response.data[0].summary);
               axios.get(
                 `${universal.defaultUrl}/api/diary/detail/`,
