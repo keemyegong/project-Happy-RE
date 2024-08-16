@@ -128,40 +128,40 @@ const App = () => {
   const [todayDone, setTodayDone] = useState(false);
   const [withHappyreAccessedToday, setWithHappyreAccessedToday] = useState(false);
 
-  useEffect(() => {
-    if (Cookies.get("Authorization")){
-      axios.get(
-        `https://i11b204.p.ssafy.io/api/diary/detail/`,
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get('Authorization')}`,
-            withCredentials: true,
-          }
-        }).then((response)=>{
-          // console.log(response.data)
-          if (response.data != "No Today Diary"){
-            setWithHappyreAccessedToday(true);
-          } else{
-            setWithHappyreAccessedToday(false)
-          };
-        })
-    }
+  // useEffect(() => {
+  //   if (Cookies.get("Authorization")){
+  //     axios.get(
+  //       `https://i11b204.p.ssafy.io/api/diary/detail/`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${Cookies.get('Authorization')}`,
+  //           withCredentials: true,
+  //         }
+  //       }).then((response)=>{
+  //         // console.log(response.data)
+  //         if (response.data != "No Today Diary"){
+  //           setWithHappyreAccessedToday(true);
+  //         } else{
+  //           setWithHappyreAccessedToday(false)
+  //         };
+  //       })
+  //   }
 
 
-    const today = new Date().toISOString().split('T')[0];
+  //   const today = new Date().toISOString().split('T')[0];
     
-  }, []);
+  // }, []);
 
 
 
   return (
     <universeVariable.Provider
       value={{
-        defaultUrl: 'https://i11b204.p.ssafy.io',
-        // defaultUrl: 'http://192.168.31.216:8080',
+        // defaultUrl: 'https://i11b204.p.ssafy.io',
+        defaultUrl: 'http://192.168.31.216:8080',
         // fastUrl: '',
-        fastUrl: 'https://i11b204.p.ssafy.io',
-        // fastUrl: 'http://192.168.31.229:8000',
+        // fastUrl: 'https://i11b204.p.ssafy.io',
+        fastUrl: 'http://192.168.31.229:8000',
         // defaultUrl: 'http://180.228.3.53:8080',
         // defaultUrl: 'http://192.168.31.48:8080',
         // fastUrl: 'https://i11b204.p.ssafy.io',
