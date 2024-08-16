@@ -258,27 +258,17 @@ const AIChat = () => {
         }).then((response) => {
           console.log("Session ended and diary summary sent:", response.data);
           axios.get(
-            `${universal.defaultUrl}/api/diary/?year=${today.year}&month=${today.month}&day=${today.date}&period=1`,
+            `${universal.defaultUrl}/api/diary/detail/`,
             {
               headers: {
                 Authorization: `Bearer ${Cookies.get('Authorization')}`,
                 withCredentials: true,
               }
             }).then((response)=>{
-              // console.log(response.data);
-              setDaySummary(response.data[0].summary);
-              axios.get(
-                `${universal.defaultUrl}/api/diary/detail/`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${Cookies.get('Authorization')}`,
-                    withCredentials: true,
-                  }
-                }).then((response)=>{
-                  setKeyword(response.data.keywordEntities);
-                }).then((response)=>{
-                  setLoading(false);
-                })
+              setDaySummary(response.data.summary);
+              setKeyword(response.data.keywordEntities);
+            }).then((response)=>{
+              setLoading(false);
             })
         }).catch((error) => {
           console.error("Error ending session:", error);
