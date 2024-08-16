@@ -10,8 +10,10 @@ import java.util.List;
 
 @Data
 public class DiaryDetailResponseDTO {
+    private String summary;
     private List<MessageEntityDTO> messageEntities;
     private List<KeywordWithEmotionDTO> keywordEntities;
+
 
     public DiaryDetailResponseDTO(List<MessageEntity> messageEntities, List<KeywordEntity> keywordEntities) {
         this.messageEntities = new ArrayList<>();

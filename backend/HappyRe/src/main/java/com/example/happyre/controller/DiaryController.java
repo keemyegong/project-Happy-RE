@@ -100,11 +100,13 @@ public class DiaryController {
 
 
             DiaryDetailResponseDTO res = new DiaryDetailResponseDTO(byDiaryEntityMessage, byDiaryEntityKeyword);
+            res.setSummary(diaryEntity.getSummary());
             for (int i = 0; i < res.getKeywordEntities().size(); i++) {
                 System.out.println("---------------!!!!!!!!!!!!!!!!!!!!11------------------");
                 List<EmotionEntity> tmp = keywordService.findEmotionsByKeywordId(res.getKeywordEntities().get(i).getKeywordId());
                 System.out.println(tmp.toString());
                 res.getKeywordEntities().get(i).setEmotions(tmp);
+
             }
 
 //            for(KeywordWithEmotionDTO keywordEmotionDTO :res.getKeywordEntities()){
