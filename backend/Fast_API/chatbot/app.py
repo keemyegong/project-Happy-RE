@@ -96,8 +96,9 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
         "content":text.strip(),
         "speaker":speaker,
         "audioKey":audio,
-        "date":str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        "date":str(datetime.now().strftime("%Y-%m-%dT%H:%M:%S"))
     })
+    print(user_message[user_id])
 
 def session_initialize(user_id:str):
     if user_id in user_session:
