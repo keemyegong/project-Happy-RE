@@ -31,7 +31,7 @@ const DiaryReport = ({ selectedDay,loading, keywords, hideplus, daySummary }) =>
   })
 
   return (
-    <div className='DiaryReport'>
+    <div className={loading? 'DiaryReport-Loading' : 'DiaryReport'}>
       <div className='diary-report-header'>
         <p className='diary-report-header-text'>{`${year}-${month}-${date} report`}</p>
 
