@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./MessageInput.css";
 import Button from "../Button/Button";
 import axios from "axios";
@@ -13,8 +13,24 @@ const MessageInput = ({ keywords }) => {
   const [keywordId, setKeywordId] = useState(0);
   const [leftdisable, setLeftdisable] = useState(true);
   const [rightdisable, setRightdisable] = useState(false);
+  const [senddisable, setSenddisable] = useState(false);
   const navigate = useNavigate();
   const universal = useContext(universeVariable);
+
+  useEffect(()=>{
+    if (keywords.length == 1 ){
+      setRightdisable(true);
+    }
+
+  },[keywords])
+
+  useEffect(()=>{
+    // back에 axios 요청을 보내 오늘 메시지 작성여부 확인,
+    // 작성했으면 button didsabled를 true로, 
+    console.log('block')
+  },[])
+
+
   const goLeftKeyword = () => {
     if (keywordId > 0) {
       setKeywordId(keywordId - 1);
@@ -39,7 +55,28 @@ const MessageInput = ({ keywords }) => {
     setMessage(event.target.value);
   };
 
+  const confirmSend = ()=>{
+    Swal.fire({
+      title: '하루를 공유할까요?',
+      html: "하루 공유는 하루에 한 번만 진행할 수 있어요!",
+      icon: 'question',
+      iconColor: '#4B4E6D',
+      color: 'white',
+      background: '#292929',
+      confirmButtonColor: '#4B4E6D',
+      showCancelButton: true,
+      cancelButtonColor: '#D35E5E',
+      confirmButtonText: '공유할래요!',
+      cancelButtonText: 'CANCEL'
+    }).then((response)=>{
+      if (response.isConfirmed){
+        handleSendMessage();
+      }
+    })
+  }
   const handleSendMessage = () => {
+    setSenddisable(true);
+
     const data = {
       content: message,
       keywordEntityDTOList:
@@ -154,13 +191,15 @@ const MessageInput = ({ keywords }) => {
             <Button
               className="message-send-btn btn middle dark-btn"
               content="Share"
-              onClick={handleSendMessage}
+              onClick={confirmSend}
+              disabled={senddisable}
             />
           ) : (
             <Button
-              className="message-send-btn btn middle dark-btn"
+              className="message-send-btn btn middle dark-btn "
               content="Diary→"
               onClick={() => navigate("/diary")}
+              disabled={true}
             />
           )}
         </div>
