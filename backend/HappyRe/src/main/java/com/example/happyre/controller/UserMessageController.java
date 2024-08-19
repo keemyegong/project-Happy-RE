@@ -1,6 +1,7 @@
 package com.example.happyre.controller;
 
 import com.example.happyre.dto.usermessage.UserMessageDTO;
+import com.example.happyre.entity.DiaryEntity;
 import com.example.happyre.entity.UserEntity;
 import com.example.happyre.entity.UserMessageArchivedEntity;
 import com.example.happyre.entity.UserMessageEntity;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "UserMessage")
@@ -36,6 +39,26 @@ public class UserMessageController {
             return ResponseEntity.ok("등록 완료");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("UserMessage 등록중 에러: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "현재 유저의 오늘 메세지 작성 여부 받아오기", description = "")
+    @GetMapping("/")
+    public ResponseEntity<?> findByDate(HttpServletRequest request,
+                                        @RequestParam(required = false) Integer year,
+                                        @RequestParam(required = false) Integer month,
+                                        @RequestParam(required = false) Integer day) {
+        try {
+            UserEntity userEntity = userService.findByRequest(request);
+            Date theDay;
+            try{
+                theDay = Date.valueOf(LocalDate.of(year, month, day));
+            } catch (Exception e){
+                theDay = Date.valueOf(LocalDate.now());
+            }
+            return ResponseEntity.ok(userMessageService.findByUserEntityAndDate(userEntity, theDay));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("UserMessage 가져오는중 에러: " + e.getMessage());
         }
     }
 
