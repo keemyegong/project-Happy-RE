@@ -62,6 +62,7 @@ CREATE TABLE `message` (
   `diary_id` int NOT NULL,
   `sequence` int NOT NULL,
   `content` text NOT NULL,
+  `date` timestamp NULL,
   `summary` text,
   `speaker` enum('ai','user') NOT NULL,
   `audio_key` varchar(255) DEFAULT NULL,

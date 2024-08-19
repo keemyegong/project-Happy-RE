@@ -8,6 +8,7 @@ public class MessageEntityDTO {
     private Integer messageId;
     private Integer diaryId;
     private Integer sequence;
+    private String date;
     private String content;
     private MessageEntity.Speaker speaker;
     private String audioKey;

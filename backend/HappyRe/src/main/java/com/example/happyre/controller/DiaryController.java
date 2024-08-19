@@ -18,7 +18,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,13 +155,16 @@ public class DiaryController {
     @PutMapping("/updatetoday")
     public ResponseEntity<?> updateContent(HttpServletRequest request, @RequestBody DiaryContentDTO diaryContentDTO) {
         try {
+            LocalDateTime targetDate = (diaryContentDTO.getDate() != null) ? LocalDateTime.parse(diaryContentDTO.getDate()) : LocalDateTime.now();
             UserEntity userEntity = userService.findByRequest(request);
-            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(LocalDate.now()));
+            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(targetDate.toLocalDate()));
+
             DiaryEntity diaryEntity;
             if (diaryEntityList.size() == 0) {
                 logger.warn("Diary 없음. 새로 만든다.");
                 diaryEntity = new DiaryEntity();
                 diaryEntity.setUserEntity(userEntity);
+                diaryEntity.setDate(Timestamp.valueOf(targetDate));
                 diaryEntity.setSummary(diaryContentDTO.getSummary());
                 diaryService.insert(diaryEntity);
             } else {

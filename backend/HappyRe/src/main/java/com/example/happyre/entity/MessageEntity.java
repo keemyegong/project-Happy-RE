@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Data
 @Entity
 @Table(name = "message")
@@ -25,6 +27,8 @@ public class MessageEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    private Timestamp date;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
