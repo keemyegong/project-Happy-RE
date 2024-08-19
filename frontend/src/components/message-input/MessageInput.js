@@ -29,7 +29,7 @@ const MessageInput = ({ keywords }) => {
       .get(`${universal.defaultUrl}/api/usermsg/`, {
         headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
       }).then((response)=>{
-        // console.log(response);
+        console.log(response.data);
         if (response.data.lenth != 0){
           setSenddisable(true);
         }
