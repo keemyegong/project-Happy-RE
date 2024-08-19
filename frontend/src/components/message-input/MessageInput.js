@@ -206,7 +206,7 @@ const MessageInput = ({ keywords }) => {
               className="message-send-btn btn middle dark-btn "
               content="Diary→"
               onClick={() => navigate("/diary")}
-              disabled={true}
+              // disabled={true}
             />
           )}
         </div>
