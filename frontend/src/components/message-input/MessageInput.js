@@ -191,14 +191,15 @@ const MessageInput = ({ keywords }) => {
             <Button
               className="message-send-btn btn middle dark-btn"
               content="Share"
-              onClick={handleSendMessage}
+              onClick={confirmSend}
               disabled={senddisable}
             />
           ) : (
             <Button
-              className="message-send-btn btn middle dark-btn"
+              className="message-send-btn btn middle dark-btn "
               content="Diary→"
               onClick={() => navigate("/diary")}
+              disabled={true}
             />
           )}
         </div>
