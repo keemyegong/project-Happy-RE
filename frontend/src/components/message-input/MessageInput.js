@@ -25,9 +25,16 @@ const MessageInput = ({ keywords }) => {
   },[keywords])
 
   useEffect(()=>{
-    // back에 axios 요청을 보내 오늘 메시지 작성여부 확인,
-    // 작성했으면 button didsabled를 true로, 
-    console.log('block')
+    axios
+      .get(`${universal.defaultUrl}/api/usermsg/`, {
+        headers: { Authorization: `Bearer ${Cookies.get('Authorization')}` },
+      }).then((response)=>{
+        // console.log(response.data);
+        if (response.data.length != 0){
+          setSenddisable(true);
+        }
+      })
+    // console.log('block')
   },[])
 
 
@@ -199,7 +206,7 @@ const MessageInput = ({ keywords }) => {
               className="message-send-btn btn middle dark-btn "
               content="Diary→"
               onClick={() => navigate("/diary")}
-              disabled={true}
+              // disabled={true}
             />
           )}
         </div>

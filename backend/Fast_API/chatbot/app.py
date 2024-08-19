@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import math
+from datetime import datetime
 import shutil
 import json
 from dotenv import load_dotenv
@@ -94,8 +95,10 @@ def message_session_update(user_id:str, text:str, speaker:str, audio:str="None")
     user_message[user_id].append({
         "content":text.strip(),
         "speaker":speaker,
-        "audioKey":audio
+        "audioKey":audio,
+        "date":str(datetime.now().strftime("%Y-%m-%dT%H:%M:%S"))
     })
+    print(user_message[user_id])
 
 def session_initialize(user_id:str):
     if user_id in user_session:
