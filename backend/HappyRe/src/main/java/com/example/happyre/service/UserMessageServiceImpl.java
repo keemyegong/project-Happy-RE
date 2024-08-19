@@ -8,6 +8,7 @@ import com.example.happyre.repository.UserMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,6 +46,11 @@ public class UserMessageServiceImpl implements UserMessageService {
     @Override
     public Optional<UserMessageEntity> findById(Integer id) {
         return userMessageRepository.findById(id);
+    }
+
+    @Override
+    public List<UserMessageEntity> findByUserEntityAndDate(UserEntity userEntity, Date date){
+        return userMessageRepository.findByUserEntityAndDate(userEntity, date);
     }
 
     @Override
