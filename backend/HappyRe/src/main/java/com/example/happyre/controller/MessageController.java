@@ -16,7 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,15 +43,16 @@ public class MessageController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
             }
             System.out.println("user Entity : " + userEntity.toString());
-            LocalDate today = LocalDate.now();
-            List<DiaryEntity> todayDiarys = diaryService.findByUserAndDate(userEntity, java.sql.Date.valueOf(today));
-            if (todayDiarys.isEmpty()) {
+            LocalDateTime targetDate = LocalDateTime.parse(messageEntityDTOs.get(0).getDate());
+            List<DiaryEntity> diaryEntityList = diaryService.findByUserAndDate(userEntity, Date.valueOf(targetDate.toLocalDate()));
+            if (diaryEntityList.isEmpty()) {
                 //만들고 시작
                 DiaryEntity diaryEntity = new DiaryEntity();
                 diaryEntity.setUserEntity(userEntity);
-                todayDiarys.add(diaryService.insert(diaryEntity));
+                diaryEntity.setDate(Timestamp.valueOf(targetDate));
+                diaryEntityList.add(diaryService.insert(diaryEntity));
             }
-            DiaryEntity diaryEntity = todayDiarys.get(0);
+            DiaryEntity diaryEntity = diaryEntityList.get(0);
             System.out.println("Diary Entity : " + diaryEntity.toString());
             ArrayList<MessageEntity> messageEntities = messageService.insertMessageDTOList(diaryEntity, messageEntityDTOs);
 

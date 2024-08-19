@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,12 @@ public class MessageServiceImpl implements MessageService {
         newOne.setRussellX(messageEntityDTO.getRussellX());
         newOne.setRussellY(messageEntityDTO.getRussellY());
         newOne.setArchived(messageEntityDTO.getArchived());
+        try{
+            newOne.setDate(Timestamp.valueOf(LocalDateTime.parse(messageEntityDTO.getDate())));
+        } catch(Exception e){
+            System.out.println(e.getStackTrace());
+        }
+
         return newOne;
     }
 
@@ -98,7 +106,9 @@ public class MessageServiceImpl implements MessageService {
         messageEntity.setSequence(messageEntityDTO.getSequence());
         messageEntity.setContent(messageEntityDTO.getContent());
         messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
-        return messageRepository.save(messageEntity);
+        messageEntity.setMessageId(null); // 새 Id 로 재지정될 것이므로 null 처리.
+        messageEntity.setDate(Timestamp.valueOf(LocalDateTime.parse(messageEntityDTO.getDate())));
+        return insert(messageEntity);
     }
 
     @Override
@@ -128,21 +138,11 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public ArrayList<MessageEntity> insertMessageDTOList(DiaryEntity diaryEntity, List<MessageEntityDTO> messageEntityDTOList) {
-        int cnt = 0;
         ArrayList<MessageEntity> messageEntities = new ArrayList<>();
         ArrayList<String> userWords = new ArrayList<>();
         try {
             for (MessageEntityDTO messageEntityDTO : messageEntityDTOList) {
-                MessageEntity messageEntity = new MessageEntity();
-
-                messageEntity.setDiaryEntity(diaryEntity);
-                messageEntity.setSequence(++cnt);
-                messageEntity.setContent(messageEntityDTO.getContent());
-                messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
-                messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
-                messageEntity.setSummary(messageEntityDTO.getSummary());
-                messageEntity.setRussellX(messageEntityDTO.getRussellX());
-                messageEntity.setRussellY(messageEntityDTO.getRussellY());
+                MessageEntity messageEntity = getMessageEntity( messageEntityDTO, diaryEntity);
                 messageRepository.save(messageEntity);
                 if (messageEntity.getSpeaker() == MessageEntity.Speaker.user) {
                     userWords.add(messageEntityDTO.getContent());
@@ -159,24 +159,5 @@ public class MessageServiceImpl implements MessageService {
             System.out.println(e.getMessage());
             throw new RuntimeException(e);
         }
-
-
     }
-
-//    public MessageEntity extracted(DiaryEntity diaryEntity, MessageEntityDTO messageEntityDTO) {
-//        MessageEntity messageEntity =  new MessageEntity();
-//
-//        messageEntity.setDiaryEntity(diaryEntity);
-//        messageEntity.setSequence(messageEntityDTO.getSequence());
-//        messageEntity.setContent(messageEntityDTO.getContent());
-//        messageEntity.setSpeaker(messageEntityDTO.getSpeaker());
-//        messageEntity.setAudioKey(messageEntityDTO.getAudioKey());
-//        messageEntity.setSummary(messageEntityDTO.getSummary());
-//        messageEntity.setRussellX(messageEntityDTO.getRussellX());
-//        messageEntity.setRussellY(messageEntityDTO.getRussellY());
-//
-//
-//        return messageEntity;
-//    }
-
 }
