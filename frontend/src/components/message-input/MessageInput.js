@@ -66,7 +66,7 @@ const MessageInput = ({ keywords }) => {
       confirmButtonColor: '#4B4E6D',
       showCancelButton: true,
       cancelButtonColor: '#D35E5E',
-      confirmButtonText: '나갈래요!',
+      confirmButtonText: '공유할래요!',
       cancelButtonText: 'CANCEL'
     }).then((response)=>{
       if (response.isConfirmed){
