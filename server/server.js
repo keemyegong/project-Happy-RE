@@ -19,6 +19,7 @@ app.get('/mindtalk', (req, res) => {
 const wss = new WebSocket.Server({ server, path: '/mindtalk' });
 
 const MAX_USERS_PER_ROOM = 6;
+const TOTAL_ROOMS = 5; // 방개수 
 let rooms = {};
 let messageQueue = [];
 
@@ -27,6 +28,31 @@ const createNewRoom = () => {
   rooms[roomId] = [];
   return roomId;
 };
+
+
+// 미리 방생성
+const initializeRooms = () => {
+  for (let i = 0; i < TOTAL_ROOMS; i++) {
+    const roomId = uuidv4();
+    rooms[roomId] = [];
+  }
+};
+
+initializeRooms();
+
+let currentRoomIndex = 0;
+const getNextRoom = () => {
+  const roomIds = Object.keys(rooms);
+  const roomId = roomIds[currentRoomIndex];
+
+  // 현재 방이 꽉 찼으면 다음 방으로 이동
+  if (rooms[roomId].length >= MAX_USERS_PER_ROOM) {
+    currentRoomIndex = (currentRoomIndex + 1) % TOTAL_ROOMS;
+  }
+  return roomIds[currentRoomIndex];
+};
+
+
 
 const getRoomWithSpace = () => {
   for (let roomId in rooms) {
@@ -53,7 +79,7 @@ wss.on('connection', (ws, req) => {
   const userId = uuidv4();
   const userInfo = { id: userId, connectedAt: Date.now(), coolTime: false, hasMoved: false, position: { x: 0, y: 0 }, characterImage: '', connectedUsers: [] };
 
-  const roomId = getRoomWithSpace();
+  const roomId = getNextRoom();
   rooms[roomId].push({ ws, ...userInfo });
 
   ws.send(JSON.stringify({ type: 'assign_id', ...userInfo, roomId }));
@@ -61,7 +87,7 @@ wss.on('connection', (ws, req) => {
   ws.on('message', (message) => {
     const data = JSON.parse(message);
     messageQueue.push({ data, roomId, userId });
-    processMessageQueue();
+    processMessageQueue();  
   });
 
   ws.on('close', () => {
