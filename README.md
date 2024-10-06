@@ -1,20 +1,22 @@
-# Happy: Re
+# Happy: Re - AI 기반 이용자 감정 분석 서비스
+🎬 SSAFY 11기 공통 프로젝트 - 웹기술 WebRTC
+
+🥇 프로젝트 1등 최우수상
 
 ![Happyre](readme%20resource/Happyre.png)
+<br/><br/>
 
 # 목차
-
 1. [기획 배경](#기획-배경)
 2. [서비스 소개](#서비스-소개)
 8. [빌드 및 배포 가이드](#빌드-및-배포-가이드)
 4. [기술 스택](#기술-스택)
 6. [서비스 설계](#서비스-설계)
 7. [명세서](#명세서)
+<br/><br/>
 
 # 기획 배경
-
 ## 필요성
-
 - 현대인은 점점 정신 건강의 필요성이 증가하고 있습니다.
 - 개인의 심리 상태를 이해하고 관리할 도구가 필요하지만, 시중에 존재하는 일기 및 감정 모니터링 도구들은 여러 단점을 가지고 있습니다.
   - 기록이 번거로워 습관을 들이기 어려움
@@ -38,6 +40,7 @@
   - 비슷한 감정을 가진 익명의 유저들과의 음성 소통
   - 유저의 감정이 담긴 편지를 공유
 - **결과적으로 Happy : Re 는 자신을 좀 더 깊게 이해하고, 바람직한 삶의 계획을 세우는 데 도움이 될 수 있습니다.**
+<br/><br/>
 
 # 서비스 소개
 ![](readme%20resource/catchphrase.png)
@@ -75,10 +78,13 @@
 - 마음에 드는 유저 메세지와 키워드를 저장할 수 있습니다.
 
   ![](readme%20resource/archive.gif)
+<br/><br/>
 
 # 빌드 및 배포 가이드
 - [Porting manual](exec/Porting%20manual.md) 을 참조하세요.
 - 자세한 사용법은 [시연 시나리오](exec/Scenario.md) 를 참조하세요
+<br/><br/>
+
 # 기술 스택
 
 ## Front-End
@@ -113,10 +119,12 @@
 
 ## 외부 API
 
-- [OPENAI API](https://platform.openai.com/)
+[OPENAI API](https://platform.openai.com/)
   - 챗봇 및 요약용 LLM 제공
-- [CLOVA Speech](https://clova.ai/speech)
+
+[CLOVA Speech](https://clova.ai/speech)
   - 음성 인식을 챗봇과의 대화에 활용
+<br/><br/>
 
 # 서비스 설계
 ## 화면 설계서
@@ -137,6 +145,8 @@
 ![](readme%20resource/architecture.png)
 ## ERD
 ![](readme%20resource/Happyre_ERD.png)
+<br/><br/>
+
 # 명세서
 ## 기능 명세서
 ![](readme%20resource/기능명세_1.PNG)
@@ -145,4 +155,12 @@
 ![](readme%20resource/REST_1.PNG)
 ![](readme%20resource/REST_2.PNG)
 ![](readme%20resource/REST_3.PNG)
+<br/><br/>
 
+# 역할 분담
+- 최봉준: 팀장 · PM  · FE 
+- 김수민: FE + BE FullStack
+- 김예운: FE Leader
+- 이동준: BE · AI Main
+- 이창현: BE Leader
+- 임용구: BE · DB Main
